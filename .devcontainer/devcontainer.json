@@ -1,0 +1,49 @@
+{
+  "name": "KeyanTong",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.12",
+      "installTools": true
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "moby": true
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "forwardPorts": [3000, 8000, 8001, 4567, 5432, 6379],
+  "portsAttributes": {
+    "3000": {
+      "label": "Portal (Next.js)",
+      "onAutoForward": "openBrowser"
+    },
+    "8000": {
+      "label": "Bridge API"
+    },
+    "8001": {
+      "label": "RAG API"
+    },
+    "4567": {
+      "label": "NodeBB"
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "postStartCommand": "bash .devcontainer/post-start.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "typescript.tsdk": "apps/portal/node_modules/typescript/lib"
+      }
+    }
+  },
+  "remoteUser": "node"
+}

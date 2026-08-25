@@ -18,8 +18,22 @@
 
 ## 2. 获取仓库
 
+### 2.1 GitHub Codespaces（推荐云端开发）
+
+1. 打开 https://github.com/2366117804qqcom-ui/keyantong  
+2. **Code → Codespaces → Create codespace on main**  
+3. 等待 `postCreate`（安装 pnpm 依赖）完成后：
+
 ```bash
-git clone <REPO_URL> keyantong
+pnpm dev:portal
+```
+
+在 Ports 面板打开 `3000`。`.devcontainer/` 已预装 Node 20、Python 3.12、Docker-in-Docker 与 GitHub CLI。
+
+### 2.2 本地 clone
+
+```bash
+git clone https://github.com/2366117804qqcom-ui/keyantong.git
 cd keyantong
 cp .env.example .env
 pnpm install --ignore-scripts

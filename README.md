@@ -60,6 +60,24 @@
 └── scripts/              # smoke / 种子清单
 ```
 
+## 云端开发（推荐）
+
+仓库已配置 GitHub Codespaces：打开仓库页面 → **Code** → **Codespaces** → **Create codespace on main**，或点：
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/2366117804qqcom-ui/keyantong)
+
+创建后终端执行：
+
+```bash
+pnpm dev:portal   # 转发端口 3000，浏览器访问 Codespaces 预览
+```
+
+依赖库（Postgres / Redis）会在 Codespace 启动时尽量自动拉起；也可手动：
+
+```bash
+docker compose -f infra/docker-compose.dev.yml up -d
+```
+
 ## 本地快速启动
 
 ```bash
