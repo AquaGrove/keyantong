@@ -1,0 +1,71 @@
+# Production-oriented compose skeleton.
+# Local DB-only: docker compose -f infra/docker-compose.dev.yml up -d
+# Optional app stubs: docker compose -f infra/docker-compose.yml --profile apps up -d --build
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-kt}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kt}
+      POSTGRES_DB: ${POSTGRES_DB:-keyantong}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-kt} -d ${POSTGRES_DB:-keyantong}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  bridge:
+    build:
+      context: ../services/bridge
+    profiles: ["apps"]
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgres://kt:kt@postgres:5432/keyantong}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  rag:
+    build:
+      context: ../services/rag
+    profiles: ["apps"]
+    ports:
+      - "8001:8001"
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgres://kt:kt@postgres:5432/keyantong}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      AI_SUGGEST_ENABLED: ${AI_SUGGEST_ENABLED:-false}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  redisdata:

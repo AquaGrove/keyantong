@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Minimal smoke checks for the KeyanTong skeleton.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
+
+echo "==> docker compose config (dev)"
+docker compose -f infra/docker-compose.dev.yml config >/dev/null
+
+echo "==> docker compose config (prod skeleton)"
+docker compose -f infra/docker-compose.yml config >/dev/null
+
+if [[ -x apps/portal/node_modules/.bin/tsc ]]; then
+  echo "==> portal typecheck"
+  (cd apps/portal && ./node_modules/.bin/tsc --noEmit)
+else
+  echo "==> skip portal typecheck (run pnpm install first)"
+fi
+
+if command -v curl >/dev/null 2>&1; then
+  for url in http://127.0.0.1:8000/health http://127.0.0.1:8001/health; do
+    if curl -fsS --max-time 2 "$url" >/dev/null 2>&1; then
+      echo "==> health ok: $url"
+    else
+      echo "==> health skip (not running): $url"
+    fi
+  done
+fi
+
+echo "smoke: ok"

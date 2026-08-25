@@ -1,0 +1,16 @@
+{
+  "name": "@keyantong/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared API contracts and types for KeyanTong",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}

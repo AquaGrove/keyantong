@@ -1,0 +1,40 @@
+# 科研通
+
+# 依赖与密钥
+.env
+.env.*
+!.env.example
+
+# 系统与编辑器
+.DS_Store
+.idea/
+.vscode/
+*.swp
+.cursor/
+
+# 语言产物
+node_modules/
+dist/
+build/
+.next/
+coverage/
+*.tsbuildinfo
+__pycache__/
+.venv/
+venv/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# 数据与备份
+*.dump
+*.sql.gz
+pgdata/
+redisdata/
+backups/
+
+# 日志与临时
+*.log
+tmp/
+.cache/

@@ -1,0 +1,17 @@
+id: example-tool
+name: Example Tool
+summary: 示例工具卡。请复制本文件为 {slug}.yaml 后填写真实信息。
+categories: [sequence]
+license: MIT
+author: keyantong-docs
+install:
+  conda: bioconda::samtools
+  docker: quay.io/biocontainers/samtools:1.21--h50ea8bc_0
+  notes: |
+    仅作格式示例。提交真实工具卡时必须使用合法安装来源。
+common_pitfalls:
+  - 版本与参考基因组索引不匹配
+  - conda 频道未启用 bioconda / conda-forge
+links:
+  docs: https://www.htslib.org/
+  forum_tags: [samtools, example-tool]

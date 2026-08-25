@@ -1,0 +1,25 @@
+name: 工具卡贡献
+description: 提交软件/环境工具卡到 catalog/tools
+title: "[catalog] "
+labels: ["catalog"]
+body:
+  - type: input
+    id: slug
+    attributes:
+      label: 工具 slug
+      placeholder: eg. bwa-mem2
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: 一句话说明与合法安装来源
+    validations:
+      required: true
+  - type: checkboxes
+    id: legal
+    attributes:
+      label: 合规
+      options:
+        - label: 安装来源合法，不含破解或盗版附件
+          required: true

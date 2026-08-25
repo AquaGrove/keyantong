@@ -1,0 +1,23 @@
+openapi: 3.0.3
+info:
+  title: KeyanTong Platform API (skeleton)
+  version: 0.1.0
+  description: Placeholder OpenAPI; expand as services land.
+paths:
+  /health:
+    get:
+      summary: Liveness
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, service]
+                properties:
+                  status:
+                    type: string
+                    enum: [ok, degraded, error]
+                  service:
+                    type: string

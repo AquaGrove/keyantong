@@ -1,0 +1,33 @@
+name: Bug 报告
+description: 报告自研组件或部署配置中的缺陷
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: 请勿在此报告安全漏洞利用细节；见 SECURITY.md。
+  - type: input
+    id: component
+    attributes:
+      label: 组件
+      placeholder: apps/portal、services/rag、infra…
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: 复现步骤
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望行为
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际行为
+    validations:
+      required: true

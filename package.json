@@ -1,0 +1,14 @@
+{
+  "name": "keyantong",
+  "private": true,
+  "scripts": {
+    "dev:portal": "pnpm --dir apps/portal dev",
+    "build:portal": "pnpm --dir apps/portal build",
+    "lint:portal": "pnpm --dir apps/portal lint",
+    "typecheck:portal": "pnpm --dir apps/portal exec tsc --noEmit",
+    "smoke": "./scripts/smoke.sh"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
