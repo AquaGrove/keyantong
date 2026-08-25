@@ -14,10 +14,10 @@ export default function HomePage() {
         <a className="btn btn-primary" href={bbsUrl}>
           进入社区
         </a>
-        <a className="btn btn-ghost" href="https://github.com/yingtao-zuo/keyantong">
+        <a className="btn btn-ghost" href="https://github.com/AquaGrove/keyantong">
           参与贡献
         </a>
-        <a className="btn btn-ghost" href="https://github.com/yingtao-zuo/keyantong/blob/main/docs/INDEX.md">
+        <a className="btn btn-ghost" href="https://github.com/AquaGrove/keyantong/blob/main/docs/INDEX.md">
           开发者文档
         </a>
       </div>
@@ -38,7 +38,7 @@ export default function HomePage() {
       <p className="foot">
         Licensed under <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache-2.0</a>
         {" · "}
-        <a href="https://github.com/yingtao-zuo/keyantong/blob/main/CONTRIBUTING.md">
+        <a href="https://github.com/AquaGrove/keyantong/blob/main/CONTRIBUTING.md">
           CONTRIBUTING
         </a>
       </p>
