@@ -80,6 +80,19 @@ infra/docker-compose.yml
 
 注意：数据库跨公网连接要 SSL + IP 白名单；MVP 更建议 **DB 与论坛同机**。
 
+### 4.1 本地 → GitHub → Zeabur（当前主流程）
+
+1. 本机开发：`pnpm --dir apps/portal dev`
+2. `git push origin main` 到 https://github.com/AquaGrove/keyantong
+3. Zeabur 项目中 **Git 部署** 该仓库；根目录已有 `zbpack.json`：
+
+```json
+{ "app_dir": "apps/portal" }
+```
+
+4. 在 Zeabur 服务设置中确认 Root Directory / App Dir 指向门户；绑定域名后即可公网访问。
+5. 论坛与数据库仍按 ADR-005 放国内更大规格机器；当前新加坡 2C2G 先跑门户即可。
+
 ## 5. 对象存储与 CDN
 
 - Bucket 分离：`static` / `uploads` / `analysis`  

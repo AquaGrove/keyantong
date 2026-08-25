@@ -60,15 +60,27 @@
 └── scripts/              # smoke / 种子清单
 ```
 
-## 云端开发（推荐：Cursor Cloud Agents）
+## 开发与发布（本地优先）
 
-主路径是 [cursor.com/agents](https://cursor.com/agents)：连接 GitHub 后选择仓库 **`AquaGrove/keyantong`**，在云端 VM 里改代码、跑门户并开 PR。
+日常在本机改代码，推送到 GitHub，由 Zeabur 自动部署门户：
 
-1. 在 [Integrations](https://cursor.com/dashboard/integrations) 连接 GitHub，授权本仓库（或 All repositories）
-2. 打开 [Cloud Agents](https://cursor.com/agents)，仓库下拉选 `AquaGrove/keyantong`
-3. 环境配置见 `.cursor/environment.json` 与根目录 `AGENTS.md`（会 `pnpm install` 并启动 portal）
+```bash
+# 1. 本地
+cp -n .env.example .env
+pnpm install --ignore-scripts
+pnpm --dir apps/portal dev
 
-可选备用：GitHub Codespaces（[一键打开](https://codespaces.new/AquaGrove/keyantong)），配置在 `.devcontainer/`。
+# 2. 同步
+git add -A && git commit -m "..." && git push origin main
+
+# 3. Zeabur
+# Dashboard → 绑定仓库 AquaGrove/keyantong → 服务 Root/app_dir = apps/portal
+# 之后每次 push main 自动重新部署（见 zbpack.json）
+```
+
+仓库根目录 `zbpack.json` 已指定 `app_dir: apps/portal`，避免 monorepo 选错应用。
+
+Cursor Cloud Agents / Codespaces 仅作可选备用（当前以本地为主）。
 
 ## 本地快速启动
 

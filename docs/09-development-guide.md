@@ -18,32 +18,22 @@
 
 ## 2. 获取仓库
 
-### 2.1 Cursor Cloud Agents（推荐）
-
-1. 连接 GitHub：[cursor.com/dashboard/integrations](https://cursor.com/dashboard/integrations)  
-2. 打开 [cursor.com/agents](https://cursor.com/agents)，选择仓库 **`AquaGrove/keyantong`**  
-3. 云端环境由 `.cursor/environment.json` 安装依赖；说明见根目录 `AGENTS.md`
-
-### 2.2 GitHub Codespaces（可选）
-
-1. 打开 https://github.com/AquaGrove/keyantong  
-2. **Code → Codespaces → Create codespace on main**  
-3. 等待 `postCreate`（安装 pnpm 依赖）完成后：
-
-```bash
-pnpm dev:portal
-```
-
-在 Ports 面板打开 `3000`。`.devcontainer/` 已预装 Node 20、Python 3.12、Docker-in-Docker 与 GitHub CLI。
-
-### 2.3 本地 clone
+### 2.1 本地开发（当前主流程）
 
 ```bash
 git clone https://github.com/AquaGrove/keyantong.git
 cd keyantong
 cp .env.example .env
 pnpm install --ignore-scripts
+pnpm --dir apps/portal dev
 ```
+
+改完后：`git push origin main` → Zeabur 自动部署门户（见 `zbpack.json` 与 [08 基础设施](./08-infrastructure.md#41-本地--github--zeabur当前主流程)）。
+
+### 2.2 Cursor Cloud / Codespaces（可选备用）
+
+- Cloud Agents：[cursor.com/agents](https://cursor.com/agents) 选 `AquaGrove/keyantong`
+- Codespaces：https://codespaces.new/AquaGrove/keyantong
 
 开源工程骨架已落地；按本节即可启动门户与依赖库。
 

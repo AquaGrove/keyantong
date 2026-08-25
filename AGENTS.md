@@ -32,9 +32,8 @@ docker compose -f infra/docker-compose.dev.yml up -d   # Postgres + Redis
 
 ## Cursor Cloud specific instructions
 
-1. Repo for Cloud Agents: `AquaGrove/keyantong` (GitHub).
-2. Environment is defined in `.cursor/environment.json` (`install` + portal `terminals`).
-3. After boot, portal should already be starting via the `portal` terminal; otherwise run `pnpm --dir apps/portal dev`.
-4. Optional deps: `docker compose -f infra/docker-compose.dev.yml up -d` when Docker is available.
-5. Prefer opening PRs to `main` for cloud agent work; do not force-push `main`.
-6. Deploy target later: Zeabur (portal first). NodeBB/DB may use a separate larger host.
+Local development is the default workflow (push to GitHub → Zeabur). Cloud Agents are optional.
+
+1. Repo: `AquaGrove/keyantong`. Deploy target: Zeabur portal via `zbpack.json` → `apps/portal`.
+2. If running in Cloud: `.cursor/environment.json` installs deps and starts portal.
+3. Prefer PRs to `main`; do not force-push `main`.
