@@ -64,7 +64,7 @@
 
 仓库已配置 GitHub Codespaces：打开仓库页面 → **Code** → **Codespaces** → **Create codespace on main**，或点：
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/2366117804qqcom-ui/keyantong)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/AquaGrove/keyantong)
 
 创建后终端执行：
 

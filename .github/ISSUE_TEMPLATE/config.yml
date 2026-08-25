@@ -1,8 +1,8 @@
 blank_issues_enabled: true
 contact_links:
   - name: 开发者文档
-    url: https://github.com/yingtao-zuo/keyantong/blob/main/docs/INDEX.md
-    about: 产品、架构与贡献规范（仓库路径以实际上游为准）
+    url: https://github.com/AquaGrove/keyantong/blob/main/docs/INDEX.md
+    about: 产品、架构与贡献规范
   - name: 安全报告
-    url: https://github.com/yingtao-zuo/keyantong/blob/main/SECURITY.md
+    url: https://github.com/AquaGrove/keyantong/blob/main/SECURITY.md
     about: 请勿公开贴利用细节

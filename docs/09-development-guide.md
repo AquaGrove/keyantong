@@ -20,7 +20,7 @@
 
 ### 2.1 GitHub Codespaces（推荐云端开发）
 
-1. 打开 https://github.com/2366117804qqcom-ui/keyantong  
+1. 打开 https://github.com/AquaGrove/keyantong  
 2. **Code → Codespaces → Create codespace on main**  
 3. 等待 `postCreate`（安装 pnpm 依赖）完成后：
 
@@ -33,7 +33,7 @@ pnpm dev:portal
 ### 2.2 本地 clone
 
 ```bash
-git clone https://github.com/2366117804qqcom-ui/keyantong.git
+git clone https://github.com/AquaGrove/keyantong.git
 cd keyantong
 cp .env.example .env
 pnpm install --ignore-scripts
