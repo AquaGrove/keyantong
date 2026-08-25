@@ -17,6 +17,7 @@
 
 # 语言产物
 node_modules/
+.pnpm-store/
 dist/
 build/
 .next/
@@ -41,3 +42,6 @@ backups/
 *.log
 tmp/
 .cache/
+
+.zeabur-home/
+.zeabur-config/
