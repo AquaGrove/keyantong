@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "科研通 KeyanTong",
-  description: "开源共享的科研互助社区：论坛、知识沉淀与可扩展工具。",
+  title: {
+    default: "科研通 KeyanTong",
+    template: "%s · 科研通",
+  },
+  description:
+    "开源共享的科研互助平台：社区问答、工具沉淀与可复现协作。合规优先，人人可贡献。",
 };
 
 export default function RootLayout({
@@ -21,11 +27,16 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=Source+Serif+4:opsz,wght@8..60,600&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <div className="grain" aria-hidden />
+        <SiteHeader />
+        {children}
+        <SiteFooter />
+      </body>
     </html>
   );
 }
