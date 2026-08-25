@@ -10,7 +10,10 @@
 .idea/
 .vscode/
 *.swp
-.cursor/
+.cursor/*
+!.cursor/environment.json
+!.cursor/Dockerfile
+!.cursor/hooks.json
 
 # 语言产物
 node_modules/

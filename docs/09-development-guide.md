@@ -18,7 +18,13 @@
 
 ## 2. 获取仓库
 
-### 2.1 GitHub Codespaces（推荐云端开发）
+### 2.1 Cursor Cloud Agents（推荐）
+
+1. 连接 GitHub：[cursor.com/dashboard/integrations](https://cursor.com/dashboard/integrations)  
+2. 打开 [cursor.com/agents](https://cursor.com/agents)，选择仓库 **`AquaGrove/keyantong`**  
+3. 云端环境由 `.cursor/environment.json` 安装依赖；说明见根目录 `AGENTS.md`
+
+### 2.2 GitHub Codespaces（可选）
 
 1. 打开 https://github.com/AquaGrove/keyantong  
 2. **Code → Codespaces → Create codespace on main**  
@@ -30,7 +36,7 @@ pnpm dev:portal
 
 在 Ports 面板打开 `3000`。`.devcontainer/` 已预装 Node 20、Python 3.12、Docker-in-Docker 与 GitHub CLI。
 
-### 2.2 本地 clone
+### 2.3 本地 clone
 
 ```bash
 git clone https://github.com/AquaGrove/keyantong.git

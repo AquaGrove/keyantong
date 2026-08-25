@@ -1,0 +1,10 @@
+{
+  "install": "corepack enable && corepack prepare pnpm@9.15.9 --activate && cp -n .env.example .env && pnpm install --ignore-scripts",
+  "start": "sudo service docker start || true",
+  "terminals": [
+    {
+      "name": "portal",
+      "command": "pnpm --dir apps/portal dev"
+    }
+  ]
+}

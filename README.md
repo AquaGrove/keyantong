@@ -60,23 +60,15 @@
 └── scripts/              # smoke / 种子清单
 ```
 
-## 云端开发（推荐）
+## 云端开发（推荐：Cursor Cloud Agents）
 
-仓库已配置 GitHub Codespaces：打开仓库页面 → **Code** → **Codespaces** → **Create codespace on main**，或点：
+主路径是 [cursor.com/agents](https://cursor.com/agents)：连接 GitHub 后选择仓库 **`AquaGrove/keyantong`**，在云端 VM 里改代码、跑门户并开 PR。
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/AquaGrove/keyantong)
+1. 在 [Integrations](https://cursor.com/dashboard/integrations) 连接 GitHub，授权本仓库（或 All repositories）
+2. 打开 [Cloud Agents](https://cursor.com/agents)，仓库下拉选 `AquaGrove/keyantong`
+3. 环境配置见 `.cursor/environment.json` 与根目录 `AGENTS.md`（会 `pnpm install` 并启动 portal）
 
-创建后终端执行：
-
-```bash
-pnpm dev:portal   # 转发端口 3000，浏览器访问 Codespaces 预览
-```
-
-依赖库（Postgres / Redis）会在 Codespace 启动时尽量自动拉起；也可手动：
-
-```bash
-docker compose -f infra/docker-compose.dev.yml up -d
-```
+可选备用：GitHub Codespaces（[一键打开](https://codespaces.new/AquaGrove/keyantong)），配置在 `.devcontainer/`。
 
 ## 本地快速启动
 
