@@ -8,8 +8,39 @@ importers:
 
   .: {}
 
+  apps/admin:
+    dependencies:
+      '@keyantong/ops-shared':
+        specifier: workspace:*
+        version: link:../../packages/ops-shared
+      next:
+        specifier: ^15.1.0
+        version: 15.5.23(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      react:
+        specifier: ^19.0.0
+        version: 19.2.8
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.8(react@19.2.8)
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.20.1
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: ^19.0.0
+        version: 19.2.5(@types/react@19.2.18)
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
   apps/portal:
     dependencies:
+      '@keyantong/ops-shared':
+        specifier: workspace:*
+        version: link:../../packages/ops-shared
       next:
         specifier: ^15.1.0
         version: 15.5.23(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -34,6 +65,12 @@ importers:
         version: 5.9.3
 
   packages/contracts:
+    devDependencies:
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
+  packages/ops-shared:
     devDependencies:
       typescript:
         specifier: ^5.7.0

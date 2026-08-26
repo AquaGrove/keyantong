@@ -2,10 +2,16 @@
   "name": "keyantong",
   "private": true,
   "scripts": {
+    "dev": "pnpm run dev:portal & pnpm run dev:admin",
     "dev:portal": "pnpm --dir apps/portal dev",
+    "dev:admin": "pnpm --dir apps/admin dev",
     "build:portal": "pnpm --dir apps/portal build",
+    "build:admin": "pnpm --dir apps/admin build",
+    "start:portal": "pnpm --dir apps/portal start",
+    "start:admin": "pnpm --dir apps/admin start",
     "lint:portal": "pnpm --dir apps/portal lint",
     "typecheck:portal": "pnpm --dir apps/portal exec tsc --noEmit",
+    "typecheck:admin": "pnpm --dir apps/admin exec tsc --noEmit",
     "smoke": "./scripts/smoke.sh"
   },
   "engines": {

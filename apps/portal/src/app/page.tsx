@@ -1,10 +1,6 @@
 import Link from "next/link";
 import { fetchRecentCommits } from "@/lib/github";
-import {
-  GITHUB_DOCS_URL,
-  GITHUB_URL,
-  getCommunityHref,
-} from "@/lib/site";
+import { GITHUB_URL, getCommunityHref } from "@/lib/site";
 
 export default async function HomePage() {
   const communityHref = getCommunityHref();
@@ -23,12 +19,12 @@ export default async function HomePage() {
             <a className="btn btn-primary" href={communityHref}>
               进入社区
             </a>
-            <Link className="btn btn-secondary" href="/monitor">
-              打开监测台
+            <Link className="btn btn-secondary" href="/tools">
+              浏览工具
             </Link>
-            <a className="btn btn-secondary" href={GITHUB_URL}>
-              GitHub 仓库
-            </a>
+            <Link className="btn btn-secondary" href="/about">
+              了解项目
+            </Link>
           </div>
         </div>
 
@@ -54,21 +50,22 @@ export default async function HomePage() {
           </div>
           <p className="visual-caption">
             <strong>协作网络正在生长</strong>
-            每一次提问、回答与代码贡献，都连成可复用的知识节点。
+            每一次提问、回答与工具沉淀，都连成可复用的知识节点。
           </p>
         </div>
       </section>
 
-      <section className="section" aria-label="最近仓库动态">
-        <h2>仓库脉搏</h2>
+      <section className="section" aria-label="社区动态">
+        <h2>社区动态</h2>
         <p className="section-lead">
-          最新提交来自 GitHub 公开仓库。完整互动、Issue / PR 与服务健康见
-          <Link href="/monitor"> 监测台</Link>
-          ；开发说明见{" "}
-          <a href={GITHUB_DOCS_URL}>文档</a>。
+          来自开源仓库的最新公开更新。想提问或分享经验？先去{" "}
+          <Link href="/community">社区</Link>
+          ；找软件与环境模板？看{" "}
+          <Link href="/tools">工具目录</Link>。源码在{" "}
+          <a href={GITHUB_URL}>GitHub</a>。
         </p>
         {commits.length === 0 ? (
-          <p className="mono">暂时无法拉取 GitHub 动态，请稍后在监测台重试。</p>
+          <p className="mono">暂时无法拉取公开动态，请稍后再试。</p>
         ) : (
           <ul className="pulse-list">
             {commits.map((c) => {

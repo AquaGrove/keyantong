@@ -18,11 +18,11 @@ export default function CommunityPage() {
     <main className="page">
       <h1 className="page-title">社区</h1>
       <p className="page-lead">
-        NodeBB 论坛上线前，社区互动先走 GitHub。你可以提问、开讨论、提 Issue 或直接贡献代码与工具卡。
+        在这里提问、分享检索策略与环境排错经验。独立论坛上线前，互动先走 GitHub；论坛就绪后本入口会自动切换。
       </p>
 
       <div className="note-banner" role="note">
-        独立论坛（NodeBB）尚未部署；「进入社区」会落到本页，避免跳到空域名。论坛就绪后，将自动改回论坛地址。
+        当前暂用 GitHub Discussions / Issues 承接社区。欢迎先开讨论再写长文，或直接提交 Issue 跟踪问题。
       </div>
 
       <div className="hub-grid">
@@ -49,14 +49,14 @@ export default function CommunityPage() {
       </div>
 
       <section className="section" style={{ marginTop: "1.25rem" }}>
-        <h2>快捷入口</h2>
-        <p className="section-lead">仓库与运维视图。</p>
+        <h2>下一步</h2>
+        <p className="section-lead">浏览工具卡，或回到首页了解项目。</p>
         <div className="actions">
           <a className="btn btn-primary" href={GITHUB_URL}>
             打开 GitHub
           </a>
-          <Link className="btn btn-secondary" href="/monitor">
-            查看监测台
+          <Link className="btn btn-secondary" href="/tools">
+            浏览工具
           </Link>
           <Link className="btn btn-secondary" href="/">
             返回首页

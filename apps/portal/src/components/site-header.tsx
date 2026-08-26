@@ -4,7 +4,8 @@ import { getCommunityHref } from "@/lib/site";
 const links = [
   { href: "/", label: "首页" },
   { href: "/community", label: "社区" },
-  { href: "/monitor", label: "监测台" },
+  { href: "/tools", label: "工具" },
+  { href: "/about", label: "关于" },
 ];
 
 export function SiteHeader() {

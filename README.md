@@ -48,12 +48,14 @@
 ├── LICENSE / NOTICE / CONTRIBUTING.md / GOVERNANCE.md / SECURITY.md
 ├── docs/                 # 开发者文档
 ├── apps/
-│   ├── portal/           # Next.js 门户
-│   └── admin/            # 管理后台（后期）
+│   ├── portal/           # 客户端门户 :3000（用户）
+│   └── admin/            # 管理端 :3001（仅站长本机）
 ├── services/
 │   ├── bridge/           # 论坛 Webhook / 积分桥接（stub）
 │   └── rag/              # RAG 初答（stub）
-├── packages/contracts/   # 共享类型 / OpenAPI
+├── packages/
+│   ├── contracts/        # 共享类型 / OpenAPI
+│   └── ops-shared/       # GitHub / 健康检查共享库
 ├── catalog/tools/        # 社区可 PR 的工具卡 YAML
 ├── forum/nodebb/         # NodeBB Compose 覆写
 ├── infra/                # Docker Compose、Caddy 示例
@@ -66,16 +68,15 @@
 
 ```bash
 # 1. 本地
-cp -n .env.example .env
+cp -n .env.example .env          # 设置 ADMIN_PASSWORD
 pnpm install --ignore-scripts
-pnpm --dir apps/portal dev
+pnpm --dir apps/portal dev       # 客户端 http://127.0.0.1:3000
+pnpm --dir apps/admin dev        # 管理端 http://127.0.0.1:3001 （口令登录）
 
-# 2. 同步
+# 2. 同步（仅客户端会部署到 Zeabur）
 git add -A && git commit -m "..." && git push origin main
 
-# 3. Zeabur
-# Dashboard → 绑定仓库 AquaGrove/keyantong → 服务 Root/app_dir = apps/portal
-# 之后每次 push main 自动重新部署（见 zbpack.json）
+# 3. Zeabur：绑定 AquaGrove/keyantong，zbpack app_dir = apps/portal
 ```
 
 仓库根目录 `zbpack.json` 已指定 `app_dir: apps/portal`，避免 monorepo 选错应用。

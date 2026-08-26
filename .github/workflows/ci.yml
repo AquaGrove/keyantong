@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+jobs:
+  compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate compose files
+        run: |
+          docker compose -f infra/docker-compose.dev.yml config >/dev/null
+          docker compose -f infra/docker-compose.yml config >/dev/null
+
+  portal:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/portal
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Install workspace
+        working-directory: .
+        run: pnpm install --ignore-scripts
+      - name: Typecheck portal
+        run: ./node_modules/.bin/tsc --noEmit
+      - name: Build portal
+        run: ./node_modules/.bin/next build
+
+  python-stubs:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [bridge, rag]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Import ${{ matrix.service }} stub
+        working-directory: services/${{ matrix.service }}
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install .
+          .venv/bin/python -c "from app.main import app; assert app.title"

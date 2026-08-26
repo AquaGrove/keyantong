@@ -23,12 +23,18 @@
 ```bash
 git clone https://github.com/AquaGrove/keyantong.git
 cd keyantong
-cp .env.example .env
+cp .env.example .env   # 设置 ADMIN_PASSWORD 等
 pnpm install --ignore-scripts
-pnpm --dir apps/portal dev
+pnpm --dir apps/portal dev   # 客户端 http://127.0.0.1:3000
+pnpm --dir apps/admin dev    # 管理端 http://127.0.0.1:3001 （需口令）
 ```
 
-改完后：`git push origin main` → Zeabur 自动部署门户（见 `zbpack.json` 与 [08 基础设施](./08-infrastructure.md#41-本地--github--zeabur当前主流程)）。
+| 应用 | 端口 | 受众 |
+|------|------|------|
+| `apps/portal` | 3000 | 全体用户（可部署 Zeabur） |
+| `apps/admin` | 3001 | 仅站长本机（勿对公网暴露） |
+
+改完客户端后：`git push origin main` → Zeabur 自动部署门户（见 `zbpack.json` 与 [08 基础设施](./08-infrastructure.md#41-本地--github--zeabur当前主流程)）。管理端默认不部署公网。
 
 ### 2.2 Cursor Cloud / Codespaces（可选备用）
 
@@ -47,12 +53,23 @@ docker compose -f infra/docker-compose.dev.yml up -d
 
 （启动 PostgreSQL + Redis。）
 
-### 3.2 门户
+### 3.2 客户端门户（:3000）
 
 ```bash
 pnpm --dir apps/portal dev
 # 或: cd apps/portal && pnpm dev
+# 路由：/  /community  /tools  /about
 ```
+
+### 3.2b 管理端（:3001，仅站长）
+
+```bash
+pnpm --dir apps/admin dev
+# http://127.0.0.1:3001/login
+# 需 .env 中 ADMIN_PASSWORD；会话 Cookie 鉴权
+```
+
+详见 [`apps/admin/README.md`](../apps/admin/README.md)。
 
 ### 3.3 服务 stub
 
@@ -83,7 +100,9 @@ docker compose -f forum/nodebb/docker-compose.yml up -d
 ```bash
 DATABASE_URL=postgres://kt:kt@localhost:5432/keyantong
 REDIS_URL=redis://localhost:6379/0
-NEXT_PUBLIC_BBS_URL=http://localhost:4567
+NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000
+ADMIN_PASSWORD=changeme
+ADMIN_SESSION_SECRET=replace-with-long-random-string
 AI_SUGGEST_ENABLED=false
 ```
 
