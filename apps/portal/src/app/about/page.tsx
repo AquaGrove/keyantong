@@ -30,7 +30,10 @@ export default function AboutPage() {
           </li>
           <li>
             <span className="mono">03</span>
-            <span>合规优先：文献互助只谈合法 / OA 路径，不做盗版分发</span>
+            <span>
+              合规优先：文献互助只谈合法 / OA / 馆藏 / 作者稿路径，禁止 PDF
+              互传与盗版分发
+            </span>
             <span />
           </li>
           <li>

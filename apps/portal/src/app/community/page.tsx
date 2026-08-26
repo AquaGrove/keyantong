@@ -1,65 +1,100 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { LiteratureHelpForm } from "@/components/literature-help-form";
 import {
-  GITHUB_CONTRIBUTING_URL,
   GITHUB_DISCUSSIONS_URL,
-  GITHUB_DOCS_URL,
   GITHUB_ISSUES_URL,
   GITHUB_URL,
 } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "社区",
-  description: "科研通社区入口：讨论、提问、贡献与文档。",
+  description: "科研通合规互助社区：文献合法获取路径、环境排错与经验分享。",
 };
 
 export default function CommunityPage() {
+  const issuesNew = `${GITHUB_URL}/issues/new`;
+
   return (
     <main className="page">
-      <h1 className="page-title">社区</h1>
+      <h1 className="page-title">社区互助</h1>
       <p className="page-lead">
-        在这里提问、分享检索策略与环境排错经验。独立论坛上线前，互动先走 GitHub；论坛就绪后本入口会自动切换。
+        核心场景：你需要一篇文献的<strong>合法获取路径</strong> → 发结构化求助帖 →
+        有经验的人回复 OA / 馆藏 / 作者稿等途径 → 你按步骤拿到全文。
+        平台<strong>禁止 PDF 互传与盗版链接</strong>。
       </p>
 
-      <div className="note-banner" role="note">
-        当前暂用 GitHub Discussions / Issues 承接社区。欢迎先开讨论再写长文，或直接提交 Issue 跟踪问题。
+      <div className="flow" aria-label="互助流程">
+        <div className="flow-step">
+          <span className="flow-num">1</span>
+          <div>
+            <strong>发求助</strong>
+            <p>写清 DOI/题名与已尝试途径</p>
+          </div>
+        </div>
+        <div className="flow-step">
+          <span className="flow-num">2</span>
+          <div>
+            <strong>获响应</strong>
+            <p>他人回复合法链接或检索步骤</p>
+          </div>
+        </div>
+        <div className="flow-step">
+          <span className="flow-num">3</span>
+          <div>
+            <strong>自己获取</strong>
+            <p>按指引下载 OA / 走馆藏或作者渠道</p>
+          </div>
+        </div>
       </div>
 
-      <div className="hub-grid">
-        <a className="hub-tile" href={GITHUB_DISCUSSIONS_URL}>
-          <span className="tag">Discussions</span>
-          <h3>开放讨论</h3>
-          <p>文献策略、环境排错、经验分享。适合非代码贡献者先参与。</p>
-        </a>
-        <a className="hub-tile" href={GITHUB_ISSUES_URL}>
-          <span className="tag">Issues</span>
-          <h3>提问与缺陷</h3>
-          <p>报告 bug、提需求、跟踪任务。每个问题都可被检索与关闭。</p>
-        </a>
-        <a className="hub-tile" href={GITHUB_CONTRIBUTING_URL}>
-          <span className="tag">Contribute</span>
-          <h3>参与贡献</h3>
-          <p>工具卡 YAML、文档修订、代码 PR。贡献门槛分层，人人可上手。</p>
-        </a>
-        <a className="hub-tile" href={GITHUB_DOCS_URL}>
-          <span className="tag">Docs</span>
-          <h3>开发者文档</h3>
-          <p>愿景、架构、ADR 与本地开发指南，读完即可开工。</p>
-        </a>
+      <div className="rules-banner" role="note">
+        <strong>合规红线：</strong>
+        可以分享 Unpaywall、预印本、机构库、图书馆数据库操作说明、向作者 Request
+        的方法；不可以上传出版社付费 PDF、不可以贴盗版站点、不可以把社区当「传 PDF」渠道。
       </div>
+
+      <section className="section" id="ask">
+        <h2>我要发文献求助</h2>
+        <p className="section-lead">
+          填写下面表单，一键打开预填好的 GitHub Issue（标签{" "}
+          <code className="mono">literature-help</code>）。论坛上线后同一结构会迁到论坛版块。
+        </p>
+        <LiteratureHelpForm issuesNewBase={issuesNew} />
+      </section>
+
+      <section className="section" id="answer" style={{ marginTop: "1.25rem" }}>
+        <h2>我要响应别人的求助</h2>
+        <p className="section-lead">看到求助帖时，优先按下面清单回复（复制即用）：</p>
+        <ul className="check-list">
+          <li>先查 <a href="https://unpaywall.org/">Unpaywall</a> / OpenAlex 是否有 OA</li>
+          <li>查预印本：arXiv、bioRxiv、medRxiv、SSRN 等</li>
+          <li>说明本校图书馆：数据库名、检索字段、是否需要 VPN</li>
+          <li>若仅作者稿可得：给作者主页或「Request full-text」步骤，勿代传 PDF</li>
+          <li>把可点击的<strong>合法 URL</strong>和复现步骤写清楚</li>
+        </ul>
+        <div className="actions" style={{ marginTop: "1rem" }}>
+          <a className="btn btn-primary" href={`${GITHUB_ISSUES_URL}?q=is%3Aissue+is%3Aopen+label%3Aliterature-help`}>
+            查看开放的文献求助
+          </a>
+          <a className="btn btn-secondary" href={GITHUB_DISCUSSIONS_URL}>
+            去 Discussions 交流
+          </a>
+        </div>
+      </section>
 
       <section className="section" style={{ marginTop: "1.25rem" }}>
-        <h2>下一步</h2>
-        <p className="section-lead">浏览工具卡，或回到首页了解项目。</p>
-        <div className="actions">
-          <a className="btn btn-primary" href={GITHUB_URL}>
-            打开 GitHub
+        <h2>其他互助</h2>
+        <div className="hub-grid">
+          <a className="hub-tile" href={GITHUB_ISSUES_URL}>
+            <span className="tag">Issues</span>
+            <h3>软件 / 环境 / Bug</h3>
+            <p>安装报错、依赖冲突、复现步骤求助。</p>
           </a>
-          <Link className="btn btn-secondary" href="/tools">
-            浏览工具
-          </Link>
-          <Link className="btn btn-secondary" href="/">
-            返回首页
+          <Link className="hub-tile" href="/tools">
+            <span className="tag">Tools</span>
+            <h3>工具目录</h3>
+            <p>合法安装来源与常见坑，减少重复踩坑。</p>
           </Link>
         </div>
       </section>

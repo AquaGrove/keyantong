@@ -1,0 +1,43 @@
+name: 文献求助（合规）
+description: 寻求合法全文获取路径（OA / 馆藏 / 作者稿）。禁止索要或上传付费 PDF。
+title: "文献求助： "
+labels: ["literature-help"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        只讨论**合法获取路径**。禁止上传、索要或转发受版权保护的付费 PDF，禁止盗版站点链接。
+  - type: input
+    id: doi
+    attributes:
+      label: DOI 或 PMID
+      placeholder: "10.xxxx/... 或 PMID"
+  - type: input
+    id: paper_title
+    attributes:
+      label: 题名 / 主题
+    validations:
+      required: true
+  - type: textarea
+    id: tried
+    attributes:
+      label: 已尝试的途径
+      placeholder: Unpaywall、学校库、出版社页面…
+  - type: dropdown
+    id: need
+    attributes:
+      label: 希望得到的帮助
+      options:
+        - 合法全文获取路径（OA / 馆藏 / 作者稿）
+        - 检索策略
+        - 向作者合法索取全文
+        - 馆际互借 / 文献传递咨询
+    validations:
+      required: true
+  - type: checkboxes
+    id: compliance
+    attributes:
+      label: 合规确认
+      options:
+        - label: 我不会在本帖索要或上传受版权保护的 PDF 附件
+          required: true

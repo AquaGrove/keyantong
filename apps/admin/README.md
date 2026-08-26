@@ -1,44 +1,37 @@
-# 科研通管理端（Admin）
+# 管理端云端部署（Zeabur）
 
-站长专用控制台，**默认只绑定本机 `127.0.0.1:3001`**。与用户端门户（`:3000`）完全分离。
+管理端与客户端是**两个独立服务**：
 
-## 启动
+| 服务 | 目录 | 公网 |
+|------|------|------|
+| 客户端 portal | `apps/portal`（根目录 `zbpack.json`） | 可公开，如 `keyantong.zeabur.app` |
+| 管理端 admin | `apps/admin`（可用 `zbpack.admin.json` 或 Root=`apps/admin`） | **仅你知道域名** + `ADMIN_PASSWORD` |
 
-在仓库根目录配置 `.env`（见根目录 `.env.example`），至少设置：
+## 在 Zeabur 新增第二个 Git 服务
 
-```bash
-ADMIN_PASSWORD=你的口令
-ADMIN_SESSION_SECRET=长随机串
-```
-
-然后：
-
-```bash
-pnpm install --ignore-scripts
-pnpm --dir apps/admin dev
-# http://127.0.0.1:3001/login
-```
-
-生产本机：
+1. 同一项目 → Add Service → Git → 仍选 `AquaGrove/keyantong`
+2. Root Directory / App Dir 设为 `apps/admin`  
+   （或复制根目录 `zbpack.admin.json` 内容到该服务的构建配置 / 环境变量 `ZBPACK_APP_DIR=apps/admin`）
+3. 生成一个**不对外宣传**的域名（例如随机子域），不要挂在门户导航上
+4. 环境变量（必填）：
 
 ```bash
-pnpm --dir apps/admin build
-pnpm --dir apps/admin start
+ADMIN_PASSWORD=强口令
+ADMIN_SESSION_SECRET=更长的随机串
+NEXT_PUBLIC_SITE_URL=https://keyantong.zeabur.app
+NEXT_PUBLIC_GITHUB_OWNER=AquaGrove
+NEXT_PUBLIC_GITHUB_REPO=keyantong
+# 可选
+GITHUB_TOKEN=
+NEXT_PUBLIC_API_BASE=
+NEXT_PUBLIC_RAG_BASE=
+NEXT_PUBLIC_BBS_URL=
 ```
 
-## 模块
-
-| 路径 | 说明 |
-|------|------|
-| `/login` | 口令登录 |
-| `/` | 总览：仓库指标、最近提交、服务灯 |
-| `/github` | 提交 / PR / Issue |
-| `/services` | 健康探针与只读配置 |
-| `/content` | 内容治理占位（GitHub label） |
-| `/settings` | 环境状态与安全提示 |
+5. 打开 `https://你的私密域名/login` 用口令登录
 
 ## 安全
 
-- 未登录无法访问业务页（Cookie 会话）。
-- **不要**把 3001 暴露到公网；公网部署需另做强鉴权与网络限制。
-- 口令只放 `.env`，勿提交到 Git。
+- 不要把管理域名写进客户端页脚/README 醒目位置
+- 使用强口令；可定期更换 `ADMIN_PASSWORD`（旧会话在 secret 变更后失效）
+- 勿关闭登录中间件；勿把口令提交进 Git

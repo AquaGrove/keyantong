@@ -69,7 +69,7 @@ pnpm --dir apps/admin dev
 # 需 .env 中 ADMIN_PASSWORD；会话 Cookie 鉴权
 ```
 
-详见 [`apps/admin/README.md`](../apps/admin/README.md)。
+管理端与用户端分离：客户端 `:3000` / 公网门户；管理端可部署到 Zeabur 私密域名 + 口令（见 [`apps/admin/README.md`](../apps/admin/README.md)）。
 
 ### 3.3 服务 stub
 

@@ -598,6 +598,103 @@ a {
   line-height: 1.6;
 }
 
+.flow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin: 1.25rem 0 1.5rem;
+}
+
+.flow-step {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 1rem 1.05rem;
+  border-radius: 0.85rem;
+  background: var(--paper);
+  border: 1px solid var(--line);
+}
+
+.flow-num {
+  flex: 0 0 auto;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+.flow-step p {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.rules-banner {
+  margin: 0 0 1.5rem;
+  padding: 0.95rem 1.05rem;
+  border-radius: 0.75rem;
+  background: rgba(185, 28, 28, 0.08);
+  border: 1px solid rgba(185, 28, 28, 0.22);
+  color: #7f1d1d;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.help-form {
+  display: grid;
+  gap: 0.85rem;
+  max-width: 40rem;
+}
+
+.help-form label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.help-form input,
+.help-form textarea,
+.help-form select {
+  font: inherit;
+  font-weight: 400;
+  padding: 0.7rem 0.8rem;
+  border-radius: 0.45rem;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+}
+
+.form-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.help-form button {
+  justify-self: start;
+  cursor: pointer;
+  border: 0;
+}
+
+.check-list {
+  margin: 0;
+  padding-left: 1.15rem;
+  color: var(--ink-soft);
+  line-height: 1.7;
+}
+
+.check-list a {
+  color: var(--accent);
+}
+
 @keyframes rise {
   from {
     opacity: 0;
@@ -646,7 +743,8 @@ a {
   .hero,
   .panels,
   .hub-grid,
-  .stats {
+  .stats,
+  .flow {
     grid-template-columns: 1fr;
   }
 

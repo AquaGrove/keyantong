@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { fetchRecentCommits } from "@/lib/github";
-import { GITHUB_URL, getCommunityHref } from "@/lib/site";
+import { GITHUB_URL } from "@/lib/site";
 
 export default async function HomePage() {
-  const communityHref = getCommunityHref();
   const commits = (await fetchRecentCommits(5)) ?? [];
 
   return (
@@ -13,17 +12,19 @@ export default async function HomePage() {
           <p className="kicker">Open science · Shared effort</p>
           <h1 className="brand">科研通</h1>
           <p className="lead">
-            面向科研人员的开源互助站：把文献策略、环境排错与可复现步骤留在社区，用规范贡献扩展工具——合法、可检索、可持续。
+            需要一篇文献？在社区发求助帖，让同伴帮你找到
+            <strong>合法获取路径</strong>
+            （OA、馆藏、作者稿）——不是互相传 PDF，而是可复现的检索与合规渠道。
           </p>
           <div className="actions">
-            <a className="btn btn-primary" href={communityHref}>
-              进入社区
-            </a>
+            <Link className="btn btn-primary" href="/community#ask">
+              发起文献求助
+            </Link>
+            <Link className="btn btn-secondary" href="/community#answer">
+              去帮助别人
+            </Link>
             <Link className="btn btn-secondary" href="/tools">
               浏览工具
-            </Link>
-            <Link className="btn btn-secondary" href="/about">
-              了解项目
             </Link>
           </div>
         </div>
