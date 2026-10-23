@@ -1,0 +1,16 @@
+id: jupyterlab
+name: JupyterLab
+summary: 浏览器里的笔记本与计算环境，适合交互分析与可复现实验记录。
+categories: [notebook, python]
+license: BSD-3-Clause
+author: Project Jupyter
+install:
+  conda: conda-forge::jupyterlab
+  notes: |
+    建议在独立 conda/venv 中安装，避免与系统 Python 混用。
+common_pitfalls:
+  - 内核与笔记本所选环境不是同一个 venv
+  - 把密钥写进笔记本后提交到公开仓库
+links:
+  docs: https://jupyterlab.readthedocs.io/en/stable/
+  forum_tags: [jupyter]

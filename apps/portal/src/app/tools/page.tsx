@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ToolsCatalog } from "@/components/tools-catalog";
 import { loadToolCards } from "@/lib/catalog";
 import { GITHUB_CONTRIBUTING_URL, GITHUB_URL } from "@/lib/site";
 
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function ToolsPage() {
-  const tools = loadToolCards();
+  const tools = loadToolCards().filter((t) => t.id !== "example-tool");
 
   return (
     <main className="page">
@@ -23,25 +24,7 @@ export default function ToolsPage() {
           <p className="mono">暂未读到 catalog/tools 下的工具卡。</p>
         </section>
       ) : (
-        <div className="hub-grid">
-          {tools.map((t) => (
-            <article key={t.id} className="hub-tile" style={{ cursor: "default" }}>
-              <span className="tag">{t.categories?.join(" · ") || "tool"}</span>
-              <h3>{t.name}</h3>
-              <p>{t.summary}</p>
-              <p className="mono" style={{ marginTop: "0.75rem" }}>
-                {t.license ? `License ${t.license}` : null}
-                {t.author ? ` · ${t.author}` : null}
-                {t.docsUrl ? (
-                  <>
-                    {" · "}
-                    <a href={t.docsUrl}>文档</a>
-                  </>
-                ) : null}
-              </p>
-            </article>
-          ))}
-        </div>
+        <ToolsCatalog tools={tools} />
       )}
 
       <section className="section" style={{ marginTop: "1.25rem" }}>

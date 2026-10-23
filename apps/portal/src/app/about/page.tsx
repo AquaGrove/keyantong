@@ -41,6 +41,13 @@ export default function AboutPage() {
             <span>可复现：强调环境、版本与步骤，而不是一次性私聊答案</span>
             <span />
           </li>
+          <li>
+            <span className="mono">05</span>
+            <span>
+              校园身份：.edu / .edu.cn 注册，试用 7 天后 19.9 永久（本期由站长开通）
+            </span>
+            <span />
+          </li>
         </ul>
       </section>
 
@@ -54,6 +61,9 @@ export default function AboutPage() {
           <a className="btn btn-secondary" href={GITHUB_URL}>
             GitHub 仓库
           </a>
+          <Link className="btn btn-secondary" href="/papers">
+            文献关系网
+          </Link>
           <Link className="btn btn-secondary" href="/community">
             加入社区
           </Link>

@@ -1,0 +1,17 @@
+id: samtools
+name: samtools
+summary: SAM/BAM/CRAM 读写与统计工具，测序数据处理的基础件。
+categories: [bioinformatics, sequence]
+license: MIT
+author: HTSlib
+install:
+  conda: bioconda::samtools
+  docker: quay.io/biocontainers/samtools:1.21--h50ea8bc_0
+  notes: |
+    与 HTSlib / bcftools 配套。参考基因组索引必须与比对所用版本一致。
+common_pitfalls:
+  - BAM 未排序就建索引
+  - 参考基因组与 BAM 头中的染色体命名不一致（chr1 vs 1）
+links:
+  docs: https://www.htslib.org/doc/samtools.html
+  forum_tags: [samtools]

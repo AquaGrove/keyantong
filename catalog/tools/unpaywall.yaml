@@ -1,0 +1,15 @@
+id: unpaywall
+name: Unpaywall
+summary: 按 DOI 查找出版社或仓储中的合法开放获取副本。
+categories: [literature, oa]
+license: MIT
+author: OurResearch
+install:
+  notes: |
+    浏览器插件或 REST API（需邮箱注册）。只返回合法 OA 链接。
+common_pitfalls:
+  - 无 OA 不等于无全文，仍可走馆藏或作者索取
+  - 不要把 Unpaywall 结果与盗版站点混为一谈
+links:
+  docs: https://unpaywall.org/products/api
+  forum_tags: [unpaywall, oa]

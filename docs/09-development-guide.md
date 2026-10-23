@@ -58,7 +58,7 @@ docker compose -f infra/docker-compose.dev.yml up -d
 ```bash
 pnpm --dir apps/portal dev
 # 或: cd apps/portal && pnpm dev
-# 路由：/  /community  /tools  /about
+# 路由：/  /papers  /community  /tools  /pricing  /login  /register  /account  /about
 ```
 
 ### 3.2b 管理端（:3001，仅站长）

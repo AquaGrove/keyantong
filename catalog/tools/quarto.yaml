@@ -1,0 +1,15 @@
+id: quarto
+name: Quarto
+summary: 科学出版系统，用 Markdown/Jupyter 生成论文、网站与演示稿。
+categories: [writing, publishing]
+license: GPL-2.0
+author: Posit
+install:
+  notes: |
+    从 quarto.org 安装 CLI，或通过 conda-forge::quarto。
+common_pitfalls:
+  - 未安装对应计算引擎（R / Python / Julia）时无法执行代码块
+  - 项目 _quarto.yml 路径与输出格式不一致
+links:
+  docs: https://quarto.org/docs/guide/
+  forum_tags: [quarto]

@@ -4,10 +4,11 @@ import { FormEvent, useMemo, useState } from "react";
 
 type Props = {
   issuesNewBase: string;
+  initialDoi?: string;
 };
 
-export function LiteratureHelpForm({ issuesNewBase }: Props) {
-  const [doi, setDoi] = useState("");
+export function LiteratureHelpForm({ issuesNewBase, initialDoi = "" }: Props) {
+  const [doi, setDoi] = useState(initialDoi);
   const [title, setTitle] = useState("");
   const [tried, setTried] = useState("");
   const [need, setNeed] = useState("合法全文获取路径（OA / 馆藏 / 作者稿）");

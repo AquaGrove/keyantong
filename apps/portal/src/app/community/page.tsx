@@ -6,14 +6,25 @@ import {
   GITHUB_ISSUES_URL,
   GITHUB_URL,
 } from "@/lib/site";
+import { isEntitled } from "@/lib/user-store";
+import { currentUser } from "@/lib/user-session";
 
 export const metadata: Metadata = {
   title: "社区",
   description: "科研通合规互助社区：文献合法获取路径、环境排错与经验分享。",
 };
 
-export default function CommunityPage() {
+export const dynamic = "force-dynamic";
+
+export default async function CommunityPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ doi?: string }>;
+}) {
+  const { doi } = await searchParams;
   const issuesNew = `${GITHUB_URL}/issues/new`;
+  const user = await currentUser();
+  const entitled = isEntitled(user ?? undefined);
 
   return (
     <main className="page">
@@ -56,11 +67,32 @@ export default function CommunityPage() {
 
       <section className="section" id="ask">
         <h2>我要发文献求助</h2>
-        <p className="section-lead">
-          填写下面表单，一键打开预填好的 GitHub Issue（标签{" "}
-          <code className="mono">literature-help</code>）。论坛上线后同一结构会迁到论坛版块。
-        </p>
-        <LiteratureHelpForm issuesNewBase={issuesNew} />
+        {!entitled ? (
+          <>
+            <p className="section-lead">
+              发帖需要校园邮箱登录，且处于试用期或永久会员。浏览开放求助仍可公开进行。
+            </p>
+            <div className="actions">
+              <Link className="btn btn-primary" href="/login">
+                登录后发帖
+              </Link>
+              <Link className="btn btn-secondary" href="/register">
+                校园邮箱注册
+              </Link>
+              <Link className="btn btn-secondary" href="/pricing">
+                会员说明
+              </Link>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="section-lead">
+              填写下面表单，一键打开预填好的 GitHub Issue（标签{" "}
+              <code className="mono">literature-help</code>）。论坛上线后同一结构会迁到论坛版块。
+            </p>
+            <LiteratureHelpForm issuesNewBase={issuesNew} initialDoi={doi} />
+          </>
+        )}
       </section>
 
       <section className="section" id="answer" style={{ marginTop: "1.25rem" }}>
@@ -88,14 +120,14 @@ export default function CommunityPage() {
         <div className="hub-grid">
           <a className="hub-tile" href={GITHUB_ISSUES_URL}>
             <span className="tag">Issues</span>
-            <h3>软件 / 环境 / Bug</h3>
-            <p>安装报错、依赖冲突、复现步骤求助。</p>
+            <h3>环境与工具求助</h3>
+            <p>安装失败、依赖冲突、工作流报错：开 Issue 并附最小复现。</p>
           </a>
-          <Link className="hub-tile" href="/tools">
-            <span className="tag">Tools</span>
-            <h3>工具目录</h3>
-            <p>合法安装来源与常见坑，减少重复踩坑。</p>
-          </Link>
+          <a className="hub-tile" href={GITHUB_DISCUSSIONS_URL}>
+            <span className="tag">Discussions</span>
+            <h3>经验与方法</h3>
+            <p>组会笔记、检索策略、合规获取经验，适合开放讨论。</p>
+          </a>
         </div>
       </section>
     </main>

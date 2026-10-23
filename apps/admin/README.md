@@ -18,7 +18,9 @@
 ```bash
 ADMIN_PASSWORD=强口令
 ADMIN_SESSION_SECRET=更长的随机串
+INTERNAL_API_SECRET=与门户相同的内部密钥
 NEXT_PUBLIC_SITE_URL=https://keyantong.zeabur.app
+PORTAL_URL=https://keyantong.zeabur.app
 NEXT_PUBLIC_GITHUB_OWNER=AquaGrove
 NEXT_PUBLIC_GITHUB_REPO=keyantong
 # 可选
@@ -29,6 +31,7 @@ NEXT_PUBLIC_BBS_URL=
 ```
 
 5. 打开 `https://你的私密域名/login` 用口令登录
+6. 门户服务同样设置 `INTERNAL_API_SECRET` 与 `DATA_DIR`（持久卷）。管理端「用户」页通过该密钥调用门户 `/api/internal/users`，两个服务磁盘不共享。
 
 ## 安全
 

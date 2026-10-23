@@ -18,6 +18,7 @@ KeyanTong（科研通）— open-source research mutual-aid platform (portal + f
 ```bash
 pnpm install --ignore-scripts
 pnpm --dir apps/portal dev          # http://localhost:3000
+pnpm --dir apps/admin dev           # http://localhost:3001
 pnpm --dir apps/portal exec tsc --noEmit
 ./scripts/smoke.sh
 docker compose -f infra/docker-compose.dev.yml up -d   # Postgres + Redis

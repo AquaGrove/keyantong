@@ -1,0 +1,15 @@
+id: zotero
+name: Zotero
+summary: 开源文献管理：抓取元数据、PDF 注释、CSL 引文与群组书目。
+categories: [literature, desktop]
+license: AGPL-3.0
+author: Corporation for Digital Scholarship
+install:
+  notes: |
+    从 zotero.org 安装桌面端；浏览器连接器与官方文档配套使用。
+common_pitfalls:
+  - 连接器与桌面端版本不匹配会导致抓取失败
+  - 群组库存储配额与附件同步策略需先看清
+links:
+  docs: https://www.zotero.org/support/
+  forum_tags: [zotero]

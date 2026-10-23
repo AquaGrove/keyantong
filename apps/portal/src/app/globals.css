@@ -14,7 +14,8 @@
   --line: rgba(11, 31, 51, 0.12);
   --shadow: 0 18px 50px rgba(11, 31, 51, 0.08);
   --font-display: "Fraunces", "Noto Serif SC", "Songti SC", Georgia, serif;
-  --font-body: "Outfit", "Noto Sans SC", "PingFang SC", sans-serif;
+  --font-body: "Outfit", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    "HarmonyOS Sans SC", "MiSans", "Noto Sans SC", "Noto Sans CJK SC", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
   --radius: 0.4rem;
 }
@@ -23,10 +24,17 @@
   box-sizing: border-box;
 }
 
+html {
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 html,
 body {
   margin: 0;
   min-height: 100%;
+  min-height: 100dvh;
   color: var(--ink);
   font-family: var(--font-body);
   background:
@@ -82,6 +90,11 @@ a {
   font-weight: 700;
   font-size: 1.25rem;
   letter-spacing: 0.02em;
+  flex: 0 0 auto;
+}
+
+.logo-text {
+  white-space: nowrap;
 }
 
 .logo-mark {
@@ -107,6 +120,7 @@ a {
   font-size: 0.95rem;
   padding: 0.35rem 0.2rem;
   transition: color 160ms ease;
+  word-break: keep-all;
 }
 
 .nav-link:hover {
@@ -122,6 +136,8 @@ a {
   background: var(--ink);
   color: var(--paper);
   transition: transform 160ms ease, background 160ms ease;
+  word-break: keep-all;
+  white-space: nowrap;
 }
 
 .nav-cta:hover {
@@ -194,6 +210,8 @@ a {
   text-decoration: none;
   font-weight: 600;
   border: 1px solid transparent;
+  cursor: pointer;
+  font: inherit;
   transition: transform 160ms ease, background 160ms ease, border-color 160ms ease,
     box-shadow 160ms ease;
 }
@@ -382,6 +400,10 @@ a {
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 1rem;
+}
+
+.footer-row {
+  min-width: 0;
 }
 
 .footer-brand {
@@ -695,6 +717,98 @@ a {
   color: var(--accent);
 }
 
+.graph-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.85fr);
+  gap: 1rem;
+  margin-top: 1.25rem;
+  min-width: 0;
+}
+
+.paper-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: min(70vh, 560px);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+}
+
+.graph-detail {
+  min-width: 0;
+  padding: 1rem 1.1rem;
+  border-radius: 0.85rem;
+  background: var(--paper);
+  border: 1px solid var(--line);
+}
+
+.graph-detail h3 {
+  margin: 0.35rem 0;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  overflow-wrap: anywhere;
+}
+
+.graph-detail .tag {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.linkish {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  color: var(--ink);
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.linkish:hover:not(:disabled) {
+  color: var(--accent);
+}
+
+.linkish:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.tool-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0 0 1rem;
+}
+
+.chip {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink-soft);
+  cursor: pointer;
+  word-break: keep-all;
+}
+
+.chip-on {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.hub-tile h3,
+.pulse-list li {
+  min-width: 0;
+}
+
 @keyframes rise {
   from {
     opacity: 0;
@@ -739,12 +853,19 @@ a {
   }
 }
 
+@media (max-width: 1200px) {
+  .stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 860px) {
   .hero,
   .panels,
   .hub-grid,
   .stats,
-  .flow {
+  .flow,
+  .graph-wrap {
     grid-template-columns: 1fr;
   }
 
@@ -755,5 +876,29 @@ a {
   .site-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats,
+  .hub-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pulse-list li {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-visual {
+    min-height: 220px;
+  }
+
+  .nav-link {
+    font-size: 0.88rem;
+  }
+
+  .logo-text,
+  .nav-cta {
+    white-space: nowrap;
   }
 }

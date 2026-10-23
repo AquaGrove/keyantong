@@ -1,0 +1,15 @@
+id: nextflow
+name: Nextflow
+summary: 数据流 DSL 工作流引擎，适合可复现的生物信息与计算实验流水线。
+categories: [workflow, bioinformatics]
+license: Apache-2.0
+author: Seqera
+install:
+  notes: |
+    需要 Java 17+。可用官方安装脚本或 conda-forge::nextflow。
+common_pitfalls:
+  - Java 版本过低导致启动失败
+  - 容器/conda 配置未写进 profile 时他人无法复现
+links:
+  docs: https://www.nextflow.io/docs/latest/index.html
+  forum_tags: [nextflow]

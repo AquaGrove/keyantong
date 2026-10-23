@@ -190,6 +190,26 @@ Webhook 消费论坛 `accepted_answer` 后由 UserBridge 入账。
 
 ---
 
+## 6.1 门户过渡接口（当前已实现）
+
+门户在 NodeBB / `/v1` 之前自带一套 JSON 接口，前缀为站点根路径（如 `https://keyantong.zeabur.app`），**不是** `api.keyantong.com/v1`。
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/auth/register` | 校园邮箱注册，发验证码 |
+| POST | `/api/auth/verify` | 验证码通过后开始 7 天试用 |
+| POST | `/api/auth/login` | 会话 Cookie；设备满员返回 `409 DEVICE_LIMIT` |
+| POST | `/api/auth/logout` | 清会话并回首页 |
+| GET | `/api/me` | 当前用户与 `entitled` |
+| POST | `/api/me/devices` | 注销自己的一台设备 |
+| GET | `/api/papers/search` | OpenAlex 题名检索（可匿名） |
+| GET | `/api/papers/graph` | 引用邻域；需登录且 `entitled` |
+| GET/POST | `/api/internal/users` | 管理端发放永久会员 / 踢设备；`Bearer INTERNAL_API_SECRET` |
+
+错误仍用 `{ error, code? }` 扁平 JSON，与上文 `/v1` 信封并存，待论坛上线后收敛。
+
+---
+
 ## 7. 版本与兼容
 
 - URL 含 `/v1`；破坏性变更走 `/v2`  

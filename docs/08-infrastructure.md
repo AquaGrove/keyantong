@@ -91,7 +91,8 @@ infra/docker-compose.yml
 ```
 
 4. 在 Zeabur 服务设置中确认 Root Directory / App Dir 指向门户；绑定域名后即可公网访问。
-5. 论坛与数据库仍按 ADR-005 放国内更大规格机器；当前新加坡 2C2G 先跑门户即可。
+5. 门户建议配置：`USER_SESSION_SECRET`、`INTERNAL_API_SECRET`、`DATA_DIR`（持久卷，存 `users.json`）、`OPENALEX_MAILTO`、可选 `OPENALEX_API_KEY`。不要把 `EMAIL_DEV_ECHO=true` 开到生产。
+6. 论坛与数据库仍按 ADR-005 放国内更大规格机器；当前新加坡节点先跑门户即可。管理端是第二个 Git 服务，见 [`apps/admin/README.md`](../apps/admin/README.md)。
 
 ## 5. 对象存储与 CDN
 

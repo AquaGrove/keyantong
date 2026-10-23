@@ -20,8 +20,8 @@ export default async function HomePage() {
             <Link className="btn btn-primary" href="/community#ask">
               发起文献求助
             </Link>
-            <Link className="btn btn-secondary" href="/community#answer">
-              去帮助别人
+            <Link className="btn btn-secondary" href="/papers">
+              文献关系网
             </Link>
             <Link className="btn btn-secondary" href="/tools">
               浏览工具
@@ -59,10 +59,11 @@ export default async function HomePage() {
       <section className="section" aria-label="社区动态">
         <h2>社区动态</h2>
         <p className="section-lead">
-          来自开源仓库的最新公开更新。想提问或分享经验？先去{" "}
-          <Link href="/community">社区</Link>
-          ；找软件与环境模板？看{" "}
-          <Link href="/tools">工具目录</Link>。源码在{" "}
+          来自开源仓库的最新公开更新。查引用邻域去{" "}
+          <Link href="/papers">文献关系网</Link>
+          ；提问先去 <Link href="/community">社区</Link>
+          ；软件环境看 <Link href="/tools">工具目录</Link>
+          。校园邮箱可 <Link href="/register">注册试用</Link>。源码在{" "}
           <a href={GITHUB_URL}>GitHub</a>。
         </p>
         {commits.length === 0 ? (

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 const links = [
   { href: "/", label: "总览" },
+  { href: "/users", label: "用户" },
   { href: "/github", label: "GitHub" },
   { href: "/services", label: "服务健康" },
   { href: "/content", label: "内容治理" },

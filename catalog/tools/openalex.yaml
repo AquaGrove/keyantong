@@ -1,0 +1,15 @@
+id: openalex
+name: OpenAlex
+summary: 开放学术图谱 API，可按题名/DOI 查作品、引用与被引，适合文献关系网。
+categories: [literature, api]
+license: CC0-1.0
+author: OurResearch
+install:
+  notes: |
+    网页与 REST API 免费使用。请求请带 mailto 参数（礼貌池）。
+common_pitfalls:
+  - 未带 mailto 时更容易被限流
+  - 作品 ID 与 DOI 混用时需去掉 https://openalex.org/ 前缀
+links:
+  docs: https://docs.openalex.org/
+  forum_tags: [openalex, literature]

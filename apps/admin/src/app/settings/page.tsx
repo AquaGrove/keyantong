@@ -7,6 +7,7 @@ export default function SettingsPage() {
   const hasPassword = Boolean(process.env.ADMIN_PASSWORD);
   const hasSessionSecret = Boolean(process.env.ADMIN_SESSION_SECRET);
   const hasGithubToken = Boolean(process.env.GITHUB_TOKEN);
+  const hasInternal = Boolean(process.env.INTERNAL_API_SECRET);
 
   return (
     <AdminShell>
@@ -44,6 +45,14 @@ export default function SettingsPage() {
             <tr>
               <td>GITHUB_TOKEN</td>
               <td>{hasGithubToken ? "已配置" : "未配置（公开 API 限额较低）"}</td>
+            </tr>
+            <tr>
+              <td>INTERNAL_API_SECRET</td>
+              <td>
+                {hasInternal
+                  ? "已配置（须与门户相同）"
+                  : "未单独配置（回退 ADMIN_SESSION_SECRET / ADMIN_PASSWORD）"}
+              </td>
             </tr>
             <tr>
               <td>监听</td>

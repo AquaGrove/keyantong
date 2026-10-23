@@ -10,7 +10,8 @@
   --ok: #3dba7c;
   --bad: #e06c75;
   --warn: #d19a66;
-  --font: "IBM Plex Sans", "Noto Sans SC", "PingFang SC", sans-serif;
+  --font: "IBM Plex Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    "HarmonyOS Sans SC", "MiSans", "Noto Sans SC", "Noto Sans CJK SC", sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, monospace;
 }
 
@@ -18,10 +19,17 @@
   box-sizing: border-box;
 }
 
+html {
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 html,
 body {
   margin: 0;
   min-height: 100%;
+  min-height: 100dvh;
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font);
@@ -300,6 +308,15 @@ a {
   color: var(--muted);
   font-weight: 500;
   font-size: 0.8rem;
+}
+
+.table td {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ghost-btn {
+  word-break: keep-all;
 }
 
 @media (max-width: 900px) {

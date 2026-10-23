@@ -1,0 +1,16 @@
+id: blast
+name: NCBI BLAST+
+summary: 序列相似性搜索套件，本地或 NCBI 服务器比对核酸/蛋白。
+categories: [bioinformatics, sequence]
+license: Public Domain
+author: NCBI
+install:
+  conda: bioconda::blast
+  notes: |
+    命令行工具为 NCBI BLAST+。大规模检索请自建数据库，勿压公共网页接口。
+common_pitfalls:
+  - 数据库未 makeblastdb 就直接 blastn
+  - 氨基酸序列误用核酸程序（或相反）
+links:
+  docs: https://www.ncbi.nlm.nih.gov/books/NBK279690/
+  forum_tags: [blast]

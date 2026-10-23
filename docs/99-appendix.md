@@ -49,6 +49,10 @@ keyantong/
 | `PUBLIC_PORTAL_URL` | portal | 规范链接 |
 | `NEXT_PUBLIC_API_BASE` | portal | 浏览器可见 API 前缀 |
 | `NEXT_PUBLIC_BBS_URL` | portal | 社区入口 |
+| `INTERNAL_API_SECRET` | portal + admin | 管理端调门户用户接口 |
+| `DATA_DIR` | portal | `users.json` 目录（勿提交） |
+| `EMAIL_DEV_ECHO` | portal | 注册验证码回显 |
+| `OPENALEX_API_KEY` | portal | OpenAlex 个人密钥（免费） |
 
 完整示例：根目录 [`.env.example`](../.env.example)。
 
@@ -58,3 +62,4 @@ keyantong/
 |------|------|------|
 | v0.1 | 2026-08-25 | 首版完整开发者文档基线 |
 | v0.2 | 2026-08-25 | 开源工程骨架落地；NodeBB / Apache-2.0 / Monorepo ADR |
+| v0.3 | 2026-10-23 | 校园邮箱会员、文献关系网、管理端用户 |
