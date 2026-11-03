@@ -25,6 +25,13 @@ else
   echo "==> skip admin typecheck (run pnpm install first)"
 fi
 
+if command -v python3 >/dev/null 2>&1; then
+  echo "==> rnaseq pca unit tests"
+  (cd services/rnaseq-viz && python3 -m unittest discover -s tests -v)
+else
+  echo "==> skip rnaseq pca tests (python3 missing)"
+fi
+
 if command -v curl >/dev/null 2>&1; then
   for url in http://127.0.0.1:8000/health http://127.0.0.1:8001/health; do
     if curl -fsS --max-time 2 "$url" >/dev/null 2>&1; then
@@ -38,6 +45,8 @@ if command -v curl >/dev/null 2>&1; then
     http://127.0.0.1:3000/papers \
     http://127.0.0.1:3000/community \
     http://127.0.0.1:3000/tools \
+    http://127.0.0.1:3000/tools/rnaseq/pca \
+    http://127.0.0.1:3000/tools/ncbi/sra \
     http://127.0.0.1:3001/login
   do
     if curl -fsS --max-time 2 "$url" >/dev/null 2>&1; then
