@@ -1,4 +1,4 @@
-"""Analysis config: multi-group cards, colors, thresholds, Venn modes."""
+"""Analysis config: multi-group cards, colors, thresholds, Venn modes, plot/DE options."""
 from __future__ import annotations
 
 import json
@@ -26,10 +26,10 @@ DEFAULT_PALETTE = [
 ]
 
 VENN_MODES = (
-    "up_down_per_contrast",  # up vs down within each contrast
-    "multi_group_up",  # intersection of up sets across contrasts
+    "up_down_per_contrast",
+    "multi_group_up",
     "multi_group_down",
-    "multi_group_deg",  # significant (up∪down) across contrasts
+    "multi_group_deg",
 )
 
 
@@ -55,7 +55,7 @@ class VennOptions:
             "multi_group_deg",
         ]
     )
-    contrasts: list[str] | None = None  # None = all auto contrasts
+    contrasts: list[str] | None = None
     colors: dict[str, str] = field(
         default_factory=lambda: {"up": "#b91c1c", "down": "#1d4ed8"}
     )
@@ -67,6 +67,13 @@ class PlotOptions:
     volcano: bool = True
     heatmap: bool = True
     venn: bool = True
+    dpi: int = 180
+    formats: list[str] = field(default_factory=lambda: ["png", "pdf", "svg"])
+    palette: str = "okabe_ito"
+    title_pca: str = "PCA (log2 expression)"
+    title_volcano: str = "Volcano"
+    title_heatmap: str = "Heatmap (top DE genes, z-score)"
+    title_venn: str = ""
 
 
 @dataclass
@@ -75,9 +82,10 @@ class AnalysisConfig:
     species: str = "none"
     lfc: float = 1.0
     padj: float = 0.05
+    de_engine: str = "auto"  # auto|limma_like|welch|pydeseq2
     plots: PlotOptions = field(default_factory=PlotOptions)
     venn: VennOptions = field(default_factory=VennOptions)
-    contrasts: list[dict[str, str]] | None = None  # [{id, treatment, control}]
+    contrasts: list[dict[str, str]] | None = None
 
     def sample_to_group(self) -> dict[str, GroupDef]:
         out: dict[str, GroupDef] = {}
@@ -102,13 +110,10 @@ class AnalysisConfig:
         for g in self.groups:
             if g.id == ctrl.id:
                 continue
-            if g.role in ("treatment", "custom") or g.role == "control":
-                # secondary controls can also be contrasted if marked treatment/custom;
-                # only treatment/custom by default
-                if g.role == "control":
-                    continue
-                cid = f"{g.name}_vs_{ctrl.name}"
-                out.append({"id": cid, "treatment": g.id, "control": ctrl.id, "label": cid})
+            if g.role == "control":
+                continue
+            cid = f"{g.name}_vs_{ctrl.name}"
+            out.append({"id": cid, "treatment": g.id, "control": ctrl.id, "label": cid})
         if not out:
             raise ValueError("除对照外至少需要一个实验/自定义分组")
         return out
@@ -121,6 +126,7 @@ class AnalysisConfig:
                 "species": self.species,
                 "lfc": self.lfc,
                 "padj": self.padj,
+                "de_engine": self.de_engine,
                 "plots": asdict(self.plots),
                 "venn": {
                     "modes": list(self.venn.modes),
@@ -161,13 +167,11 @@ def _guess_role(name: str) -> Role:
 
 def config_from_groups_csv(path: Path, species: str = "none", lfc: float = 1.0, padj: float = 0.05) -> AnalysisConfig:
     raw = load_groups(path)
-    # preserve order of first appearance
     names: list[str] = list(dict.fromkeys(raw["group"].tolist()))
     groups: list[GroupDef] = []
     for i, name in enumerate(names):
         samples = raw.index[raw["group"] == name].tolist()
         role = _guess_role(name)
-        # if only two unlabeled groups, force first→control second→treatment when neither matched
         groups.append(
             GroupDef(
                 id=f"g{i+1}",
@@ -208,16 +212,27 @@ def config_from_dict(data: dict[str, Any]) -> AnalysisConfig:
             )
         )
     opts = data.get("options") or {}
-    # allow flat keys at top level too
     species = str(opts.get("species") or data.get("species") or "none")
     lfc = float(opts.get("lfc") or opts.get("abs_log2FC") or data.get("lfc") or 1.0)
     padj = float(opts.get("padj") or data.get("padj") or 0.05)
+    de_engine = str(opts.get("de_engine") or data.get("de_engine") or "auto")
     plots_raw = opts.get("plots") or {}
+    formats = plots_raw.get("formats") or ["png", "pdf", "svg"]
+    if isinstance(formats, str):
+        formats = [x.strip() for x in formats.split(",") if x.strip()]
+    formats = [f for f in formats if f in ("png", "pdf", "svg")] or ["png", "pdf", "svg"]
     plots = PlotOptions(
         pca=bool(plots_raw.get("pca", True)),
         volcano=bool(plots_raw.get("volcano", True)),
         heatmap=bool(plots_raw.get("heatmap", True)),
         venn=bool(plots_raw.get("venn", True)),
+        dpi=int(plots_raw.get("dpi") or 180),
+        formats=list(formats),
+        palette=str(plots_raw.get("palette") or "okabe_ito"),
+        title_pca=str(plots_raw.get("title_pca") or "PCA (log2 expression)"),
+        title_volcano=str(plots_raw.get("title_volcano") or "Volcano"),
+        title_heatmap=str(plots_raw.get("title_heatmap") or "Heatmap (top DE genes, z-score)"),
+        title_venn=str(plots_raw.get("title_venn") or ""),
     )
     venn_raw = opts.get("venn") or {}
     modes = venn_raw.get("modes") or list(VENN_MODES)
@@ -235,6 +250,7 @@ def config_from_dict(data: dict[str, Any]) -> AnalysisConfig:
         species=species,
         lfc=lfc,
         padj=padj,
+        de_engine=de_engine,
         plots=plots,
         venn=venn,
         contrasts=contrasts,
@@ -248,7 +264,6 @@ def load_analysis_config(
     lfc: float | None = None,
     padj: float | None = None,
 ) -> AnalysisConfig:
-    """Load either JSON analysis config or legacy sample,group CSV."""
     path = Path(path)
     text = path.read_text(encoding="utf-8", errors="replace").lstrip()
     if path.suffix.lower() == ".json" or text.startswith("{") or text.startswith("["):
@@ -280,4 +295,4 @@ def _validate(cfg: AnalysisConfig) -> None:
     for g in cfg.groups:
         if len(g.samples) < 2 and g.role in ("control", "treatment"):
             raise ValueError(f"分组「{g.name}」至少需要 2 个样本（当前 {len(g.samples)}）")
-    cfg.auto_contrasts()  # ensure at least one
+    cfg.auto_contrasts()

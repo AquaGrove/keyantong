@@ -5,45 +5,40 @@
       "id": "ctrl",
       "name": "对照",
       "role": "control",
-      "color": "#0f766e",
-      "samples": [
-        "C1",
-        "C2",
-        "C3"
-      ]
+      "color": "#0072B2",
+      "samples": ["C1", "C2", "C3"]
     },
     {
       "id": "ta",
       "name": "实验A",
       "role": "treatment",
-      "color": "#b45309",
-      "samples": [
-        "A1",
-        "A2",
-        "A3"
-      ]
+      "color": "#E69F00",
+      "samples": ["A1", "A2", "A3"]
     },
     {
       "id": "tb",
       "name": "实验B",
       "role": "treatment",
-      "color": "#7c3aed",
-      "samples": [
-        "B1",
-        "B2",
-        "B3"
-      ]
+      "color": "#009E73",
+      "samples": ["B1", "B2", "B3"]
     }
   ],
   "options": {
-    "species": "none",
+    "species": "demo",
     "lfc": 1.0,
     "padj": 0.05,
+    "de_engine": "limma_like",
     "plots": {
       "pca": true,
       "volcano": true,
       "heatmap": true,
-      "venn": true
+      "venn": true,
+      "dpi": 160,
+      "formats": ["png", "pdf", "svg"],
+      "palette": "okabe_ito",
+      "title_pca": "PCA · demo",
+      "title_volcano": "Volcano",
+      "title_heatmap": "Heatmap · top DE"
     },
     "venn": {
       "modes": [
@@ -53,10 +48,21 @@
         "multi_group_deg"
       ],
       "contrasts": null,
-      "colors": {
-        "up": "#b91c1c",
-        "down": "#1d4ed8"
+      "colors": { "up": "#D55E00", "down": "#0072B2" }
+    },
+    "contrasts": [
+      {
+        "id": "实验A_vs_对照",
+        "treatment": "ta",
+        "control": "ctrl",
+        "label": "实验A vs 对照"
+      },
+      {
+        "id": "实验B_vs_对照",
+        "treatment": "tb",
+        "control": "ctrl",
+        "label": "实验B vs 对照"
       }
-    }
+    ]
   }
 }

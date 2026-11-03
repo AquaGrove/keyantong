@@ -11,7 +11,8 @@ from pathlib import Path
 import pandas as pd
 
 from .config import AnalysisConfig, load_analysis_config
-from .de import run_de_samples
+from .de import available_engines, run_de_samples
+from .enrichment import run_enrichment
 from .io import load_matrix
 from .plots import plot_heatmap, plot_multi_set_venn, plot_pca, plot_regulation_venn, plot_volcano
 
@@ -33,6 +34,7 @@ class PipelineResult:
     n_down: int
     artifacts: list[str]
     enrichment: str
+    de_engine: str
     bundle: str
 
 
@@ -70,14 +72,12 @@ def run_pipeline(
     overlap = [s for s in sample_map if s in matrix.columns]
     if len(overlap) < 4:
         raise ValueError("矩阵与分组的共有样本不足 4 个")
-    # drop samples not in matrix from groups (keep config copy)
     for g in cfg.groups:
         g.samples = [s for s in g.samples if s in matrix.columns]
     sample_map = cfg.sample_to_group()
     overlap = list(sample_map.keys())
     matrix = matrix[overlap]
 
-    # series keyed by sample -> display name; colors by display name
     group_labels = pd.Series({s: sample_map[s].name for s in overlap})
     color_by_label = {g.name: g.color for g in cfg.groups}
 
@@ -99,10 +99,19 @@ def run_pipeline(
 
     contrasts = cfg.auto_contrasts()
     id_to_group = {g.id: g for g in cfg.groups}
+    # validate contrast refs
+    for c in contrasts:
+        if c["treatment"] not in id_to_group or c["control"] not in id_to_group:
+            raise ValueError(f"对比引用了不存在的分组: {c}")
+
     artifacts: list[Path] = [sample_sheet_path, tables_dir / "analysis_config_resolved.json"]
+    plot_fmts = tuple(cfg.plots.formats)
+    dpi = int(cfg.plots.dpi or 180)
+    palette = cfg.plots.palette
 
     deg_by_contrast: dict[str, pd.DataFrame] = {}
     all_deg_frames: list[pd.DataFrame] = []
+    engines_used: list[str] = []
     for c in contrasts:
         treat_g = id_to_group[c["treatment"]]
         ctrl_g = id_to_group[c["control"]]
@@ -114,7 +123,10 @@ def run_pipeline(
             lfc_cutoff=cfg.lfc,
             padj_cutoff=cfg.padj,
             contrast_id=cid,
+            engine=cfg.de_engine,
         )
+        eng = str(deg["engine"].iloc[0]) if "engine" in deg.columns and len(deg) else cfg.de_engine
+        engines_used.append(eng)
         deg_by_contrast[cid] = deg
         all_deg_frames.append(deg)
         safe = _slug(cid)
@@ -137,29 +149,47 @@ def run_pipeline(
 
     primary_id = contrasts[0].get("id") or list(deg_by_contrast.keys())[0]
     primary_deg = deg_by_contrast[primary_id]
+    primary_engine = engines_used[0] if engines_used else cfg.de_engine
 
     if cfg.plots.pca:
-        artifacts += plot_pca(matrix, group_labels, plots_dir / "PCA", color_by_label=color_by_label)
+        artifacts += plot_pca(
+            matrix,
+            group_labels,
+            plots_dir / "PCA",
+            color_by_label=color_by_label,
+            title=cfg.plots.title_pca,
+            dpi=dpi,
+            palette=palette,
+            formats=plot_fmts,
+        )
     if cfg.plots.volcano:
         for cid, deg in deg_by_contrast.items():
+            title = cfg.plots.title_volcano
+            if title == "Volcano" or not title:
+                title = f"Volcano · {cid}"
+            else:
+                title = f"{title} · {cid}"
             artifacts += plot_volcano(
                 deg,
                 plots_dir / f"volcano_{_slug(cid)}",
                 lfc_cutoff=cfg.lfc,
                 padj_cutoff=cfg.padj,
-                title=f"Volcano · {cid}",
+                title=title,
                 up_color=cfg.venn.colors.get("up", "#b91c1c"),
                 down_color=cfg.venn.colors.get("down", "#1d4ed8"),
+                dpi=dpi,
+                formats=plot_fmts,
             )
-        # also canonical volcano.png for primary
         artifacts += plot_volcano(
             primary_deg,
             plots_dir / "volcano",
             lfc_cutoff=cfg.lfc,
             padj_cutoff=cfg.padj,
-            title=f"Volcano · {primary_id}",
+            title=f"{cfg.plots.title_volcano} · {primary_id}",
             up_color=cfg.venn.colors.get("up", "#b91c1c"),
             down_color=cfg.venn.colors.get("down", "#1d4ed8"),
+            dpi=dpi,
+            formats=plot_fmts,
         )
     if cfg.plots.heatmap:
         artifacts += plot_heatmap(
@@ -168,6 +198,10 @@ def run_pipeline(
             primary_deg,
             plots_dir / "heatmap",
             color_by_label=color_by_label,
+            title=cfg.plots.title_heatmap,
+            dpi=dpi,
+            palette=palette,
+            formats=plot_fmts,
         )
 
     if cfg.plots.venn:
@@ -181,20 +215,24 @@ def run_pipeline(
         modes = cfg.venn.modes
         if "up_down_per_contrast" in modes:
             for cid in contrast_ids:
+                t = cfg.plots.title_venn or f"Up vs Down · {cid}"
                 artifacts += plot_regulation_venn(
                     deg_by_contrast[cid],
                     plots_dir / f"venn_up_down_{_slug(cid)}",
                     up_color=cfg.venn.colors.get("up", "#b91c1c"),
                     down_color=cfg.venn.colors.get("down", "#1d4ed8"),
-                    title=f"Up vs Down · {cid}",
+                    title=t if cfg.plots.title_venn else f"Up vs Down · {cid}",
+                    dpi=dpi,
+                    formats=plot_fmts,
                 )
-            # canonical name for smoke / primary
             artifacts += plot_regulation_venn(
                 deg_by_contrast[contrast_ids[0]],
                 plots_dir / "venn_up_down",
                 up_color=cfg.venn.colors.get("up", "#b91c1c"),
                 down_color=cfg.venn.colors.get("down", "#1d4ed8"),
                 title=f"Up vs Down · {contrast_ids[0]}",
+                dpi=dpi,
+                formats=plot_fmts,
             )
 
         def _sets(kind: str) -> dict[str, set[str]]:
@@ -207,18 +245,16 @@ def run_pipeline(
                     genes = set(deg.loc[deg["regulation"] == "down", "gene"].astype(str))
                 else:
                     genes = set(deg.loc[deg["significant"], "gene"].astype(str))
-                # short label = treatment side of contrast id
                 label = cid.split("_vs_")[0] if "_vs_" in cid else cid
                 out[label] = genes
             return out
 
-        # colors aligned to contrast / set order
         cid_to_contrast = {}
         for c in contrasts:
             cid = c.get("id") or f"{id_to_group[c['treatment']].name}_vs_{id_to_group[c['control']].name}"
             cid_to_contrast[cid] = c
         set_colors: list[str] = [
-            id_to_group[cid_to_contrast[cid]["treatment"]].color for cid in contrast_ids
+            id_to_group[cid_to_contrast[cid]["treatment"]].color for cid in contrast_ids if cid in cid_to_contrast
         ]
 
         if "multi_group_up" in modes and len(contrast_ids) >= 1:
@@ -226,45 +262,69 @@ def run_pipeline(
                 _sets("up"),
                 plots_dir / "venn_multi_up",
                 colors=set_colors,
-                title="Multi-group Venn · Up",
+                title=(cfg.plots.title_venn or "Multi-group Venn · Up"),
+                dpi=dpi,
+                formats=plot_fmts,
+                palette=palette,
             )
         if "multi_group_down" in modes and len(contrast_ids) >= 1:
             artifacts += plot_multi_set_venn(
                 _sets("down"),
                 plots_dir / "venn_multi_down",
                 colors=set_colors,
-                title="Multi-group Venn · Down",
+                title=(cfg.plots.title_venn or "Multi-group Venn · Down"),
+                dpi=dpi,
+                formats=plot_fmts,
+                palette=palette,
             )
         if "multi_group_deg" in modes and len(contrast_ids) >= 1:
             artifacts += plot_multi_set_venn(
                 _sets("deg"),
                 plots_dir / "venn_multi_deg",
                 colors=set_colors,
-                title="Multi-group Venn · Significant (up∪down)",
+                title=(cfg.plots.title_venn or "Multi-group Venn · Significant (up∪down)"),
+                dpi=dpi,
+                formats=plot_fmts,
+                palette=palette,
             )
 
-    enrich_note = tables_dir / "enrichment_status.txt"
-    sp = (cfg.species or "none").strip().lower()
-    if sp in {"", "none", "na", "null"}:
-        enrich_note.write_text(
-            "GO/KEGG 未运行：未提供可用物种注释（--species none）。\n"
-            "后续版本可在提供 gene→GO/KEGG 映射或物种库时自动富集。\n",
-            encoding="utf-8",
-        )
-        enrichment = "skipped_no_annotation"
-    else:
-        enrich_note.write_text(
-            f"物种参数: {cfg.species}\n"
-            "当前切片尚未内置该物种注释库；已记录请求，GO/KEGG 标记为 pending_annotation。\n",
-            encoding="utf-8",
-        )
-        enrichment = "pending_annotation"
-    artifacts.append(enrich_note)
+    # enrichment on primary significant genes
+    sig_genes = primary_deg.loc[primary_deg["significant"], "gene"].astype(str).tolist() if not primary_deg.empty else []
+    enrich = run_enrichment(sig_genes, cfg.species, tables_dir)
+    enrichment = enrich.status
+    for a in enrich.artifacts or [str(tables_dir / "enrichment_status.txt")]:
+        ap = Path(a)
+        if ap.exists():
+            artifacts.append(ap)
 
     n_up = int((primary_deg["regulation"] == "up").sum()) if not primary_deg.empty else 0
     n_down = int((primary_deg["regulation"] == "down").sum()) if not primary_deg.empty else 0
     ctrl = cfg.primary_control()
     treat_names = [id_to_group[c["treatment"]].name for c in contrasts]
+
+    methods = {
+        "de_engine_requested": cfg.de_engine,
+        "de_engine_used": primary_engine,
+        "de_engines_by_contrast": dict(zip([c.get("id") or "" for c in contrasts], engines_used)),
+        "available_engines": available_engines(),
+        "transform": "log2(x+1) for limma_like/welch; pydeseq2 uses rounded counts when selected",
+        "multiple_testing": "Benjamini-Hochberg FDR on p-values",
+        "thresholds": {"abs_log2FC": cfg.lfc, "padj": cfg.padj},
+        "plots": {
+            "dpi": dpi,
+            "formats": list(plot_fmts),
+            "palette": palette,
+        },
+        "enrichment": enrich.to_dict(),
+        "notes": [
+            "limma_like = two-group moderated t with empirical Bayes variance squeeze (not Bioconductor limma).",
+            "Welch remains available as fallback / explicit engine.",
+            "GO uses local gene2go.tsv under services/rnaseq-pipeline/annotations/; KEGG not bundled yet.",
+        ],
+    }
+    methods_path = tables_dir / "methods.json"
+    methods_path.write_text(json.dumps(methods, ensure_ascii=False, indent=2), encoding="utf-8")
+    artifacts.append(methods_path)
 
     manifest = {
         "created_at": datetime.now(timezone.utc).isoformat(),
@@ -272,6 +332,7 @@ def run_pipeline(
         "groups": [g.to_dict() for g in cfg.groups],
         "contrast": {"control": ctrl.name, "treatments": treat_names, "list": contrasts},
         "thresholds": {"abs_log2FC": cfg.lfc, "padj": cfg.padj},
+        "de_engine": primary_engine,
         "venn": {"modes": cfg.venn.modes, "contrasts": cfg.venn.contrasts, "colors": cfg.venn.colors},
         "summary": {
             "n_genes": int(matrix.shape[0]),
@@ -280,6 +341,7 @@ def run_pipeline(
             "n_down": n_down,
             "n_contrasts": len(contrasts),
             "enrichment": enrichment,
+            "de_engine": primary_engine,
         },
         "artifacts": [str(p.relative_to(outdir)) for p in artifacts],
     }
@@ -291,7 +353,9 @@ def run_pipeline(
     with zipfile.ZipFile(bundle_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         seen = set()
         for p in artifacts:
-            arc = str(p.relative_to(outdir))
+            if not Path(p).exists():
+                continue
+            arc = str(Path(p).relative_to(outdir))
             if arc in seen:
                 continue
             seen.add(arc)
@@ -301,13 +365,17 @@ def run_pipeline(
         outdir=str(outdir),
         control_label=ctrl.name,
         treatment_label=",".join(treat_names),
-        contrasts=[c.get("id") or f"{id_to_group[c['treatment']].name}_vs_{id_to_group[c['control']].name}" for c in contrasts],
+        contrasts=[
+            c.get("id") or f"{id_to_group[c['treatment']].name}_vs_{id_to_group[c['control']].name}"
+            for c in contrasts
+        ],
         n_genes=int(matrix.shape[0]),
         n_samples=int(matrix.shape[1]),
         n_up=n_up,
         n_down=n_down,
         artifacts=[str(p) for p in artifacts],
         enrichment=enrichment,
+        de_engine=primary_engine,
         bundle=str(bundle_path),
     )
 

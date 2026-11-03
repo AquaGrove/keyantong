@@ -1214,3 +1214,57 @@ a {
     grid-template-columns: 1fr;
   }
 }
+
+.rnaseq-group-card.is-drop {
+  border-color: var(--group-accent, var(--accent));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--group-accent, var(--accent)) 35%, transparent);
+  background: color-mix(in srgb, var(--group-accent, var(--accent)) 8%, #fff);
+}
+
+.rnaseq-contrast-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.5rem 0 0.75rem;
+}
+
+.rnaseq-contrast-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.5rem;
+}
+
+.rnaseq-contrast-card {
+  display: flex;
+  gap: 0.55rem;
+  align-items: flex-start;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(11, 31, 51, 0.02);
+  cursor: pointer;
+}
+
+.rnaseq-contrast-card.is-on {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  background: color-mix(in srgb, var(--accent) 8%, #fff);
+}
+
+.rnaseq-contrast-card input {
+  margin-top: 0.15rem;
+}
+
+.ncbi-wizard .ncbi-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.ncbi-wizard .ncbi-steps li.is-on {
+  color: var(--ink, #0b1f33);
+  font-weight: 600;
+}

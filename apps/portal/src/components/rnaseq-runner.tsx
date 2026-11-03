@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
 type Job = {
@@ -16,6 +16,7 @@ type Job = {
     treatment_label?: string;
     enrichment?: string;
     n_contrasts?: number;
+    de_engine?: string;
   };
 };
 
@@ -27,6 +28,13 @@ type GroupCard = {
   role: GroupRole;
   color: string;
   samples: string[];
+};
+
+type ContrastOpt = {
+  id: string;
+  label: string;
+  treatment: string;
+  control: string;
 };
 
 const PALETTE = [
@@ -106,16 +114,27 @@ export function RnaseqRunner({ entitled, loggedIn }: { entitled: boolean; logged
   const [samples, setSamples] = useState<string[]>([]);
   const [groups, setGroups] = useState<GroupCard[]>(defaultGroups);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [dragSample, setDragSample] = useState<string | null>(null);
+  const [dropTarget, setDropTarget] = useState<string | null>(null);
   const [species, setSpecies] = useState("none");
   const [lfc, setLfc] = useState(1);
   const [padj, setPadj] = useState(0.05);
+  const [deEngine, setDeEngine] = useState("auto");
   const [plotPca, setPlotPca] = useState(true);
   const [plotVolcano, setPlotVolcano] = useState(true);
   const [plotHeatmap, setPlotHeatmap] = useState(true);
   const [plotVenn, setPlotVenn] = useState(true);
+  const [dpi, setDpi] = useState(180);
+  const [palette, setPalette] = useState("okabe_ito");
+  const [exportSvg, setExportSvg] = useState(true);
+  const [exportPdf, setExportPdf] = useState(true);
+  const [titlePca, setTitlePca] = useState("PCA (log2 expression)");
+  const [titleVolcano, setTitleVolcano] = useState("Volcano");
+  const [titleHeatmap, setTitleHeatmap] = useState("Heatmap (top DE genes, z-score)");
   const [vennModes, setVennModes] = useState<string[]>(VENN_MODE_OPTIONS.map((m) => m.id));
   const [upColor, setUpColor] = useState("#b91c1c");
   const [downColor, setDownColor] = useState("#1d4ed8");
+  const [selectedContrastIds, setSelectedContrastIds] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [job, setJob] = useState<Job | null>(null);
@@ -123,14 +142,38 @@ export function RnaseqRunner({ entitled, loggedIn }: { entitled: boolean; logged
   const assigned = useMemo(() => new Set(groups.flatMap((g) => g.samples)), [groups]);
   const unassigned = useMemo(() => samples.filter((s) => !assigned.has(s)), [samples, assigned]);
 
-  const contrasts = useMemo(() => {
+  const allContrasts: ContrastOpt[] = useMemo(() => {
     const controls = groups.filter((g) => g.role === "control" && g.samples.length >= 2);
     const ctrl = controls[0];
-    if (!ctrl) return [] as { id: string; label: string }[];
+    if (!ctrl) return [];
     return groups
       .filter((g) => g.id !== ctrl.id && g.role !== "control" && g.samples.length >= 2)
-      .map((g) => ({ id: `${g.name}_vs_${ctrl.name}`, label: `${g.name} vs ${ctrl.name}` }));
+      .map((g) => ({
+        id: `${g.name}_vs_${ctrl.name}`,
+        label: `${g.name} vs ${ctrl.name}`,
+        treatment: g.id,
+        control: ctrl.id,
+      }));
   }, [groups]);
+
+  // keep selected contrasts in sync when group names change; default = all
+  useEffect(() => {
+    const ids = allContrasts.map((c) => c.id);
+    setSelectedContrastIds((prev) => {
+      if (!ids.length) return [];
+      const kept = prev.filter((id) => ids.includes(id));
+      if (!prev.length) return ids;
+      // if new contrasts appeared, auto-include them
+      const missing = ids.filter((id) => !prev.includes(id));
+      if (!kept.length) return ids;
+      return Array.from(new Set([...kept, ...missing]));
+    });
+  }, [allContrasts]);
+
+  const activeContrasts = useMemo(
+    () => allContrasts.filter((c) => selectedContrastIds.includes(c.id)),
+    [allContrasts, selectedContrastIds],
+  );
 
   async function onMatrixChange(file: File | null) {
     setMatrix(file);
@@ -142,10 +185,7 @@ export function RnaseqRunner({ entitled, loggedIn }: { entitled: boolean; logged
     const text = await file.text();
     const cols = parseMatrixSamples(text);
     setSamples(cols);
-    // keep existing assignments that still exist
-    setGroups((prev) =>
-      prev.map((g) => ({ ...g, samples: g.samples.filter((s) => cols.includes(s)) })),
-    );
+    setGroups((prev) => prev.map((g) => ({ ...g, samples: g.samples.filter((s) => cols.includes(s)) })));
   }
 
   async function onGroupsFile(file: File | null) {
@@ -171,10 +211,21 @@ export function RnaseqRunner({ entitled, loggedIn }: { entitled: boolean; logged
         if (typeof opts.lfc === "number") setLfc(opts.lfc);
         if (typeof opts.padj === "number") setPadj(opts.padj);
         if (typeof opts.species === "string") setSpecies(opts.species);
+        if (typeof opts.de_engine === "string") setDeEngine(opts.de_engine);
+        const plots = (opts.plots || {}) as Record<string, unknown>;
+        if (typeof plots.dpi === "number") setDpi(plots.dpi);
+        if (typeof plots.palette === "string") setPalette(plots.palette);
+        if (typeof plots.title_pca === "string") setTitlePca(plots.title_pca);
+        if (typeof plots.title_volcano === "string") setTitleVolcano(plots.title_volcano);
+        if (typeof plots.title_heatmap === "string") setTitleHeatmap(plots.title_heatmap);
         const venn = (opts.venn || {}) as { modes?: string[]; colors?: { up?: string; down?: string } };
         if (Array.isArray(venn.modes) && venn.modes.length) setVennModes(venn.modes);
         if (venn.colors?.up) setUpColor(venn.colors.up);
         if (venn.colors?.down) setDownColor(venn.colors.down);
+        if (Array.isArray(opts.contrasts)) {
+          const ids = (opts.contrasts as Array<{ id?: string }>).map((c) => String(c.id || "")).filter(Boolean);
+          if (ids.length) setSelectedContrastIds(ids);
+        }
       } catch {
         setErr("分组 JSON 解析失败");
       }
@@ -228,7 +279,14 @@ export function RnaseqRunner({ entitled, loggedIn }: { entitled: boolean; logged
     setVennModes((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   }
 
+  function toggleContrast(id: string) {
+    setSelectedContrastIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  }
+
   function buildConfigBlob() {
+    const formats = ["png"];
+    if (exportPdf) formats.push("pdf");
+    if (exportSvg) formats.push("svg");
     const payload = {
       version: 1,
       groups: groups.map((g) => ({
@@ -242,12 +300,30 @@ export function RnaseqRunner({ entitled, loggedIn }: { entitled: boolean; logged
         species,
         lfc,
         padj,
-        plots: { pca: plotPca, volcano: plotVolcano, heatmap: plotHeatmap, venn: plotVenn },
+        de_engine: deEngine,
+        plots: {
+          pca: plotPca,
+          volcano: plotVolcano,
+          heatmap: plotHeatmap,
+          venn: plotVenn,
+          dpi,
+          formats,
+          palette,
+          title_pca: titlePca,
+          title_volcano: titleVolcano,
+          title_heatmap: titleHeatmap,
+        },
         venn: {
           modes: vennModes,
           contrasts: null,
           colors: { up: upColor, down: downColor },
         },
+        contrasts: activeContrasts.map((c) => ({
+          id: c.id,
+          treatment: c.treatment,
+          control: c.control,
+          label: c.label,
+        })),
       },
     };
     return new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
@@ -273,8 +349,8 @@ export function RnaseqRunner({ entitled, loggedIn }: { entitled: boolean; logged
       setErr("请配置至少一个对照分组，且至少 2 个样本");
       return;
     }
-    if (contrasts.length < 1) {
-      setErr("除对照外，请至少配置一个实验/自定义分组（各 ≥2 样本）");
+    if (activeContrasts.length < 1) {
+      setErr("请至少勾选一个对照×实验对比");
       return;
     }
     if (plotVenn && vennModes.length === 0) {
@@ -352,11 +428,13 @@ export function RnaseqRunner({ entitled, loggedIn }: { entitled: boolean; logged
         <section className="rnaseq-panel">
           <div className="rnaseq-panel-head">
             <h2>2. 分组卡片</h2>
-            <p>为每组命名、选角色与展示色，再把样本芯片点进卡片。支持多实验组对照。</p>
+            <p>拖拽样本到卡片，或先点选卡片再点样本。每组可改名、角色与展示色。</p>
           </div>
 
           <div className="rnaseq-sample-pool">
-            <div className="rnaseq-pool-title">未分配样本 · 先点选下方某张分组卡，再点样本以归入</div>
+            <div className="rnaseq-pool-title">
+              未分配样本 · 拖到下方卡片，或点选卡片后点击样本
+            </div>
             <div className="rnaseq-chips">
               {unassigned.length === 0 ? (
                 <span className="form-note">{samples.length ? "样本已全部分配" : "请先上传矩阵"}</span>
@@ -366,9 +444,15 @@ export function RnaseqRunner({ entitled, loggedIn }: { entitled: boolean; logged
                     key={s}
                     type="button"
                     className="rnaseq-chip"
-                    disabled={!activeGroup}
+                    draggable
+                    onDragStart={() => setDragSample(s)}
+                    onDragEnd={() => {
+                      setDragSample(null);
+                      setDropTarget(null);
+                    }}
+                    disabled={!activeGroup && !dragSample}
                     onClick={() => activeGroup && assignSample(s, activeGroup.id)}
-                    title={activeGroup ? `归入「${activeGroup.name}」` : "请先点选一张分组卡"}
+                    title={activeGroup ? `归入「${activeGroup.name}」` : "可拖拽到分组卡，或先点选一张卡"}
                   >
                     {s}
                   </button>
@@ -381,9 +465,22 @@ export function RnaseqRunner({ entitled, loggedIn }: { entitled: boolean; logged
             {groups.map((g) => (
               <article
                 key={g.id}
-                className={`rnaseq-group-card${selectedGroupId === g.id ? " is-active" : ""}`}
+                className={`rnaseq-group-card${selectedGroupId === g.id ? " is-active" : ""}${
+                  dropTarget === g.id ? " is-drop" : ""
+                }`}
                 style={{ ["--group-accent" as string]: g.color }}
                 onClick={() => setSelectedGroupId(g.id)}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDropTarget(g.id);
+                }}
+                onDragLeave={() => setDropTarget((cur) => (cur === g.id ? null : cur))}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (dragSample) assignSample(dragSample, g.id);
+                  setDragSample(null);
+                  setDropTarget(null);
+                }}
               >
                 <header className="rnaseq-group-card-head">
                   <input
@@ -442,7 +539,7 @@ export function RnaseqRunner({ entitled, loggedIn }: { entitled: boolean; logged
 
                 <div className="rnaseq-card-samples">
                   {g.samples.length === 0 ? (
-                    <span className="form-note">尚未分配样本</span>
+                    <span className="form-note">拖拽样本到此，或点选后点样本</span>
                   ) : (
                     g.samples.map((s) => (
                       <button
@@ -450,11 +547,20 @@ export function RnaseqRunner({ entitled, loggedIn }: { entitled: boolean; logged
                         type="button"
                         className="rnaseq-chip is-assigned"
                         style={{ borderColor: g.color, background: `${g.color}22` }}
+                        draggable
+                        onDragStart={(e) => {
+                          e.stopPropagation();
+                          setDragSample(s);
+                        }}
+                        onDragEnd={() => {
+                          setDragSample(null);
+                          setDropTarget(null);
+                        }}
                         onClick={(e) => {
                           e.stopPropagation();
                           assignSample(s, null);
                         }}
-                        title="移回未分配"
+                        title="拖到其他组，或点击移回未分配"
                       >
                         {s} ×
                       </button>
@@ -476,17 +582,40 @@ export function RnaseqRunner({ entitled, loggedIn }: { entitled: boolean; logged
           </div>
 
           <div className="rnaseq-contrast-preview">
-            <h3>对比预览</h3>
-            {contrasts.length === 0 ? (
-              <p className="form-note">配置对照 + 至少一个实验/自定义组后，将自动生成 pairwise 对比。</p>
+            <h3>对比选择（将实际运行）</h3>
+            {allContrasts.length === 0 ? (
+              <p className="form-note">配置对照 + 至少一个实验/自定义组后，可勾选 pairwise 对比。</p>
             ) : (
-              <ul>
-                {contrasts.map((c) => (
-                  <li key={c.id} className="mono">
-                    {c.label}
-                  </li>
-                ))}
-              </ul>
+              <>
+                <div className="rnaseq-contrast-actions">
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={() => setSelectedContrastIds(allContrasts.map((c) => c.id))}
+                  >
+                    全选
+                  </button>
+                  <button type="button" className="btn" onClick={() => setSelectedContrastIds([])}>
+                    清空
+                  </button>
+                </div>
+                <div className="rnaseq-contrast-grid">
+                  {allContrasts.map((c) => (
+                    <label
+                      key={c.id}
+                      className={`rnaseq-contrast-card${selectedContrastIds.includes(c.id) ? " is-on" : ""}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedContrastIds.includes(c.id)}
+                        onChange={() => toggleContrast(c.id)}
+                      />
+                      <span className="mono">{c.label}</span>
+                    </label>
+                  ))}
+                </div>
+                <p className="form-note mono">已选 {activeContrasts.length} / {allContrasts.length}</p>
+              </>
             )}
           </div>
         </section>
@@ -494,19 +623,13 @@ export function RnaseqRunner({ entitled, loggedIn }: { entitled: boolean; logged
         <section className="rnaseq-panel">
           <div className="rnaseq-panel-head">
             <h2>3. 分析参数</h2>
-            <p>阈值、图种与维恩模式均可调；未改则用稳妥默认值。</p>
+            <p>DE 引擎、阈值、图题、DPI、色盲友好色板与导出格式均可调。</p>
           </div>
 
           <div className="rnaseq-options-grid">
             <label>
               |log2FC| 阈值
-              <input
-                type="number"
-                step="0.1"
-                min="0"
-                value={lfc}
-                onChange={(e) => setLfc(Number(e.target.value))}
-              />
+              <input type="number" step="0.1" min="0" value={lfc} onChange={(e) => setLfc(Number(e.target.value))} />
             </label>
             <label>
               padj 阈值
@@ -521,7 +644,22 @@ export function RnaseqRunner({ entitled, loggedIn }: { entitled: boolean; logged
             </label>
             <label>
               物种注释
-              <input value={species} onChange={(e) => setSpecies(e.target.value)} placeholder="none" />
+              <select value={species} onChange={(e) => setSpecies(e.target.value)}>
+                <option value="none">none（跳过富集）</option>
+                <option value="demo">demo（内置夹具注释）</option>
+                <option value="human">human（需本地 annotations/human）</option>
+                <option value="mouse">mouse（需本地 annotations/mouse）</option>
+                <option value="arabidopsis">arabidopsis（需本地 annotations）</option>
+              </select>
+            </label>
+            <label>
+              DE 引擎
+              <select value={deEngine} onChange={(e) => setDeEngine(e.target.value)}>
+                <option value="auto">auto（limma_like → welch）</option>
+                <option value="limma_like">limma_like（经验贝叶斯 moderated t）</option>
+                <option value="welch">welch（备选）</option>
+                <option value="pydeseq2">pydeseq2（需安装且为 counts）</option>
+              </select>
             </label>
             <label>
               上调色
@@ -531,6 +669,31 @@ export function RnaseqRunner({ entitled, loggedIn }: { entitled: boolean; logged
               下调色
               <input type="color" value={downColor} onChange={(e) => setDownColor(e.target.value)} />
             </label>
+            <label>
+              DPI
+              <input type="number" min="72" max="600" step="10" value={dpi} onChange={(e) => setDpi(Number(e.target.value))} />
+            </label>
+            <label>
+              色板
+              <select value={palette} onChange={(e) => setPalette(e.target.value)}>
+                <option value="okabe_ito">Okabe–Ito（色盲友好）</option>
+                <option value="tol_bright">Tol Bright</option>
+                <option value="colorblind">colorblind</option>
+                <option value="default">default</option>
+              </select>
+            </label>
+            <label>
+              PCA 标题
+              <input value={titlePca} onChange={(e) => setTitlePca(e.target.value)} />
+            </label>
+            <label>
+              火山图标题
+              <input value={titleVolcano} onChange={(e) => setTitleVolcano(e.target.value)} />
+            </label>
+            <label>
+              热图标题
+              <input value={titleHeatmap} onChange={(e) => setTitleHeatmap(e.target.value)} />
+            </label>
           </div>
 
           <div className="rnaseq-check-row">
@@ -538,24 +701,19 @@ export function RnaseqRunner({ entitled, loggedIn }: { entitled: boolean; logged
               <input type="checkbox" checked={plotPca} onChange={(e) => setPlotPca(e.target.checked)} /> PCA
             </label>
             <label>
-              <input
-                type="checkbox"
-                checked={plotVolcano}
-                onChange={(e) => setPlotVolcano(e.target.checked)}
-              />{" "}
-              火山图
+              <input type="checkbox" checked={plotVolcano} onChange={(e) => setPlotVolcano(e.target.checked)} /> 火山图
             </label>
             <label>
-              <input
-                type="checkbox"
-                checked={plotHeatmap}
-                onChange={(e) => setPlotHeatmap(e.target.checked)}
-              />{" "}
-              热图
+              <input type="checkbox" checked={plotHeatmap} onChange={(e) => setPlotHeatmap(e.target.checked)} /> 热图
             </label>
             <label>
-              <input type="checkbox" checked={plotVenn} onChange={(e) => setPlotVenn(e.target.checked)} />{" "}
-              维恩图
+              <input type="checkbox" checked={plotVenn} onChange={(e) => setPlotVenn(e.target.checked)} /> 维恩图
+            </label>
+            <label>
+              <input type="checkbox" checked={exportPdf} onChange={(e) => setExportPdf(e.target.checked)} /> 导出 PDF
+            </label>
+            <label>
+              <input type="checkbox" checked={exportSvg} onChange={(e) => setExportSvg(e.target.checked)} /> 导出 SVG
             </label>
           </div>
 
@@ -580,7 +738,8 @@ export function RnaseqRunner({ entitled, loggedIn }: { entitled: boolean; logged
         </section>
 
         <p className="form-note">
-          主路径只需<strong>矩阵 + 此处分组</strong>。差异分析、多对比可视化与维恩由系统自动完成并打包。
+          主路径只需<strong>矩阵 + 此处分组与勾选对比</strong>。差异分析、可视化与维恩由系统自动完成并打包；结果含{" "}
+          <span className="mono">methods.json</span> 记录实际 DE 引擎。
         </p>
         {err ? <p className="rules-banner">{err}</p> : null}
         <button className="btn btn-primary" type="submit" disabled={busy || !loggedIn || !entitled}>
@@ -594,7 +753,7 @@ export function RnaseqRunner({ entitled, loggedIn }: { entitled: boolean; logged
           <p className="mono">
             id={job.id} · status={job.status}
             {job.summary
-              ? ` · genes=${job.summary.n_genes ?? "?"} samples=${job.summary.n_samples ?? "?"} up=${job.summary.n_up ?? "?"} down=${job.summary.n_down ?? "?"} contrasts=${job.summary.n_contrasts ?? "?"} control=${job.summary.control_label || "?"} treatments=${job.summary.treatment_label || "?"} enrichment=${job.summary.enrichment || "?"}`
+              ? ` · genes=${job.summary.n_genes ?? "?"} samples=${job.summary.n_samples ?? "?"} up=${job.summary.n_up ?? "?"} down=${job.summary.n_down ?? "?"} contrasts=${job.summary.n_contrasts ?? "?"} engine=${job.summary.de_engine || "?"} control=${job.summary.control_label || "?"} treatments=${job.summary.treatment_label || "?"} enrichment=${job.summary.enrichment || "?"}`
               : null}
           </p>
           {job.status === "succeeded" ? (

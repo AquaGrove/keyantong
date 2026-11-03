@@ -22,6 +22,7 @@ export type RnaseqJob = {
     treatment_label?: string;
     enrichment?: string;
     n_contrasts?: number;
+    de_engine?: string;
   };
 };
 
@@ -163,6 +164,7 @@ export function runRnaseqJobSync(opts: {
       treatment_label: typeof parsed.treatment_label === "string" ? parsed.treatment_label : undefined,
       enrichment: typeof parsed.enrichment === "string" ? parsed.enrichment : undefined,
       n_contrasts: Array.isArray(parsed.contrasts) ? parsed.contrasts.length : numberOrUndef(parsed.n_contrasts),
+      de_engine: typeof parsed.de_engine === "string" ? parsed.de_engine : undefined,
     };
   } catch {
     summary = {};

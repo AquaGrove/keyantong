@@ -1,6 +1,7 @@
-"""Publication-ish static plots; multi-group colors and flexible Venns."""
+"""Publication-ish static plots; accurate 2–4 set Venns; SVG/PDF/PNG export."""
 from __future__ import annotations
 
+from itertools import combinations
 from pathlib import Path
 
 import matplotlib
@@ -11,6 +12,13 @@ from matplotlib import font_manager
 from matplotlib.patches import Circle
 import numpy as np
 import pandas as pd
+
+COLORBLIND_PALETTES = {
+    "default": ["#0f766e", "#b45309", "#7c3aed", "#be185d", "#0369a1", "#ca8a04"],
+    "okabe_ito": ["#0072B2", "#E69F00", "#009E73", "#CC79A7", "#56B4E9", "#D55E00", "#F0E442", "#000000"],
+    "tol_bright": ["#4477AA", "#EE6677", "#228833", "#CCBB44", "#66CCEE", "#AA3377", "#BBBBBB"],
+    "colorblind": ["#0072B2", "#E69F00", "#009E73", "#CC79A7", "#56B4E9", "#D55E00"],
+}
 
 
 def _setup_fonts() -> None:
@@ -33,25 +41,40 @@ def _setup_fonts() -> None:
 
 _setup_fonts()
 
-# modest layout helpers for 2–4 set Venns
 _VENN2 = [(-0.55, 0, 1.05), (0.55, 0, 1.05)]
-_VENN3 = [(-0.55, 0.2, 1.0), (0.55, 0.2, 1.0), (0.0, -0.55, 1.0)]
-_VENN4 = [(-0.7, 0.15, 0.95), (-0.2, 0.15, 0.95), (0.2, 0.15, 0.95), (0.7, 0.15, 0.95)]
+_VENN3 = [(-0.55, 0.25, 1.0), (0.55, 0.25, 1.0), (0.0, -0.55, 1.0)]
+_VENN4 = [(-0.75, 0.2, 0.95), (-0.25, 0.35, 0.95), (0.25, 0.35, 0.95), (0.75, 0.2, 0.95)]
 
 
-def _save(fig: plt.Figure, out_base: Path) -> list[Path]:
+def palette_colors(name: str | None, n: int) -> list[str]:
+    key = (name or "default").lower()
+    base = COLORBLIND_PALETTES.get(key) or COLORBLIND_PALETTES["default"]
+    return [base[i % len(base)] for i in range(n)]
+
+
+def _save(
+    fig: plt.Figure,
+    out_base: Path,
+    *,
+    dpi: int = 160,
+    formats: tuple[str, ...] = ("png", "pdf", "svg"),
+) -> list[Path]:
     out_base.parent.mkdir(parents=True, exist_ok=True)
-    paths = []
-    for ext in ("png", "pdf"):
+    paths: list[Path] = []
+    for ext in formats:
         p = out_base.with_suffix(f".{ext}")
-        fig.savefig(p, dpi=160, bbox_inches="tight")
+        fig.savefig(p, dpi=dpi, bbox_inches="tight")
         paths.append(p)
     plt.close(fig)
     return paths
 
 
-def _color_map(groups: pd.Series, color_by_label: dict[str, str] | None) -> dict[str, str]:
-    defaults = ["#0f766e", "#b45309", "#7c3aed", "#be185d", "#0369a1", "#ca8a04"]
+def _color_map(
+    groups: pd.Series,
+    color_by_label: dict[str, str] | None,
+    palette: str | None = None,
+) -> dict[str, str]:
+    defaults = palette_colors(palette, 12)
     labels = list(dict.fromkeys(groups.tolist()))
     out: dict[str, str] = {}
     for i, lab in enumerate(labels):
@@ -68,6 +91,11 @@ def plot_pca(
     out_base: Path,
     top_n: int = 500,
     color_by_label: dict[str, str] | None = None,
+    *,
+    title: str = "PCA (log2 expression)",
+    dpi: int = 160,
+    palette: str | None = None,
+    formats: tuple[str, ...] = ("png", "pdf", "svg"),
 ) -> list[Path]:
     samples = groups.index.tolist()
     X = np.log2(matrix[samples].astype(float) + 1.0)
@@ -78,7 +106,7 @@ def plot_pca(
     u, s, vt = np.linalg.svd(Y, full_matrices=False)
     scores = u[:, :2] * s[:2]
     var_exp = (s**2) / (s**2).sum()
-    cmap = _color_map(groups, color_by_label)
+    cmap = _color_map(groups, color_by_label, palette)
 
     fig, ax = plt.subplots(figsize=(6.4, 5.4))
     for label in dict.fromkeys(groups.tolist()):
@@ -98,11 +126,11 @@ def plot_pca(
             ax.annotate(samples[i], (scores[i, 0], scores[i, 1]), fontsize=7, alpha=0.8)
     ax.set_xlabel(f"PC1 ({var_exp[0]*100:.1f}%)")
     ax.set_ylabel(f"PC2 ({var_exp[1]*100:.1f}%)")
-    ax.set_title("PCA (log2 expression)")
+    ax.set_title(title)
     ax.legend(frameon=False, fontsize=8)
     ax.axhline(0, color="#94a3b8", lw=0.6)
     ax.axvline(0, color="#94a3b8", lw=0.6)
-    return _save(fig, out_base)
+    return _save(fig, out_base, dpi=dpi, formats=formats)
 
 
 def plot_volcano(
@@ -114,6 +142,8 @@ def plot_volcano(
     title: str = "Volcano",
     up_color: str = "#b91c1c",
     down_color: str = "#1d4ed8",
+    dpi: int = 160,
+    formats: tuple[str, ...] = ("png", "pdf", "svg"),
 ) -> list[Path]:
     df = deg.copy()
     df["neglog10p"] = -np.log10(df["pvalue"].clip(lower=1e-300))
@@ -129,7 +159,7 @@ def plot_volcano(
     n_up = int((df["regulation"] == "up").sum())
     n_down = int((df["regulation"] == "down").sum())
     ax.text(0.02, 0.98, f"up={n_up}  down={n_down}", transform=ax.transAxes, va="top", fontsize=9)
-    return _save(fig, out_base)
+    return _save(fig, out_base, dpi=dpi, formats=formats)
 
 
 def plot_heatmap(
@@ -139,6 +169,11 @@ def plot_heatmap(
     out_base: Path,
     top_n: int = 40,
     color_by_label: dict[str, str] | None = None,
+    *,
+    title: str = "Heatmap (top DE genes, z-score)",
+    dpi: int = 160,
+    palette: str | None = None,
+    formats: tuple[str, ...] = ("png", "pdf", "svg"),
 ) -> list[Path]:
     sig = deg[deg["regulation"].isin(["up", "down"])].head(top_n)
     if sig.empty:
@@ -150,7 +185,7 @@ def plot_heatmap(
     label_order = list(dict.fromkeys(groups.tolist()))
     order = sorted(samples, key=lambda s: (label_order.index(groups.loc[s]), s))
     Z = Z[order]
-    cmap = _color_map(groups, color_by_label)
+    cmap = _color_map(groups, color_by_label, palette)
 
     fig, ax = plt.subplots(figsize=(max(5.5, 0.45 * len(order) + 2), max(4.5, 0.22 * len(genes) + 1.5)))
     im = ax.imshow(Z.to_numpy(), aspect="auto", cmap="RdBu_r", vmin=-2, vmax=2)
@@ -158,11 +193,11 @@ def plot_heatmap(
     ax.set_xticklabels(order, rotation=45, ha="right", fontsize=8)
     ax.set_yticks(range(len(genes)))
     ax.set_yticklabels(genes, fontsize=7)
-    ax.set_title("Heatmap (top DE genes, z-score)")
+    ax.set_title(title)
     for i, s in enumerate(order):
         ax.add_patch(plt.Rectangle((i - 0.5, -1.2), 1, 0.35, color=cmap[groups.loc[s]], clip_on=False))
     fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04, label="z-score")
-    return _save(fig, out_base)
+    return _save(fig, out_base, dpi=dpi, formats=formats)
 
 
 def plot_regulation_venn(
@@ -172,6 +207,8 @@ def plot_regulation_venn(
     up_color: str = "#b91c1c",
     down_color: str = "#1d4ed8",
     title: str = "Significant genes: up vs down",
+    dpi: int = 160,
+    formats: tuple[str, ...] = ("png", "pdf", "svg"),
 ) -> list[Path]:
     up = set(deg.loc[deg["regulation"] == "up", "gene"].astype(str))
     down = set(deg.loc[deg["regulation"] == "down", "gene"].astype(str))
@@ -188,7 +225,7 @@ def plot_regulation_venn(
     ax.set_aspect("equal")
     ax.axis("off")
     ax.set_title(title)
-    paths = _save(fig, out_base)
+    paths = _save(fig, out_base, dpi=dpi, formats=formats)
     members = pd.DataFrame(
         {"gene": list(up | down), "set": ["up" if g in up else "down" for g in list(up | down)]}
     ).sort_values(["set", "gene"])
@@ -198,89 +235,30 @@ def plot_regulation_venn(
     return paths
 
 
-def _set_counts(sets: dict[str, set[str]]) -> dict[str, int]:
-    """Return exclusive region counts for up to 4 labeled sets (approx labels for display)."""
+def exclusive_region_counts(sets: dict[str, set[str]]) -> dict[str, int]:
+    """Exact exclusive region counts for all non-empty intersections (2^n - 1 regions)."""
     labels = list(sets.keys())
     n = len(labels)
     counts: dict[str, int] = {}
     if n == 0:
         return counts
-    # only totals + pairwise intersections for annotation simplicity
-    for lab in labels:
-        counts[lab] = len(sets[lab])
-    if n >= 2:
-        for i in range(n):
-            for j in range(i + 1, n):
-                a, b = labels[i], labels[j]
-                counts[f"{a}&{b}"] = len(sets[a] & sets[b])
-    if n >= 3:
-        counts["&".join(labels[:3])] = len(sets[labels[0]] & sets[labels[1]] & sets[labels[2]])
-    if n == 4:
-        counts["all4"] = len(sets[labels[0]] & sets[labels[1]] & sets[labels[2]] & sets[labels[3]])
+    for r in range(1, n + 1):
+        for combo in combinations(range(n), r):
+            key = "&".join(labels[i] for i in combo)
+            genes = set.intersection(*(sets[labels[i]] for i in combo))
+            others = [labels[j] for j in range(n) if j not in combo]
+            for o in others:
+                genes = genes - sets[o]
+            counts[key] = len(genes)
     return counts
 
 
-def plot_multi_set_venn(
-    sets: dict[str, set[str]],
-    out_base: Path,
-    *,
-    colors: list[str] | None = None,
-    title: str = "Multi-set Venn",
-) -> list[Path]:
+def _write_set_tables(sets: dict[str, set[str]], out_base: Path, region_counts: dict[str, int]) -> list[Path]:
     labels = list(sets.keys())
-    n = len(labels)
-    if n < 2:
-        # still write membership
-        fig, ax = plt.subplots(figsize=(5, 4))
-        ax.text(0.5, 0.5, "Need ≥2 sets for Venn", ha="center", va="center")
-        ax.axis("off")
-        paths = _save(fig, out_base)
-    elif n > 4:
-        # fall back to size bars + pairwise table look
-        fig, ax = plt.subplots(figsize=(7.2, 4.8))
-        sizes = [len(sets[lab]) for lab in labels]
-        palette = colors or ["#0f766e", "#b45309", "#7c3aed", "#be185d", "#0369a1"]
-        ax.barh(labels, sizes, color=[palette[i % len(palette)] for i in range(n)])
-        ax.set_xlabel("# genes")
-        ax.set_title(title + " (n>4: size bars; see membership CSV)")
-        paths = _save(fig, out_base)
-    else:
-        layouts = {2: _VENN2, 3: _VENN3, 4: _VENN4}[n]
-        palette = colors or ["#0f766e", "#b45309", "#7c3aed", "#be185d"]
-        fig, ax = plt.subplots(figsize=(6.6, 5.6))
-        for i, (x, y, r) in enumerate(layouts):
-            ax.add_patch(Circle((x, y), r, color=palette[i % len(palette)], alpha=0.32))
-            ax.text(x, y + r * 0.72, labels[i], ha="center", va="center", fontsize=9, fontweight="600")
-            # exclusive-ish count near center of circle
-            only = sets[labels[i]].copy()
-            for j, other in enumerate(labels):
-                if j != i:
-                    only -= sets[other]
-            ax.text(x, y, str(len(only)), ha="center", va="center", fontsize=13, fontweight="bold")
-        counts = _set_counts(sets)
-        # annotate pairwise center for 2-set
-        if n == 2:
-            inter = len(sets[labels[0]] & sets[labels[1]])
-            ax.text(0, 0, str(inter), ha="center", va="center", fontsize=12)
-        elif n == 3:
-            inter = len(sets[labels[0]] & sets[labels[1]] & sets[labels[2]])
-            ax.text(0, -0.05, str(inter), ha="center", va="center", fontsize=11)
-        ax.set_xlim(-2.2, 2.2)
-        ax.set_ylim(-2.0, 1.8)
-        ax.set_aspect("equal")
-        ax.axis("off")
-        ax.set_title(title)
-        # legend of totals
-        legend = ", ".join(f"{lab}={counts.get(lab, 0)}" for lab in labels)
-        ax.text(0, -1.85, legend, ha="center", fontsize=8, color="#334155")
-        paths = _save(fig, out_base)
-
-    # long membership table
     rows = []
     for lab, genes in sets.items():
         for g in sorted(genes):
             rows.append({"gene": g, "set": lab})
-    # also presence matrix
     all_genes = sorted(set().union(*sets.values())) if sets else []
     presence = []
     for g in all_genes:
@@ -292,5 +270,82 @@ def plot_multi_set_venn(
     pd.DataFrame(rows).to_csv(mem_path, index=False)
     pres_path = out_base.parent / f"{out_base.name}_presence.csv"
     pd.DataFrame(presence).to_csv(pres_path, index=False)
-    paths.extend([mem_path, pres_path])
+    region_path = out_base.parent / f"{out_base.name}_regions.csv"
+    pd.DataFrame([{"region": k, "count": v} for k, v in region_counts.items()]).to_csv(region_path, index=False)
+    return [mem_path, pres_path, region_path]
+
+
+def plot_multi_set_venn(
+    sets: dict[str, set[str]],
+    out_base: Path,
+    *,
+    colors: list[str] | None = None,
+    title: str = "Multi-set Venn",
+    dpi: int = 160,
+    formats: tuple[str, ...] = ("png", "pdf", "svg"),
+    palette: str | None = None,
+) -> list[Path]:
+    labels = list(sets.keys())
+    n = len(labels)
+    region_counts = exclusive_region_counts(sets)
+    palette_list = colors or palette_colors(palette, max(n, 1))
+
+    if n < 2:
+        fig, ax = plt.subplots(figsize=(5, 4))
+        ax.text(0.5, 0.5, "Need ≥2 sets for Venn", ha="center", va="center")
+        ax.axis("off")
+        ax.set_title(title)
+        paths = _save(fig, out_base, dpi=dpi, formats=formats)
+    elif n > 4:
+        fig, axes = plt.subplots(1, 2, figsize=(10.5, 4.8), gridspec_kw={"width_ratios": [1, 1.4]})
+        sizes = [len(sets[lab]) for lab in labels]
+        axes[0].barh(labels, sizes, color=[palette_list[i % len(palette_list)] for i in range(n)])
+        axes[0].set_xlabel("# genes")
+        axes[0].set_title("Set sizes")
+        items = sorted(region_counts.items(), key=lambda kv: -kv[1])[:12]
+        axes[1].barh([k for k, _ in items][::-1], [v for _, v in items][::-1], color="#334155")
+        axes[1].set_xlabel("# genes (exclusive region)")
+        axes[1].set_title("Top exclusive intersections")
+        fig.suptitle(title + " (n>4: sizes + exclusive regions)")
+        fig.tight_layout()
+        paths = _save(fig, out_base, dpi=dpi, formats=formats)
+    else:
+        layouts = {2: _VENN2, 3: _VENN3, 4: _VENN4}[n]
+        fig, ax = plt.subplots(figsize=(7.0, 6.0))
+        for i, (x, y, r) in enumerate(layouts):
+            ax.add_patch(Circle((x, y), r, color=palette_list[i % len(palette_list)], alpha=0.32))
+            ax.text(x, y + r * 0.78, labels[i], ha="center", va="center", fontsize=9, fontweight="600")
+
+        def _count(*idxs: int) -> int:
+            key = "&".join(labels[i] for i in idxs)
+            return region_counts.get(key, 0)
+
+        if n == 2:
+            ax.text(-0.95, 0, str(_count(0)), ha="center", va="center", fontsize=14, fontweight="bold")
+            ax.text(0.95, 0, str(_count(1)), ha="center", va="center", fontsize=14, fontweight="bold")
+            ax.text(0, 0, str(_count(0, 1)), ha="center", va="center", fontsize=13, fontweight="bold")
+        elif n == 3:
+            ax.text(-0.95, 0.35, str(_count(0)), ha="center", va="center", fontsize=12, fontweight="bold")
+            ax.text(0.95, 0.35, str(_count(1)), ha="center", va="center", fontsize=12, fontweight="bold")
+            ax.text(0.0, -0.95, str(_count(2)), ha="center", va="center", fontsize=12, fontweight="bold")
+            ax.text(0.0, 0.45, str(_count(0, 1)), ha="center", va="center", fontsize=11)
+            ax.text(-0.45, -0.25, str(_count(0, 2)), ha="center", va="center", fontsize=11)
+            ax.text(0.45, -0.25, str(_count(1, 2)), ha="center", va="center", fontsize=11)
+            ax.text(0.0, -0.05, str(_count(0, 1, 2)), ha="center", va="center", fontsize=12, fontweight="bold")
+        else:
+            for i, (x, y, r) in enumerate(layouts):
+                ax.text(x, y, str(_count(i)), ha="center", va="center", fontsize=12, fontweight="bold")
+            ax.text(0, 0.05, f"all4={_count(0,1,2,3)}", ha="center", va="center", fontsize=10)
+            ax.text(0, -1.55, "pairwise/triple exclusive counts → *_regions.csv", ha="center", fontsize=8, color="#475569")
+
+        ax.set_xlim(-2.3, 2.3)
+        ax.set_ylim(-2.1, 1.9)
+        ax.set_aspect("equal")
+        ax.axis("off")
+        ax.set_title(title)
+        totals = ", ".join(f"{lab}={len(sets[lab])}" for lab in labels)
+        ax.text(0, -1.85, totals, ha="center", fontsize=8, color="#334155")
+        paths = _save(fig, out_base, dpi=dpi, formats=formats)
+
+    paths.extend(_write_set_tables(sets, out_base, region_counts))
     return paths

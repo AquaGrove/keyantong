@@ -58,9 +58,16 @@ fi
 
 if [[ -d services/ncbi-upload/tests ]]; then
   echo "==> ncbi-upload unit tests"
-  (cd services/ncbi-upload && PYTHONPATH=. python3 -m unittest tests.test_validators -q)
+  (cd services/ncbi-upload && PYTHONPATH=. python3 -m unittest discover -s tests -q)
 else
   echo "==> skip ncbi-upload tests"
+fi
+
+if [[ -d services/rnaseq-pipeline/tests ]]; then
+  echo "==> rnaseq-pipeline unit tests"
+  (cd services/rnaseq-pipeline && PYTHONPATH=. python3 -m unittest discover -s tests -q)
+else
+  echo "==> skip rnaseq-pipeline unit tests"
 fi
 
 echo "smoke: ok"
