@@ -16,7 +16,7 @@ export default function ToolsPage() {
     <main className="page">
       <h1 className="page-title">工具目录</h1>
       <p className="page-lead">
-        社区沉淀的软件卡片：合法安装来源、环境提示与常见坑。欢迎按贡献指南提交新的 YAML 工具卡。
+        社区沉淀的软件卡片。标成「可运行」的转录组分析只收表达矩阵和对照/处理组，在门户里一次跑完；需要登录，且试用未过期或已开通永久会员。欢迎按贡献指南提交新的 YAML 工具卡。
       </p>
 
       {tools.length === 0 ? (

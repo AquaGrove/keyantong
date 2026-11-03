@@ -204,6 +204,9 @@ Webhook 消费论坛 `accepted_answer` 后由 UserBridge 入账。
 | POST | `/api/me/devices` | 注销自己的一台设备 |
 | GET | `/api/papers/search` | OpenAlex 题名检索（可匿名） |
 | GET | `/api/papers/graph` | 引用邻域；需登录且 `entitled` |
+| POST | `/api/tools/rnaseq/run` | 上传表达矩阵和分组 JSON，同步跑 QC/差异/PCA/火山图/热图/韦恩图/可选富集；需登录且 `entitled` |
+| GET | `/api/tools/rnaseq/{jobId}/{file}` | 下载该用户自己的分析结果（图、表、`results.zip`）；需登录且 `entitled` |
+| POST | `/api/tools/ncbi/sra/prepare` | 校验 BioSample 与 SRA 表并返回 ascp 命令；不落盘私钥；需登录且 `entitled` |
 | GET/POST | `/api/internal/users` | 管理端发放永久会员 / 踢设备；`Bearer INTERNAL_API_SECRET` |
 
 错误仍用 `{ error, code? }` 扁平 JSON，与上文 `/v1` 信封并存，待论坛上线后收敛。

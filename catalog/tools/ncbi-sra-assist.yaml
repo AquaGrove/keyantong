@@ -1,0 +1,21 @@
+id: ncbi-sra-assist
+name: NCBI SRA 上传辅助
+summary: 一次提交 BioSample 表、SRA metadata，以及邮箱、账号目录和本机私钥路径。校验通过后生成 ascp 命令。服务器不登录 NCBI，不接收 FASTQ，不保存私钥。
+categories: [ncbi, submission]
+tags: [SRA, BioSample, Aspera]
+status: available
+route: /tools/ncbi/sra
+license: Apache-2.0
+author: keyantong
+install:
+  notes: |
+    门户：/tools/ncbi/sra
+    本机：python3 -m rnaseq_viz ncbi --biosample bio.tsv --sra sra.tsv --email you@uni.edu --account ACCOUNT --preload RUN1 --key-path /绝对路径/key --data-dir /绝对路径/fastq --out-dir out
+    加 --execute 才会在本机调用 ascp。门户不会加这个参数。
+common_pitfalls:
+  - 把私钥文件本身上传到网页
+  - FASTQ 使用 zip，或文件名和 metadata 不一致
+  - 预传目录只用了账号根目录，没有子目录
+links:
+  docs: https://www.ncbi.nlm.nih.gov/sra/docs/submit/
+  forum_tags: [ncbi, sra, aspera]

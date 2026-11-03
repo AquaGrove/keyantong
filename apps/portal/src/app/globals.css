@@ -804,6 +804,55 @@ a {
   border-color: var(--ink);
 }
 
+.tool-badge {
+  display: inline-block;
+  margin-left: 0.45rem;
+  padding: 0.08rem 0.4rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--muted);
+  vertical-align: 1px;
+}
+
+.tool-badge-live {
+  color: var(--accent);
+  border-color: rgba(15, 118, 110, 0.35);
+}
+
+.pca-preview {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 1rem;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+}
+
+.pca-downloads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+.pca-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.85rem;
+  font-size: 0.9rem;
+}
+
+.pca-table th,
+.pca-table td {
+  text-align: left;
+  padding: 0.35rem 0.5rem;
+  border-bottom: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+}
+
 .hub-tile h3,
 .pulse-list li {
   min-width: 0;

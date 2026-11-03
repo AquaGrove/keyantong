@@ -1,0 +1,18 @@
+id: rnaseq-go-bubble
+name: GO / KEGG 气泡图
+summary: 用第一个处理组的显著基因，对照服务器上的物种 GMT 做富集并画气泡图。默认物种是拟南芥。注释库缺失时这一步明确失败，不会改成让你上传富集表；PCA 和差异图仍然给出。
+categories: [rnaseq, visualization]
+tags: [GO, KEGG, 气泡图]
+status: available
+route: /tools/rnaseq
+license: Apache-2.0
+author: keyantong
+install:
+  notes: |
+    把 go.gmt 和 kegg.gmt 放到 annotations/<species>/，或设置 RNASEQ_ANNOTATION_DIR。
+    GMT 每行：名称、描述、基因 ID（制表符分隔），基因 ID 必须和矩阵一致。
+common_pitfalls:
+  - 矩阵用转录本 ID，注释库用基因 ID，富集会是空的
+  - 没放注释库时只看气泡图，会以为整次分析失败
+links:
+  forum_tags: [rnaseq, go, kegg]

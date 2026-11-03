@@ -43,6 +43,10 @@ function resolveDataDir() {
 
 const DATA_DIR = resolveDataDir();
 
+export function dataDir(): string {
+  return DATA_DIR;
+}
+
 function dbPath() {
   return path.join(DATA_DIR, "users.json");
 }

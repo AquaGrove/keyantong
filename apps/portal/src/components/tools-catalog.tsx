@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import type { ToolCard } from "@/lib/catalog";
 
 export function ToolsCatalog({ tools }: { tools: ToolCard[] }) {
@@ -31,14 +32,25 @@ export function ToolsCatalog({ tools }: { tools: ToolCard[] }) {
       </div>
       <div className="hub-grid">
         {shown.map((t) => (
-          <article key={t.id} className="hub-tile" style={{ cursor: "default" }}>
-            <span className="tag">{t.categories?.join(" · ") || "tool"}</span>
+          <article key={t.id} className="hub-tile" style={t.route ? undefined : { cursor: "default" }}>
+            <span className="tag">
+              {t.categories?.join(" · ") || "tool"}
+              {t.status === "available" ? <span className="tool-badge tool-badge-live">可运行</span> : null}
+              {t.status === "coming_soon" ? <span className="tool-badge">即将上线</span> : null}
+            </span>
             <h3>{t.name}</h3>
             <p>{t.summary}</p>
+            {t.tags?.length ? <p className="mono" style={{ marginTop: "0.55rem" }}>{t.tags.join(" · ")}</p> : null}
             <p className="mono" style={{ marginTop: "0.75rem" }}>
               {t.license ? `License ${t.license}` : null}
               {t.author ? ` · ${t.author}` : null}
-              {t.docsUrl ? (
+              {t.route ? (
+                <>
+                  {" · "}
+                  <Link href={t.route}>{t.status === "coming_soon" ? "查看说明" : "打开"}</Link>
+                </>
+              ) : null}
+              {t.docsUrl && t.docsUrl !== t.route ? (
                 <>
                   {" · "}
                   <a href={t.docsUrl}>文档</a>
