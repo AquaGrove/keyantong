@@ -1,11 +1,17 @@
 import fs from "node:fs";
 import path from "node:path";
 
+export type ToolStatus = "available" | "coming_soon";
+
 export type ToolCard = {
   id: string;
   name: string;
   summary: string;
   categories?: string[];
+  tags?: string[];
+  status?: ToolStatus;
+  /** In-app path. Only set when the card should link inside the portal. */
+  route?: string;
   license?: string;
   author?: string;
   docsUrl?: string;
@@ -47,6 +53,19 @@ function pickDocs(text: string): string | undefined {
   return m?.[1];
 }
 
+function pickStatus(text: string): ToolStatus | undefined {
+  const v = pick(text, "status");
+  if (v === "available" || v === "coming_soon") return v;
+  return undefined;
+}
+
+function pickRoute(text: string): string | undefined {
+  const v = pick(text, "route");
+  if (!v) return undefined;
+  if (!v.startsWith("/") || v.startsWith("//") || v.includes("..") || /\s/.test(v)) return undefined;
+  return v;
+}
+
 export function loadToolCards(): ToolCard[] {
   const dir = catalogDir();
   if (!fs.existsSync(dir)) return [];
@@ -59,6 +78,9 @@ export function loadToolCards(): ToolCard[] {
         name: pick(raw, "name") ?? file,
         summary: pick(raw, "summary") ?? "",
         categories: pickList(raw, "categories"),
+        tags: pickList(raw, "tags"),
+        status: pickStatus(raw),
+        route: pickRoute(raw),
         license: pick(raw, "license"),
         author: pick(raw, "author"),
         docsUrl: pickDocs(raw),

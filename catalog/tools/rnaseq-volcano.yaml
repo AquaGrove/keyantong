@@ -1,0 +1,17 @@
+id: rnaseq-volcano
+name: 转录组火山图
+summary: 由同一次矩阵加分组自动做差异分析后绘制。横轴是处理组相对对照的 log2FC，显著阈值 |log2FC| ≥ 1 且 padj ≤ 0.05。不需要上传 DEG 表。
+categories: [rnaseq, visualization]
+tags: [火山图, DEG, log2FC]
+status: available
+route: /tools/rnaseq
+license: Apache-2.0
+author: keyantong
+install:
+  notes: |
+    火山图是 `rnaseq_viz run` 的产物，每个处理组相对对照各一张。
+common_pitfalls:
+  - 把已经取过 log 的矩阵再做一次 log2(x+1)，倍数会被压扁
+  - 对照和处理组标反，上调下调方向会反过来
+links:
+  forum_tags: [rnaseq, volcano, deg]

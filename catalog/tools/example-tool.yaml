@@ -2,6 +2,9 @@ id: example-tool
 name: Example Tool
 summary: 示例工具卡。请复制本文件为 {slug}.yaml 后填写真实信息。
 categories: [sequence]
+# 可选 status: available | coming_soon
+# 可选 route: /tools/...   仅门户内路径，目录页会链到该路由
+# 可选 tags: [pca, 表达矩阵]
 license: MIT
 author: keyantong-docs
 install:

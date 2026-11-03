@@ -1,0 +1,18 @@
+[project]
+name = "keyantong-rnaseq-viz"
+version = "0.1.0"
+description = "Parameterized RNAseq downstream plots for KeyanTong"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+dependencies = []
+
+[project.scripts]
+rnaseq-pca = "rnaseq_viz.pca:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["rnaseq_viz"]

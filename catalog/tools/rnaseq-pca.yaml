@@ -1,0 +1,19 @@
+id: rnaseq-pca
+name: 转录组 PCA
+summary: 上传一份基因×样本的 TPM/FPKM 矩阵，并在页面上标好对照和处理组。PCA 与差异分析、火山图、热图一起自动算出，不需要另传样本表或差异基因表。
+categories: [rnaseq, visualization]
+tags: [PCA, 表达矩阵, 对照处理]
+status: available
+route: /tools/rnaseq
+license: Apache-2.0
+author: keyantong
+install:
+  notes: |
+    一次作业：python3 -m rnaseq_viz run --matrix 矩阵.tsv --control A,B,C --treat treat=D,E,F --out-dir 输出目录
+    门户页面是 /tools/rnaseq。
+common_pitfalls:
+  - 样本列没有全部标成对照或处理组
+  - 每组生物学重复少于 2 个，无法做差异分析
+  - 矩阵不是 TPM/FPKM，却仍按默认 log2(x+1) 解释
+links:
+  forum_tags: [rnaseq, pca]

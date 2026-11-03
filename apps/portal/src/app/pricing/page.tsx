@@ -17,7 +17,7 @@ export default function PricingPage() {
         <article className="hub-tile">
           <span className="tag">Trial</span>
           <h3>7 天试用</h3>
-          <p>文献关系网、工具目录、合规社区发帖。最多 2 台设备同时登录。</p>
+          <p>文献关系网、转录组下游分析、工具目录、合规社区发帖。最多 2 台设备同时登录。</p>
         </article>
         <article className="hub-tile">
           <span className="tag">Lifetime · ¥19.9</span>

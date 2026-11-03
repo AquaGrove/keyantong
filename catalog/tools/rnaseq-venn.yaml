@@ -1,0 +1,17 @@
+id: rnaseq-venn
+name: 转录组韦恩图
+summary: 有两个或三个处理组、且都相对同一对照时，自动用显著基因画韦恩图并导出成员表。只有一个处理组时跳过，不需要另传基因列表。
+categories: [rnaseq, visualization]
+tags: [韦恩图, DEG, 多处理组]
+status: available
+route: /tools/rnaseq
+license: Apache-2.0
+author: keyantong
+install:
+  notes: |
+    在分析页增加处理组名称，把对应样本列标进去即可。
+common_pitfalls:
+  - 不同比较的基因 ID 版本不一致时交集会被低估；这里各比较来自同一矩阵，ID 是对齐的
+  - 超过 3 个处理组目前会拒绝，避免韦恩图不可读
+links:
+  forum_tags: [rnaseq, venn, deg]

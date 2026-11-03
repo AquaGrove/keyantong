@@ -1,0 +1,17 @@
+id: rnaseq-heatmap
+name: 转录组热图
+summary: 用本次差异分析挑出的基因，对 log2 表达做行向 z-score 后画热图。样本顺序跟对照和处理组一致。不需要另传 FPKM 子矩阵。
+categories: [rnaseq, visualization]
+tags: [热图, DEG, z-score]
+status: available
+route: /tools/rnaseq
+license: Apache-2.0
+author: keyantong
+install:
+  notes: |
+    热图基因来自各比较的显著基因；一个都没有时改用 |log2FC| 最大的基因，保证有图。
+common_pitfalls:
+  - 行向 z-score 展示的是样本间相对高低，不是原始 TPM
+  - 分组标错时，列注释会和表达对不上
+links:
+  forum_tags: [rnaseq, heatmap]
