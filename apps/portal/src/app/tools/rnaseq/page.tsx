@@ -6,7 +6,7 @@ import { currentUser } from "@/lib/user-session";
 
 export const metadata: Metadata = {
   title: "转录组一键下游分析",
-  description: "上传表达矩阵与对照/实验分组，自动完成 DE 与可视化并打包下载。",
+  description: "上传表达矩阵，用彩色分组卡配置多样本对照/实验，自动 DE、可视化与灵活维恩。",
 };
 
 export const dynamic = "force-dynamic";
@@ -22,7 +22,8 @@ export default async function RnaseqToolPage() {
       </p>
       <h1 className="page-title">转录组一键下游分析</h1>
       <p className="page-lead">
-        只需提供<strong>表达矩阵</strong>与<strong>对照/实验分组</strong>。系统自动跑差异分析、PCA、火山图、热图与上下调对照；有物种注释时再做 GO/KEGG。
+        只需提供<strong>表达矩阵</strong>，在页面上用<strong>分组卡片</strong>（颜色、角色、样本芯片）配置对照与多个实验组。
+        系统自动跑多对比差异分析、PCA、火山图、热图，以及上调/下调与多组维恩；有物种注释时再做 GO/KEGG。
       </p>
       <RnaseqRunner loggedIn={Boolean(user)} entitled={entitled} />
       <section className="section" style={{ marginTop: "1.5rem" }}>
@@ -30,10 +31,10 @@ export default async function RnaseqToolPage() {
         <pre className="mono" style={{ whiteSpace: "pre-wrap" }}>
 {`cd services/rnaseq-pipeline
 ./smoke.sh
-# 或
+# 多组 JSON 配置
 PYTHONPATH=. python3 -m keyantong_rnaseq \\
   --matrix fixtures/tiny_matrix.csv \\
-  --groups fixtures/tiny_groups.csv \\
+  --groups fixtures/tiny_analysis.json \\
   --outdir /tmp/rnaseq-out --species none`}
         </pre>
       </section>

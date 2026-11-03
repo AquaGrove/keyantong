@@ -1,4 +1,4 @@
-"""Differential expression (Welch t-test + BH FDR)."""
+"""Differential expression (Welch t-test + BH FDR), single and multi-contrast."""
 from __future__ import annotations
 
 import numpy as np
@@ -21,24 +21,30 @@ def benjamini_hochberg(pvals: np.ndarray) -> np.ndarray:
     return np.clip(adj, 0, 1)
 
 
-def run_de(matrix: pd.DataFrame, groups: pd.Series, min_count: float = 0.0) -> pd.DataFrame:
-    """matrix: genes x samples; groups index=sample, values control|treatment."""
-    ctrl = groups[groups == "control"].index.tolist()
-    treat = groups[groups == "treatment"].index.tolist()
-    missing = [s for s in ctrl + treat if s not in matrix.columns]
+def run_de_samples(
+    matrix: pd.DataFrame,
+    control_samples: list[str],
+    treatment_samples: list[str],
+    *,
+    lfc_cutoff: float = 1.0,
+    padj_cutoff: float = 0.05,
+    min_count: float = 0.0,
+    contrast_id: str = "",
+) -> pd.DataFrame:
+    """matrix: genes x samples; explicit sample lists for control / treatment."""
+    missing = [s for s in control_samples + treatment_samples if s not in matrix.columns]
     if missing:
         raise ValueError(f"分组样本不在矩阵中: {missing}")
-    if len(ctrl) < 2 or len(treat) < 2:
+    if len(control_samples) < 2 or len(treatment_samples) < 2:
         raise ValueError("对照与实验组各自至少需要 2 个样本")
 
-    X = matrix[ctrl + treat].astype(float)
-    # filter near-zero genes
+    X = matrix[control_samples + treatment_samples].astype(float)
     keep = (X.sum(axis=1) > min_count) & (X.var(axis=1) > 0)
     X = X.loc[keep]
     logX = np.log2(X + 1.0)
 
-    ctrl_vals = logX[ctrl].to_numpy()
-    treat_vals = logX[treat].to_numpy()
+    ctrl_vals = logX[control_samples].to_numpy()
+    treat_vals = logX[treatment_samples].to_numpy()
     mean_c = ctrl_vals.mean(axis=1)
     mean_t = treat_vals.mean(axis=1)
     log2fc = mean_t - mean_c
@@ -67,10 +73,19 @@ def run_de(matrix: pd.DataFrame, groups: pd.Series, min_count: float = 0.0) -> p
             "padj": padj,
         }
     )
-    out["significant"] = (out["padj"] <= 0.05) & (out["log2FC"].abs() >= 1.0)
+    if contrast_id:
+        out.insert(0, "contrast", contrast_id)
+    out["significant"] = (out["padj"] <= padj_cutoff) & (out["log2FC"].abs() >= lfc_cutoff)
     out["regulation"] = np.where(
         out["significant"] & (out["log2FC"] > 0),
         "up",
         np.where(out["significant"] & (out["log2FC"] < 0), "down", "ns"),
     )
     return out.sort_values(["padj", "pvalue"]).reset_index(drop=True)
+
+
+def run_de(matrix: pd.DataFrame, groups: pd.Series, min_count: float = 0.0) -> pd.DataFrame:
+    """Backward-compatible: groups values are control|treatment."""
+    ctrl = groups[groups == "control"].index.tolist()
+    treat = groups[groups == "treatment"].index.tolist()
+    return run_de_samples(matrix, ctrl, treat, min_count=min_count)

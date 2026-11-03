@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "groups": [
+    {
+      "id": "ctrl",
+      "name": "对照",
+      "role": "control",
+      "color": "#0f766e",
+      "samples": [
+        "C1",
+        "C2",
+        "C3"
+      ]
+    },
+    {
+      "id": "ta",
+      "name": "实验A",
+      "role": "treatment",
+      "color": "#b45309",
+      "samples": [
+        "A1",
+        "A2",
+        "A3"
+      ]
+    },
+    {
+      "id": "tb",
+      "name": "实验B",
+      "role": "treatment",
+      "color": "#7c3aed",
+      "samples": [
+        "B1",
+        "B2",
+        "B3"
+      ]
+    }
+  ],
+  "options": {
+    "species": "none",
+    "lfc": 1.0,
+    "padj": 0.05,
+    "plots": {
+      "pca": true,
+      "volcano": true,
+      "heatmap": true,
+      "venn": true
+    },
+    "venn": {
+      "modes": [
+        "up_down_per_contrast",
+        "multi_group_up",
+        "multi_group_down",
+        "multi_group_deg"
+      ],
+      "contrasts": null,
+      "colors": {
+        "up": "#b91c1c",
+        "down": "#1d4ed8"
+      }
+    }
+  }
+}

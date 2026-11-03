@@ -21,6 +21,7 @@ export type RnaseqJob = {
     control_label?: string;
     treatment_label?: string;
     enrichment?: string;
+    n_contrasts?: number;
   };
 };
 
@@ -78,7 +79,7 @@ export function getRnaseqBundlePath(id: string, userId: string): string | null {
 
 /**
  * Dev/local job runner: writes uploads, then runs the Python CLI synchronously.
- * Matches the product I/O contract (matrix + groups -> bundle). Swap for a queue later.
+ * Groups may be legacy CSV or analysis JSON (multi-group + colors + venn).
  */
 export function runRnaseqJobSync(opts: {
   userId: string;
@@ -87,6 +88,8 @@ export function runRnaseqJobSync(opts: {
   groupsBuf: Buffer;
   groupsName: string;
   species?: string;
+  lfc?: number;
+  padj?: number;
 }): RnaseqJob {
   const id = randomUUID();
   const dir = jobDir(id);
@@ -96,7 +99,7 @@ export function runRnaseqJobSync(opts: {
   fs.mkdirSync(outDir, { recursive: true });
 
   const matrixPath = path.join(inputDir, sanitizeName(opts.matrixName) || "matrix.csv");
-  const groupsPath = path.join(inputDir, sanitizeName(opts.groupsName) || "groups.csv");
+  const groupsPath = path.join(inputDir, sanitizeName(opts.groupsName) || "groups.json");
   fs.writeFileSync(matrixPath, opts.matrixBuf);
   fs.writeFileSync(groupsPath, opts.groupsBuf);
 
@@ -111,27 +114,31 @@ export function runRnaseqJobSync(opts: {
 
   const root = pipelineRoot();
   const py = process.env.PYTHON_BIN || "python3";
-  const result = spawnSync(
-    py,
-    [
-      "-m",
-      "keyantong_rnaseq",
-      "--matrix",
-      matrixPath,
-      "--groups",
-      groupsPath,
-      "--outdir",
-      outDir,
-      "--species",
-      job.species,
-    ],
-    {
-      cwd: root,
-      env: { ...process.env, PYTHONPATH: root + (process.env.PYTHONPATH ? `:${process.env.PYTHONPATH}` : "") },
-      encoding: "utf8",
-      maxBuffer: 8 * 1024 * 1024,
-    },
-  );
+  const args = [
+    "-m",
+    "keyantong_rnaseq",
+    "--matrix",
+    matrixPath,
+    "--groups",
+    groupsPath,
+    "--outdir",
+    outDir,
+    "--species",
+    job.species,
+  ];
+  if (typeof opts.lfc === "number" && Number.isFinite(opts.lfc)) {
+    args.push("--lfc", String(opts.lfc));
+  }
+  if (typeof opts.padj === "number" && Number.isFinite(opts.padj)) {
+    args.push("--padj", String(opts.padj));
+  }
+
+  const result = spawnSync(py, args, {
+    cwd: root,
+    env: { ...process.env, PYTHONPATH: root + (process.env.PYTHONPATH ? `:${process.env.PYTHONPATH}` : "") },
+    encoding: "utf8",
+    maxBuffer: 8 * 1024 * 1024,
+  });
 
   if (result.status !== 0) {
     job = {
@@ -155,6 +162,7 @@ export function runRnaseqJobSync(opts: {
       control_label: typeof parsed.control_label === "string" ? parsed.control_label : undefined,
       treatment_label: typeof parsed.treatment_label === "string" ? parsed.treatment_label : undefined,
       enrichment: typeof parsed.enrichment === "string" ? parsed.enrichment : undefined,
+      n_contrasts: Array.isArray(parsed.contrasts) ? parsed.contrasts.length : numberOrUndef(parsed.n_contrasts),
     };
   } catch {
     summary = {};
