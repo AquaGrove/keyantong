@@ -46,3 +46,5 @@ tmp/
 
 .zeabur-home/
 .zeabur-config/
+
+_smoke_artifacts_*/
