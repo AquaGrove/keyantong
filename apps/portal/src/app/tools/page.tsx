@@ -19,6 +19,19 @@ export default function ToolsPage() {
         社区沉淀的软件卡片：合法安装来源、环境提示与常见坑。欢迎按贡献指南提交新的 YAML 工具卡。
       </p>
 
+      <section className="section">
+        <h2>可在线运行</h2>
+        <p className="section-lead">矩阵+分组一键分析、NCBI 上传协助（需登录且具备会员权益）。</p>
+        <div className="actions">
+          <Link className="btn btn-primary" href="/tools/rnaseq">
+            转录组一键下游分析
+          </Link>
+          <Link className="btn btn-secondary" href="/tools/ncbi-upload">
+            NCBI SRA 上传协助
+          </Link>
+        </div>
+      </section>
+
       {tools.length === 0 ? (
         <section className="section">
           <p className="mono">暂未读到 catalog/tools 下的工具卡。</p>

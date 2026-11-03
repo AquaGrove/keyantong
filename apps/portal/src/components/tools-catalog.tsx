@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { ToolCard } from "@/lib/catalog";
 
@@ -30,23 +31,40 @@ export function ToolsCatalog({ tools }: { tools: ToolCard[] }) {
         ))}
       </div>
       <div className="hub-grid">
-        {shown.map((t) => (
-          <article key={t.id} className="hub-tile" style={{ cursor: "default" }}>
-            <span className="tag">{t.categories?.join(" · ") || "tool"}</span>
-            <h3>{t.name}</h3>
-            <p>{t.summary}</p>
-            <p className="mono" style={{ marginTop: "0.75rem" }}>
-              {t.license ? `License ${t.license}` : null}
-              {t.author ? ` · ${t.author}` : null}
-              {t.docsUrl ? (
-                <>
-                  {" · "}
-                  <a href={t.docsUrl}>文档</a>
-                </>
-              ) : null}
-            </p>
-          </article>
-        ))}
+        {shown.map((t) => {
+          const body = (
+            <>
+              <span className="tag">{t.categories?.join(" · ") || "tool"}</span>
+              <h3>{t.name}</h3>
+              <p>{t.summary}</p>
+              <p className="mono" style={{ marginTop: "0.75rem" }}>
+                {t.license ? `License ${t.license}` : null}
+                {t.author ? ` · ${t.author}` : null}
+                {t.docsUrl ? (
+                  <>
+                    {" · "}
+                    <a href={t.docsUrl} onClick={(e) => e.stopPropagation()}>
+                      文档
+                    </a>
+                  </>
+                ) : null}
+                {t.portalPath ? " · 可在线运行" : null}
+              </p>
+            </>
+          );
+          if (t.portalPath) {
+            return (
+              <Link key={t.id} href={t.portalPath} className="hub-tile" style={{ textDecoration: "none" }}>
+                {body}
+              </Link>
+            );
+          }
+          return (
+            <article key={t.id} className="hub-tile" style={{ cursor: "default" }}>
+              {body}
+            </article>
+          );
+        })}
       </div>
     </div>
   );

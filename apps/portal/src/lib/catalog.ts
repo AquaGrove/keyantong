@@ -9,6 +9,7 @@ export type ToolCard = {
   license?: string;
   author?: string;
   docsUrl?: string;
+  portalPath?: string;
 };
 
 function catalogDir(): string {
@@ -47,6 +48,11 @@ function pickDocs(text: string): string | undefined {
   return m?.[1];
 }
 
+function pickPortal(text: string): string | undefined {
+  const m = text.match(/^\s+portal:\s+(\S+)/m);
+  return m?.[1];
+}
+
 export function loadToolCards(): ToolCard[] {
   const dir = catalogDir();
   if (!fs.existsSync(dir)) return [];
@@ -62,6 +68,7 @@ export function loadToolCards(): ToolCard[] {
         license: pick(raw, "license"),
         author: pick(raw, "author"),
         docsUrl: pickDocs(raw),
+        portalPath: pickPortal(raw),
       } satisfies ToolCard;
     })
     .sort((a, b) => a.name.localeCompare(b.name, "zh-CN"));

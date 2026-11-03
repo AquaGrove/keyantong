@@ -48,4 +48,19 @@ if command -v curl >/dev/null 2>&1; then
   done
 fi
 
+
+if [[ -x services/rnaseq-pipeline/smoke.sh ]]; then
+  echo "==> rnaseq-pipeline smoke"
+  ./services/rnaseq-pipeline/smoke.sh
+else
+  echo "==> skip rnaseq-pipeline smoke"
+fi
+
+if [[ -d services/ncbi-upload/tests ]]; then
+  echo "==> ncbi-upload unit tests"
+  (cd services/ncbi-upload && PYTHONPATH=. python3 -m unittest tests.test_validators -q)
+else
+  echo "==> skip ncbi-upload tests"
+fi
+
 echo "smoke: ok"
