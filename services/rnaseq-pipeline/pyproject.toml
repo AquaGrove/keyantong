@@ -10,6 +10,10 @@ dependencies = [
   "matplotlib>=3.8",
 ]
 
+[project.optional-dependencies]
+deseq = ["pydeseq2>=0.4"]
+dev = ["pydeseq2>=0.4"]
+
 [project.scripts]
 keyantong-rnaseq = "keyantong_rnaseq.cli:main"
 

@@ -16,7 +16,7 @@
   - `limma_like` / `welch`：纯 Python
   - `pydeseq2`：可选 `pip install 'pydeseq2>=0.4'`（需 counts）
   - 结果写入 `tables/methods.json`（含 `engine_catalog`）
-- **注释**：`annotations/<species>/gene2go.tsv` 与 `gene2kegg.tsv`；`demo` 夹具已内置；human/mouse 需自行放入（见 `annotations/README.md`）。
+- **注释**：`annotations/<species>/gene2go.tsv` 与 `gene2kegg.tsv`；`demo` 夹具已内置；human/mouse 用 `services/rnaseq-pipeline/scripts/fetch_annotations.sh` 本机拉取（TSV gitignore，见 `annotations/README.md`）。
 - **维恩**：2–4 集互斥区标注；CSV（regions/presence）为权威。
 - **Job**：门户 POST 入队（202）→ GET 轮询 status → 下载 ZIP（文件型异步，非独立 worker 集群）。
 
@@ -46,3 +46,5 @@ cd services/ncbi-upload && PYTHONPATH=. python3 -m unittest discover -s tests -v
 | 异步 Job 轮询（rnaseq/ncbi） | 文件型本地队列；非云端 worker |
 | NCBI 校验 + dry-run/ascp | 已接 |
 | Portal 网页自动填表提交 | **不做**（checklist 仅跟踪） |
+
+相关：[16 · 轻量云服务器选型](./16-lightweight-cloud-sizing.md)

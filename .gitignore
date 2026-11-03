@@ -51,3 +51,10 @@ _smoke_artifacts_*/
 
 # portal one-click demo annotation copy
 services/rnaseq-pipeline/annotations/tryout/
+
+# RNAseq large local annotation caches (regenerate via scripts/fetch_annotations.sh)
+services/rnaseq-pipeline/annotations/human/*.tsv
+services/rnaseq-pipeline/annotations/mouse/*.tsv
+services/rnaseq-pipeline/annotations/arabidopsis/*.tsv
+services/rnaseq-pipeline/annotations/fetch_meta.json
+services/rnaseq-pipeline/.venv/

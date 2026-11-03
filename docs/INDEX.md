@@ -39,3 +39,4 @@
 - API 变更：同步更新 `06-api.md` 与 OpenAPI（代码阶段）
 - 每个 PR 若触及行为约定，需更新相关文档片段
 - [15 · 转录组一键分析与 NCBI 上传协助](./15-rnaseq-ncbi-tools.md)
+- [16 · 轻量云服务器选型](./16-lightweight-cloud-sizing.md)
