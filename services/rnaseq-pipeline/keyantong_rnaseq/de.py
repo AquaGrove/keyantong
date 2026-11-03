@@ -1,4 +1,4 @@
-"""Differential expression engines: limma-like EB, optional pydeseq2, Welch fallback."""
+"""Differential expression engines: R limma/edgeR/DESeq2 when present, limma-like EB, optional pydeseq2, Welch."""
 from __future__ import annotations
 
 from typing import Any
@@ -260,14 +260,53 @@ def run_de_pydeseq2(
 
 
 def available_engines() -> list[str]:
-    out = ["limma_like", "welch"]
+    """Prefer R Bioconductor when present, then Python engines."""
+    out: list[str] = []
+    try:
+        from .r_backends import available_r_engines
+
+        out.extend(available_r_engines())
+    except Exception:
+        pass
     try:
         import pydeseq2  # noqa: F401
 
-        out.insert(0, "pydeseq2")
+        out.append("pydeseq2")
     except Exception:
         pass
-    return out
+    out.extend(["limma_like", "welch"])
+    # stable unique order
+    seen: set[str] = set()
+    uniq: list[str] = []
+    for e in out:
+        if e not in seen:
+            seen.add(e)
+            uniq.append(e)
+    return uniq
+
+
+def engine_catalog() -> dict:
+    """Human-facing catalog for UI / methods.json."""
+    try:
+        from .r_backends import engine_probe_report
+
+        probe = engine_probe_report()
+    except Exception as exc:  # noqa: BLE001
+        probe = {"error": str(exc), "engines": {"python": ["limma_like", "welch"], "r": []}}
+    return {
+        "available": available_engines(),
+        "probe": probe,
+        "labels": {
+            "auto": "自动：优先本机 R limma → limma_like → Welch",
+            "r_limma": "Bioconductor limma（Rscript）",
+            "r_edger": "Bioconductor edgeR（Rscript；需 counts）",
+            "r_deseq2": "Bioconductor DESeq2（Rscript；需 counts）",
+            "limma_like": "Python 经验贝叶斯 moderated t（非 Bioconductor）",
+            "welch": "Welch t-test（备选）",
+            "pydeseq2": "pydeseq2（可选 pip 安装；需 counts）",
+        },
+        "pydeseq2_install": "pip install 'pydeseq2>=0.4'",
+    }
 
 
 def run_de_samples(
@@ -281,13 +320,33 @@ def run_de_samples(
     contrast_id: str = "",
     engine: str = "auto",
 ) -> pd.DataFrame:
-    """matrix: genes x samples. engine: auto|limma_like|welch|pydeseq2."""
+    """matrix: genes x samples.
+
+    engine: auto|r_limma|r_edger|r_deseq2|limma_like|welch|pydeseq2
+    """
     eng = (engine or "auto").strip().lower()
     errors: list[str] = []
     order: list[str]
+    r_avail: list[str] = []
+    try:
+        from .r_backends import available_r_engines
+
+        r_avail = available_r_engines()
+    except Exception:
+        r_avail = []
+
     if eng == "auto":
-        order = ["limma_like", "welch"]
-        # try pydeseq2 only when explicitly count-like later; prefer limma_like for expression matrices
+        # Prefer real limma when R has it; else Python limma_like
+        order = []
+        if "r_limma" in r_avail:
+            order.append("r_limma")
+        order.extend(["limma_like", "welch"])
+    elif eng in ("r_limma", "limma_bioc", "bioc_limma"):
+        order = ["r_limma", "limma_like", "welch"]
+    elif eng in ("r_edger", "edger", "edger"):
+        order = ["r_edger", "limma_like", "welch"]
+    elif eng in ("r_deseq2", "deseq2"):
+        order = ["r_deseq2", "pydeseq2", "limma_like", "welch"]
     elif eng in ("limma", "limma_like", "eb", "empirical_bayes"):
         order = ["limma_like", "welch"]
     elif eng in ("welch", "ttest"):
@@ -298,14 +357,33 @@ def run_de_samples(
         order = ["limma_like", "welch"]
         errors.append(f"unknown engine {engine}, falling back")
 
+    def _run_r(name: str) -> pd.DataFrame:
+        from .r_backends import run_de_r
+
+        return run_de_r(
+            matrix,
+            control_samples,
+            treatment_samples,
+            engine=name,
+            lfc_cutoff=lfc_cutoff,
+            padj_cutoff=padj_cutoff,
+            min_count=min_count,
+            contrast_id=contrast_id,
+        )
+
     runners = {
         "welch": run_de_welch,
         "limma_like": run_de_limma_like,
         "pydeseq2": run_de_pydeseq2,
+        "r_limma": lambda *a, **k: _run_r("r_limma"),
+        "r_edger": lambda *a, **k: _run_r("r_edger"),
+        "r_deseq2": lambda *a, **k: _run_r("r_deseq2"),
     }
     last_exc: Exception | None = None
     for name in order:
         try:
+            if name in ("r_limma", "r_edger", "r_deseq2"):
+                return _run_r(name)
             return runners[name](
                 matrix,
                 control_samples,

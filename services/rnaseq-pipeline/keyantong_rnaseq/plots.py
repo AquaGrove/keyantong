@@ -333,10 +333,33 @@ def plot_multi_set_venn(
             ax.text(0.45, -0.25, str(_count(1, 2)), ha="center", va="center", fontsize=11)
             ax.text(0.0, -0.05, str(_count(0, 1, 2)), ha="center", va="center", fontsize=12, fontweight="bold")
         else:
-            for i, (x, y, r) in enumerate(layouts):
-                ax.text(x, y, str(_count(i)), ha="center", va="center", fontsize=12, fontweight="bold")
-            ax.text(0, 0.05, f"all4={_count(0,1,2,3)}", ha="center", va="center", fontsize=10)
-            ax.text(0, -1.55, "pairwise/triple exclusive counts → *_regions.csv", ha="center", fontsize=8, color="#475569")
+            # 4-set: label exclusive singles on each circle; place pairwise/triple
+            # approximate midpoints; full exclusive table always in *_regions.csv.
+            pos_single = [(-0.95, 0.35), (-0.2, 0.55), (0.2, 0.55), (0.95, 0.35)]
+            for i, (x, y) in enumerate(pos_single):
+                ax.text(x, y, str(_count(i)), ha="center", va="center", fontsize=11, fontweight="bold")
+            # pairwise exclusive midpoints (approximate for side-by-side layout)
+            pair_pos = {
+                (0, 1): (-0.55, 0.35),
+                (1, 2): (0.0, 0.42),
+                (2, 3): (0.55, 0.35),
+                (0, 2): (-0.35, 0.05),
+                (1, 3): (0.35, 0.05),
+                (0, 3): (0.0, -0.35),
+            }
+            for (i, j), (x, y) in pair_pos.items():
+                ax.text(x, y, str(_count(i, j)), ha="center", va="center", fontsize=9, color="#1e293b")
+            # triples
+            trip_pos = {
+                (0, 1, 2): (-0.25, 0.18),
+                (1, 2, 3): (0.25, 0.18),
+                (0, 1, 3): (-0.15, -0.05),
+                (0, 2, 3): (0.15, -0.05),
+            }
+            for key, (x, y) in trip_pos.items():
+                ax.text(x, y, str(_count(*key)), ha="center", va="center", fontsize=8, color="#334155")
+            ax.text(0, -0.85, f"∩4={_count(0,1,2,3)}", ha="center", va="center", fontsize=11, fontweight="bold")
+            ax.text(0, -1.55, "CSV authoritative: *_regions.csv / *_presence.csv", ha="center", fontsize=8, color="#475569")
 
         ax.set_xlim(-2.3, 2.3)
         ax.set_ylim(-2.1, 1.9)

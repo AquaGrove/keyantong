@@ -11,7 +11,7 @@ from pathlib import Path
 import pandas as pd
 
 from .config import AnalysisConfig, load_analysis_config
-from .de import available_engines, run_de_samples
+from .de import available_engines, engine_catalog, run_de_samples
 from .enrichment import run_enrichment
 from .io import load_matrix
 from .plots import plot_heatmap, plot_multi_set_venn, plot_pca, plot_regulation_venn, plot_volcano
@@ -307,8 +307,9 @@ def run_pipeline(
         "de_engine_used": primary_engine,
         "de_engines_by_contrast": dict(zip([c.get("id") or "" for c in contrasts], engines_used)),
         "available_engines": available_engines(),
-        "transform": "log2(x+1) for limma_like/welch; pydeseq2 uses rounded counts when selected",
-        "multiple_testing": "Benjamini-Hochberg FDR on p-values",
+        "engine_catalog": engine_catalog(),
+        "transform": "log2(x+1) for limma_like/welch/r_limma; edgeR/DESeq2/pydeseq2 use count-like matrices",
+        "multiple_testing": "Benjamini-Hochberg FDR on p-values (or package FDR when provided)",
         "thresholds": {"abs_log2FC": cfg.lfc, "padj": cfg.padj},
         "plots": {
             "dpi": dpi,
@@ -317,9 +318,10 @@ def run_pipeline(
         },
         "enrichment": enrich.to_dict(),
         "notes": [
-            "limma_like = two-group moderated t with empirical Bayes variance squeeze (not Bioconductor limma).",
-            "Welch remains available as fallback / explicit engine.",
-            "GO uses local gene2go.tsv under services/rnaseq-pipeline/annotations/; KEGG not bundled yet.",
+            "auto prefers Bioconductor limma via Rscript when installed, else Python limma_like.",
+            "r_limma/r_edger/r_deseq2 require R + Bioconductor packages; see engine_catalog.install_hints.",
+            "limma_like = Python moderated t (not identical to Bioconductor limma).",
+            "GO/KEGG use local gene2go.tsv / gene2kegg.tsv under annotations/; see annotations/README.md.",
         ],
     }
     methods_path = tables_dir / "methods.json"

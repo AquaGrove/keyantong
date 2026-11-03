@@ -17,6 +17,16 @@ type RunStatus = {
   issues?: Issue[];
 };
 
+
+const PORTAL_CHECKLIST = [
+  "1. 在本工具完成字段校验与 ascp dry-run / 本机上传",
+  "2. 登录 NCBI Submission Portal（浏览器手动操作）",
+  "3. 创建或选择 BioProject，核对元数据",
+  "4. 创建 BioSample，粘贴本工具校验通过的字段",
+  "5. 创建 SRA submission，关联已上传文件清单",
+  "6. 提交并保存 Accession —— 本站不代填、不自动提交网页表单",
+] as const;
+
 export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; loggedIn: boolean }) {
   const [step, setStep] = useState(1);
   const [title, setTitle] = useState("");
@@ -128,16 +138,49 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
         body: JSON.stringify({ ...payload(), mode }),
       });
       const data = await res.json();
-      if (data.error && !data.status) {
-        setErr(data.error);
+      if (!res.ok && !data.job) {
+        setErr(data.error || "提交失败");
         return;
       }
-      setRunStatus(data as RunStatus);
-      if (data.command) setCommand(data.command);
-      if (Array.isArray(data.issues)) setIssues(data.issues);
-      if (!data.ok && data.status !== "dry_run") {
-        setErr(data.message || "运行失败");
+      // Legacy sync response (no job envelope)
+      if (!data.job && (data.status || data.command)) {
+        setRunStatus(data as RunStatus);
+        if (data.command) setCommand(data.command);
+        if (Array.isArray(data.issues)) setIssues(data.issues);
+        if (!data.ok && data.status !== "dry_run") setErr(data.message || "运行失败");
+        return;
       }
+      let job = data.job as {
+        id: string;
+        status: string;
+        message?: string;
+        error?: string;
+        result?: RunStatus;
+      };
+      const started = Date.now();
+      while (
+        job &&
+        (job.status === "queued" || job.status === "running") &&
+        Date.now() - started < 2 * 60 * 60 * 1000
+      ) {
+        await new Promise((r) => setTimeout(r, 1200));
+        const poll = await fetch(`/api/tools/ncbi-run?id=${encodeURIComponent(job.id)}`);
+        const body = await poll.json();
+        if (!poll.ok || !body.job) {
+          setErr(body.error || "轮询任务失败");
+          break;
+        }
+        job = body.job;
+      }
+      const result = (job?.result || null) as RunStatus | null;
+      if (result) {
+        setRunStatus(result);
+        if (result.command) setCommand(String(result.command));
+        if (Array.isArray((result as { issues?: Issue[] }).issues)) {
+          setIssues((result as { issues: Issue[] }).issues);
+        }
+      }
+      if (job?.status === "failed") setErr(job.error || job.message || "运行失败");
     } catch (ex) {
       setErr(ex instanceof Error ? ex.message : "网络错误");
     } finally {
@@ -291,9 +334,14 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
           <>
             <h2>校验结果与本机上传</h2>
             <p className="form-note">
-              先 dry-run（校验路径/文件并写 status.json），确认无误后再对本机执行 ascp。Submission Portal
-              网页代填仍未自动化。
+              先 dry-run（异步任务轮询 status），确认无误后再对本机执行 ascp。Submission Portal
+              <strong>网页代填 / 自动提交不在范围内</strong>——请按下方清单在浏览器手动完成。
             </p>
+            <ol className="form-note">
+              {PORTAL_CHECKLIST.map((c) => (
+                <li key={c}>{c}</li>
+              ))}
+            </ol>
             <div className="actions">
               <button type="button" className="btn" onClick={() => setStep(3)} disabled={busy}>
                 返回修改

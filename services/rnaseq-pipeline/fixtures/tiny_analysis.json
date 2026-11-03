@@ -6,35 +6,51 @@
       "name": "对照",
       "role": "control",
       "color": "#0072B2",
-      "samples": ["C1", "C2", "C3"]
+      "samples": [
+        "C1",
+        "C2",
+        "C3"
+      ]
     },
     {
       "id": "ta",
       "name": "实验A",
       "role": "treatment",
       "color": "#E69F00",
-      "samples": ["A1", "A2", "A3"]
+      "samples": [
+        "A1",
+        "A2",
+        "A3"
+      ]
     },
     {
       "id": "tb",
       "name": "实验B",
       "role": "treatment",
       "color": "#009E73",
-      "samples": ["B1", "B2", "B3"]
+      "samples": [
+        "B1",
+        "B2",
+        "B3"
+      ]
     }
   ],
   "options": {
     "species": "demo",
     "lfc": 1.0,
     "padj": 0.05,
-    "de_engine": "limma_like",
+    "de_engine": "auto",
     "plots": {
       "pca": true,
       "volcano": true,
       "heatmap": true,
       "venn": true,
       "dpi": 160,
-      "formats": ["png", "pdf", "svg"],
+      "formats": [
+        "png",
+        "pdf",
+        "svg"
+      ],
       "palette": "okabe_ito",
       "title_pca": "PCA · demo",
       "title_volcano": "Volcano",
@@ -48,7 +64,10 @@
         "multi_group_deg"
       ],
       "contrasts": null,
-      "colors": { "up": "#D55E00", "down": "#0072B2" }
+      "colors": {
+        "up": "#D55E00",
+        "down": "#0072B2"
+      }
     },
     "contrasts": [
       {

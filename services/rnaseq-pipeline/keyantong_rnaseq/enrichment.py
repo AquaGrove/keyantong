@@ -1,4 +1,4 @@
-"""Pluggable GO enrichment with local/cacheable gene→term mappings."""
+"""Pluggable GO + KEGG enrichment with local/cacheable gene→term mappings."""
 from __future__ import annotations
 
 import json
@@ -10,23 +10,26 @@ import numpy as np
 import pandas as pd
 from scipy.stats import hypergeom
 
-# species key → relative annotation path under package annotations/
 SPECIES_MAP: dict[str, dict[str, str]] = {
     "demo": {
         "label": "Demo (fixture annotation)",
         "gene2go": "demo/gene2go.tsv",
+        "gene2kegg": "demo/gene2kegg.tsv",
     },
     "human": {
         "label": "Homo sapiens (local cache if present)",
         "gene2go": "human/gene2go.tsv",
+        "gene2kegg": "human/gene2kegg.tsv",
     },
     "mouse": {
         "label": "Mus musculus (local cache if present)",
         "gene2go": "mouse/gene2go.tsv",
+        "gene2kegg": "mouse/gene2kegg.tsv",
     },
     "arabidopsis": {
         "label": "Arabidopsis thaliana (local cache if present)",
         "gene2go": "arabidopsis/gene2go.tsv",
+        "gene2kegg": "arabidopsis/gene2kegg.tsv",
     },
 }
 
@@ -56,7 +59,9 @@ class EnrichmentResult:
     n_query: int = 0
     n_annotated_query: int = 0
     n_terms_tested: int = 0
+    n_kegg_tested: int = 0
     table: str | None = None
+    kegg_table: str | None = None
     artifacts: list[str] | None = None
 
     def to_dict(self) -> dict[str, Any]:
@@ -72,25 +77,96 @@ def normalize_species(species: str | None) -> str:
     return ALIAS.get(raw, raw)
 
 
-def resolve_gene2go(species: str) -> Path | None:
+def list_species_status() -> list[dict[str, Any]]:
+    rows = []
+    for key, meta in SPECIES_MAP.items():
+        go = annotations_root() / meta["gene2go"]
+        kegg = annotations_root() / meta.get("gene2kegg", f"{key}/gene2kegg.tsv")
+        rows.append(
+            {
+                "species": key,
+                "label": meta.get("label", key),
+                "gene2go": str(go) if go.is_file() else None,
+                "gene2kegg": str(kegg) if kegg.is_file() else None,
+                "ready_go": go.is_file(),
+                "ready_kegg": kegg.is_file(),
+            }
+        )
+    root = annotations_root()
+    if root.is_dir():
+        known = set(SPECIES_MAP)
+        for child in sorted(root.iterdir()):
+            if not child.is_dir() or child.name in known or child.name.startswith("."):
+                continue
+            go = child / "gene2go.tsv"
+            kegg = child / "gene2kegg.tsv"
+            rows.append(
+                {
+                    "species": child.name,
+                    "label": f"custom:{child.name}",
+                    "gene2go": str(go) if go.is_file() else None,
+                    "gene2kegg": str(kegg) if kegg.is_file() else None,
+                    "ready_go": go.is_file(),
+                    "ready_kegg": kegg.is_file(),
+                }
+            )
+    return rows
+
+
+def resolve_annotation(species: str, kind: str) -> Path | None:
     key = normalize_species(species)
     if key in {"none"}:
         return None
     meta = SPECIES_MAP.get(key)
-    if not meta:
-        # allow direct custom folder name
-        candidate = annotations_root() / key / "gene2go.tsv"
-        return candidate if candidate.is_file() else None
-    path = annotations_root() / meta["gene2go"]
-    return path if path.is_file() else None
+    if meta and kind in meta:
+        path = annotations_root() / meta[kind]
+        return path if path.is_file() else None
+    candidate = annotations_root() / key / f"{kind}.tsv"
+    return candidate if candidate.is_file() else None
 
 
-def load_gene2go(path: Path) -> pd.DataFrame:
-    df = pd.read_csv(path, sep="\t")
-    cols = {c.lower(): c for c in df.columns}
-    gene_col = cols.get("gene") or cols.get("gene_id") or list(df.columns)[0]
-    term_col = cols.get("go_id") or cols.get("term") or cols.get("term_id") or list(df.columns)[1]
-    name_col = cols.get("go_name") or cols.get("term_name") or cols.get("name")
+def resolve_gene2go(species: str) -> Path | None:
+    return resolve_annotation(species, "gene2go")
+
+
+def resolve_gene2kegg(species: str) -> Path | None:
+    return resolve_annotation(species, "gene2kegg")
+
+
+def load_gene_mapping(
+    path: Path,
+    *,
+    id_aliases: tuple[str, ...],
+    name_aliases: tuple[str, ...],
+) -> pd.DataFrame:
+    head = path.read_text(encoding="utf-8", errors="replace").splitlines()[:1]
+    if head and "\t" in head[0]:
+        sep = "\t"
+    elif head and "," in head[0]:
+        sep = ","
+    else:
+        sep = "\t"
+    df = pd.read_csv(path, sep=sep)
+    cols = {c.lower().strip(): c for c in df.columns}
+    gene_col = None
+    for a in ("gene", "gene_id", "geneid", "symbol", "gene_symbol", "orf"):
+        if a in cols:
+            gene_col = cols[a]
+            break
+    if gene_col is None:
+        gene_col = list(df.columns)[0]
+    term_col = None
+    for a in id_aliases:
+        if a in cols:
+            term_col = cols[a]
+            break
+    if term_col is None:
+        term_col = list(df.columns)[1] if len(df.columns) > 1 else list(df.columns)[0]
+    name_col = None
+    for a in name_aliases:
+        if a in cols:
+            name_col = cols[a]
+            break
     out = pd.DataFrame(
         {
             "gene": df[gene_col].astype(str),
@@ -99,6 +175,22 @@ def load_gene2go(path: Path) -> pd.DataFrame:
         }
     )
     return out.drop_duplicates()
+
+
+def load_gene2go(path: Path) -> pd.DataFrame:
+    return load_gene_mapping(
+        path,
+        id_aliases=("go_id", "term", "term_id", "goid", "id"),
+        name_aliases=("go_name", "term_name", "name", "description"),
+    )
+
+
+def load_gene2kegg(path: Path) -> pd.DataFrame:
+    return load_gene_mapping(
+        path,
+        id_aliases=("kegg_id", "pathway", "pathway_id", "term", "term_id", "id"),
+        name_aliases=("kegg_name", "pathway_name", "term_name", "name", "description"),
+    )
 
 
 def _bh(p: np.ndarray) -> np.ndarray:
@@ -137,7 +229,6 @@ def enrich_hypergeometric(
         k = len(annotated_query & term_genes)
         if k == 0:
             continue
-        # P(X >= k)
         p = hypergeom.sf(k - 1, N, K, n)
         rows.append(
             {
@@ -168,24 +259,31 @@ def run_enrichment(
     key = normalize_species(species)
     status_path = outdir / "enrichment_status.txt"
     meta_path = outdir / "enrichment_meta.json"
+    artifacts: list[str] = []
 
     if key == "none":
         reason = "GO/KEGG 未运行：未选择物种（species=none）。"
         status_path.write_text(reason + "\n", encoding="utf-8")
         meta = EnrichmentResult(status="skipped_no_species", reason=reason, species=key)
         meta_path.write_text(json.dumps(meta.to_dict(), ensure_ascii=False, indent=2), encoding="utf-8")
+        meta.artifacts = [str(status_path), str(meta_path)]
         return meta
 
-    path = resolve_gene2go(key)
-    if path is None:
+    go_path = resolve_gene2go(key)
+    kegg_path = resolve_gene2kegg(key)
+    if go_path is None and kegg_path is None:
         known = ", ".join(sorted(SPECIES_MAP))
         reason = (
-            f"物种「{species}」无可用本地注释（期望 {annotations_root()}/<species>/gene2go.tsv）。"
-            f"已支持内置键: {known}。可将映射表放入 annotations 目录后重跑。"
+            f"物种「{species}」无可用本地注释（期望 {annotations_root()}/<species>/gene2go.tsv "
+            f"和/或 gene2kegg.tsv）。已支持内置键: {known}。"
+            "可将映射表放入 annotations 目录后重跑；见 annotations/README.md。"
         )
         status_path.write_text(reason + "\n", encoding="utf-8")
-        meta = EnrichmentResult(status="skipped_no_annotation", reason=reason, species=key, n_query=len(sig_genes))
+        meta = EnrichmentResult(
+            status="skipped_no_annotation", reason=reason, species=key, n_query=len(sig_genes)
+        )
         meta_path.write_text(json.dumps(meta.to_dict(), ensure_ascii=False, indent=2), encoding="utf-8")
+        meta.artifacts = [str(status_path), str(meta_path)]
         return meta
 
     if not sig_genes:
@@ -193,32 +291,51 @@ def run_enrichment(
         status_path.write_text(reason + "\n", encoding="utf-8")
         meta = EnrichmentResult(status="skipped_no_sig_genes", reason=reason, species=key)
         meta_path.write_text(json.dumps(meta.to_dict(), ensure_ascii=False, indent=2), encoding="utf-8")
+        meta.artifacts = [str(status_path), str(meta_path)]
         return meta
 
-    mapping = load_gene2go(path)
-    table = enrich_hypergeometric(sig_genes, mapping)
-    table_path = outdir / "go_enrichment.csv"
-    table.to_csv(table_path, index=False)
-    annotated = len(set(map(str, sig_genes)) & set(mapping["gene"].astype(str)))
+    go_table = pd.DataFrame()
+    kegg_table = pd.DataFrame()
+    annotated = 0
+    parts: list[str] = []
+
+    if go_path is not None:
+        mapping = load_gene2go(go_path)
+        go_table = enrich_hypergeometric(sig_genes, mapping)
+        table_path = outdir / "go_enrichment.csv"
+        go_table.to_csv(table_path, index=False)
+        artifacts.append(str(table_path))
+        annotated = max(annotated, len(set(map(str, sig_genes)) & set(mapping["gene"].astype(str))))
+        parts.append(f"GO:{go_path.name} terms={len(go_table)}")
+
+    if kegg_path is not None:
+        mapping_k = load_gene2kegg(kegg_path)
+        kegg_table = enrich_hypergeometric(sig_genes, mapping_k, min_term_size=2, max_term_size=2000)
+        kegg_out = outdir / "kegg_enrichment.csv"
+        kegg_table.to_csv(kegg_out, index=False)
+        artifacts.append(str(kegg_out))
+        annotated = max(annotated, len(set(map(str, sig_genes)) & set(mapping_k["gene"].astype(str))))
+        parts.append(f"KEGG:{kegg_path.name} pathways={len(kegg_table)}")
+
     reason = (
-        f"已用本地注释 {path} 对 {len(sig_genes)} 个显著基因做 GO 超几何检验；"
-        f"注释命中 {annotated}；检出 terms={len(table)}。"
-        "（当前切片未内置完整 KEGG；GO 为可插拔本地映射。）"
+        f"已对 {len(sig_genes)} 个显著基因做本地超几何富集；注释命中≈{annotated}；"
+        + "；".join(parts)
+        + "。映射文件可替换/扩充，见 annotations/README.md。"
     )
     status_path.write_text(reason + "\n", encoding="utf-8")
+    artifacts.extend([str(status_path), str(meta_path)])
+    status = "ok" if (len(go_table) or len(kegg_table)) else "ok_empty"
     meta = EnrichmentResult(
-        status="ok" if len(table) else "ok_empty",
+        status=status,
         reason=reason,
         species=key,
         n_query=len(sig_genes),
         n_annotated_query=annotated,
-        n_terms_tested=int(len(table)),
-        table=str(table_path),
-        artifacts=[str(table_path), str(status_path), str(meta_path)],
+        n_terms_tested=int(len(go_table)),
+        n_kegg_tested=int(len(kegg_table)),
+        table=str(outdir / "go_enrichment.csv") if go_path is not None else None,
+        kegg_table=str(outdir / "kegg_enrichment.csv") if kegg_path is not None else None,
+        artifacts=list(dict.fromkeys(artifacts)),
     )
     meta_path.write_text(json.dumps(meta.to_dict(), ensure_ascii=False, indent=2), encoding="utf-8")
-    if meta.artifacts is None:
-        meta.artifacts = [str(status_path), str(meta_path)]
-    else:
-        meta.artifacts = list(dict.fromkeys(meta.artifacts + [str(status_path), str(meta_path)]))
     return meta

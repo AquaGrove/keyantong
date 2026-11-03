@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any
 
 from .validators import ValidationIssue, build_ascp_command, validate_submission
+from .portal_checklist import checklist_from_status
 
 
 def _now() -> str:
@@ -43,12 +44,15 @@ class RunStatus:
     finished_at: str | None = None
     issues: list[dict[str, str]] = field(default_factory=list)
     validation: dict[str, Any] | None = None
+    portal_checklist: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
     def write(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
+        if self.portal_checklist is None:
+            self.portal_checklist = checklist_from_status(self.to_dict())
         path.write_text(json.dumps(self.to_dict(), ensure_ascii=False, indent=2), encoding="utf-8")
 
 

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { isEntitled } from "@/lib/user-store";
 import { currentUser } from "@/lib/user-session";
-import { getRnaseqJob, runRnaseqJobSync } from "@/lib/tools/rnaseq-jobs";
+import { enqueueRnaseqJob, getRnaseqJob } from "@/lib/tools/rnaseq-jobs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "文件过大" }, { status: 413 });
   }
 
-  const job = runRnaseqJobSync({
+  const job = enqueueRnaseqJob({
     userId: user.id,
     matrixBuf: Buffer.from(await matrix.arrayBuffer()),
     matrixName: matrix.name || "matrix.csv",
@@ -52,5 +52,5 @@ export async function POST(request: Request) {
     padj: Number.isFinite(padj) ? padj : undefined,
   });
 
-  return NextResponse.json({ job }, { status: job.status === "succeeded" ? 200 : 500 });
+  return NextResponse.json({ job }, { status: 202 });
 }

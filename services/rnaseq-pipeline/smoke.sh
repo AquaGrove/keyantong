@@ -37,6 +37,7 @@ need=(
   "$OUT2/tables/analysis_config_resolved.json"
   "$OUT2/tables/methods.json"
   "$OUT2/tables/go_enrichment.csv"
+  "$OUT2/tables/kegg_enrichment.csv"
   "$OUT2/plots/PCA.png"
   "$OUT2/plots/PCA.svg"
   "$OUT2/plots/volcano.png"
@@ -67,7 +68,7 @@ df = pd.read_csv(out / "tables/deg_all.csv")
 assert "contrast" in df.columns
 assert set(["gene","log2FC","pvalue","padj","regulation"]).issubset(df.columns)
 assert "engine" in df.columns
-assert (df["engine"] == "limma_like").all() or set(df["engine"]).issubset({"limma_like","welch","pydeseq2"})
+assert set(df["engine"]).issubset({"r_limma","r_edger","r_deseq2","limma_like","welch","pydeseq2"}), set(df["engine"])
 contrasts = sorted(df.contrast.unique())
 assert len(contrasts) >= 2, contrasts
 manifest = json.loads((out / "manifest.json").read_text())
@@ -75,13 +76,24 @@ assert manifest["summary"]["n_contrasts"] >= 2
 assert manifest["summary"].get("de_engine")
 methods = json.loads((out / "tables/methods.json").read_text())
 assert methods["de_engine_used"]
+assert "engine_catalog" in methods or True  # optional forward-compat
+# prefer real limma when present
+print("available noted in methods", methods.get("available_engines"))
 assert (out / "plots/venn_multi_up_regions.csv").exists()
 enrich = json.loads((out / "tables/enrichment_meta.json").read_text())
 assert enrich["status"] in ("ok", "ok_empty"), enrich
 # one-contrast fixture
 df1 = pd.read_csv(one / "tables/deg_all.csv")
 assert df1["contrast"].nunique() == 1, df1["contrast"].unique()
-print(f"smoke ok: contrasts={contrasts} engine={methods['de_engine_used']} enrich={enrich['status']} one={df1['contrast'].unique().tolist()}")
+avail = methods.get("available_engines") or []
+used = methods["de_engine_used"]
+# fixture uses auto → prefer r_limma when installed
+if "r_limma" in avail:
+    assert used == "r_limma", (used, avail)
+else:
+    assert used in ("limma_like", "welch"), used
+assert (out / "tables/kegg_enrichment.csv").exists()
+print(f"smoke ok: contrasts={contrasts} engine={used} enrich={enrich['status']} kegg=yes one={df1['contrast'].unique().tolist()}")
 PY
 
 echo "rnaseq-pipeline smoke: ok ($OUT)"

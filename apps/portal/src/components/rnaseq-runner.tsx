@@ -7,6 +7,7 @@ type Job = {
   id: string;
   status: string;
   error?: string;
+  message?: string;
   summary?: {
     n_genes?: number;
     n_samples?: number;
@@ -371,8 +372,26 @@ export function RnaseqRunner({ entitled, loggedIn }: { entitled: boolean; logged
         setErr(data.error || "提交失败");
         return;
       }
-      setJob(data.job);
-      if (data.job?.status === "failed") setErr(data.job.error || "分析失败");
+      let current: Job | null = data.job || null;
+      setJob(current);
+      // poll until terminal
+      const started = Date.now();
+      while (
+        current &&
+        (current.status === "queued" || current.status === "running") &&
+        Date.now() - started < 60 * 60 * 1000
+      ) {
+        await new Promise((r) => setTimeout(r, 1200));
+        const poll = await fetch(`/api/tools/rnaseq?id=${encodeURIComponent(current.id)}`);
+        const body = await poll.json();
+        if (!poll.ok || !body.job) {
+          setErr(body.error || "轮询任务失败");
+          break;
+        }
+        current = body.job as Job;
+        setJob(current);
+      }
+      if (current?.status === "failed") setErr(current.error || "分析失败");
     } catch (ex) {
       setErr(ex instanceof Error ? ex.message : "网络错误");
     } finally {
@@ -655,10 +674,13 @@ export function RnaseqRunner({ entitled, loggedIn }: { entitled: boolean; logged
             <label>
               DE 引擎
               <select value={deEngine} onChange={(e) => setDeEngine(e.target.value)}>
-                <option value="auto">auto（limma_like → welch）</option>
-                <option value="limma_like">limma_like（经验贝叶斯 moderated t）</option>
+                <option value="auto">auto（优先本机 R limma → limma_like → Welch）</option>
+                <option value="r_limma">r_limma（Bioconductor limma，需 R）</option>
+                <option value="r_edger">r_edger（edgeR，需 R + counts）</option>
+                <option value="r_deseq2">r_deseq2（DESeq2，需 R + counts）</option>
+                <option value="limma_like">limma_like（Python moderated t）</option>
                 <option value="welch">welch（备选）</option>
-                <option value="pydeseq2">pydeseq2（需安装且为 counts）</option>
+                <option value="pydeseq2">pydeseq2（pip 可选；需 counts）</option>
               </select>
             </label>
             <label>
@@ -752,6 +774,8 @@ export function RnaseqRunner({ entitled, loggedIn }: { entitled: boolean; logged
           <h2>任务状态</h2>
           <p className="mono">
             id={job.id} · status={job.status}
+            {job.message ? ` · ${job.message}` : ""}
+            {job.status === "queued" || job.status === "running" ? " · 轮询中…" : ""}
             {job.summary
               ? ` · genes=${job.summary.n_genes ?? "?"} samples=${job.summary.n_samples ?? "?"} up=${job.summary.n_up ?? "?"} down=${job.summary.n_down ?? "?"} contrasts=${job.summary.n_contrasts ?? "?"} engine=${job.summary.de_engine || "?"} control=${job.summary.control_label || "?"} treatments=${job.summary.treatment_label || "?"} enrichment=${job.summary.enrichment || "?"}`
               : null}
