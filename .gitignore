@@ -48,3 +48,6 @@ tmp/
 .zeabur-config/
 
 _smoke_artifacts_*/
+
+# portal one-click demo annotation copy
+services/rnaseq-pipeline/annotations/tryout/

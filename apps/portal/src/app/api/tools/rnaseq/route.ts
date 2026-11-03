@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { isEntitled } from "@/lib/user-store";
 import { currentUser } from "@/lib/user-session";
-import { enqueueRnaseqJob, getRnaseqJob } from "@/lib/tools/rnaseq-jobs";
+import { enqueueRnaseqJob, getRnaseqJob, quotaForUser } from "@/lib/tools/rnaseq-jobs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,7 +16,7 @@ export async function GET(request: Request) {
   if (!id) return NextResponse.json({ error: "缺少 job id" }, { status: 400 });
   const job = getRnaseqJob(id, user.id);
   if (!job) return NextResponse.json({ error: "任务不存在" }, { status: 404 });
-  return NextResponse.json({ job });
+  return NextResponse.json({ job, quota: quotaForUser(user.id) });
 }
 
 export async function POST(request: Request) {
@@ -52,5 +52,6 @@ export async function POST(request: Request) {
     padj: Number.isFinite(padj) ? padj : undefined,
   });
 
-  return NextResponse.json({ job }, { status: 202 });
+  const quota = quotaForUser(user.id);
+  return NextResponse.json({ job, quota }, { status: 202 });
 }

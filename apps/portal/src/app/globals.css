@@ -1268,3 +1268,179 @@ a {
   color: var(--ink, #0b1f33);
   font-weight: 600;
 }
+
+
+.tools-history {
+  margin-top: 1.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid color-mix(in srgb, var(--muted, #667) 35%, transparent);
+}
+
+.tools-history-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.tools-history-head h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.tools-quota {
+  font-size: 0.9rem;
+  color: var(--muted, #556);
+  margin: 0.25rem 0 0.75rem;
+}
+
+.tools-quota.is-warn {
+  color: #9a3412;
+  font-weight: 600;
+}
+
+.tools-history-table-wrap {
+  overflow-x: auto;
+}
+
+.tools-history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.tools-history-table th,
+.tools-history-table td {
+  text-align: left;
+  padding: 0.45rem 0.55rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--muted, #667) 28%, transparent);
+  vertical-align: top;
+}
+
+.tools-status {
+  display: inline-block;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: #e2e8f0;
+  font-size: 0.8rem;
+}
+
+.tools-status-succeeded,
+.tools-status-dry_run {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.tools-status-failed {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.tools-status-running,
+.tools-status-queued {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.rnaseq-ann-box {
+  margin: 1rem 0;
+  padding: 0.85rem 1rem;
+  border: 1px dashed color-mix(in srgb, var(--muted, #667) 45%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, #0f766e 6%, white);
+}
+
+.rnaseq-ann-box h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+}
+
+.rnaseq-ann-list {
+  margin: 0.5rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+}
+
+.ncbi-mode-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+  margin: 0.75rem 0 1rem;
+}
+
+.ncbi-mode-card {
+  border: 1px solid color-mix(in srgb, var(--muted, #667) 35%, transparent);
+  border-radius: 12px;
+  padding: 0.75rem 0.9rem;
+  background: #fff;
+}
+
+.ncbi-mode-card.is-on {
+  border-color: #0f766e;
+  box-shadow: 0 0 0 2px color-mix(in srgb, #0f766e 25%, transparent);
+}
+
+.ncbi-mode-card h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+
+.ncbi-mode-card p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted, #445);
+}
+
+.ncbi-checklist {
+  margin: 0.5rem 0 1rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid color-mix(in srgb, var(--muted, #667) 25%, transparent);
+}
+
+.ncbi-checklist-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+
+.ncbi-checklist-head h3 {
+  margin: 0;
+}
+
+.ncbi-checklist-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+}
+
+.ncbi-checklist-list li {
+  margin: 0.35rem 0;
+}
+
+.ncbi-checklist-list li.is-done label strong {
+  color: #065f46;
+}
+
+.ncbi-checklist-list label {
+  display: flex;
+  gap: 0.55rem;
+  align-items: flex-start;
+}
+
+.ncbi-checklist-list label span {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.ncbi-checklist-list label em {
+  font-style: normal;
+  font-size: 0.8rem;
+  color: var(--muted, #667);
+}
+

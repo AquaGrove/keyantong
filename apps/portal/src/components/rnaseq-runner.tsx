@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { ToolsJobHistory } from "@/components/tools-job-history";
 
 type Job = {
   id: string;
@@ -118,6 +119,11 @@ export function RnaseqRunner({ entitled, loggedIn }: { entitled: boolean; logged
   const [dragSample, setDragSample] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<string | null>(null);
   const [species, setSpecies] = useState("none");
+  const [speciesRows, setSpeciesRows] = useState<
+    { species: string; label: string; ready_go: boolean; ready_kegg: boolean }[]
+  >([]);
+  const [annHelp, setAnnHelp] = useState("");
+  const [annMsg, setAnnMsg] = useState("");
   const [lfc, setLfc] = useState(1);
   const [padj, setPadj] = useState(0.05);
   const [deEngine, setDeEngine] = useState("auto");
@@ -156,6 +162,46 @@ export function RnaseqRunner({ entitled, loggedIn }: { entitled: boolean; logged
         control: ctrl.id,
       }));
   }, [groups]);
+
+  useEffect(() => {
+    if (!loggedIn || !entitled) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/tools/rnaseq/annotations");
+        const data = await res.json();
+        if (cancelled || !res.ok) return;
+        setSpeciesRows(data.species || []);
+        setAnnHelp(data.help?.summary || "");
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [loggedIn, entitled]);
+
+  async function seedDemoAnnotations() {
+    setAnnMsg("");
+    try {
+      const res = await fetch("/api/tools/rnaseq/annotations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "seed-demo-tryout" }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setAnnMsg(data.error || data.message || "复制失败");
+        return;
+      }
+      setSpeciesRows(data.species || []);
+      setSpecies("tryout");
+      setAnnMsg(data.message || "已复制 demo → tryout");
+    } catch (ex) {
+      setAnnMsg(ex instanceof Error ? ex.message : "网络错误");
+    }
+  }
 
   // keep selected contrasts in sync when group names change; default = all
   useEffect(() => {
@@ -661,14 +707,25 @@ export function RnaseqRunner({ entitled, loggedIn }: { entitled: boolean; logged
                 onChange={(e) => setPadj(Number(e.target.value))}
               />
             </label>
-            <label>
+            <label id="annotations">
               物种注释
               <select value={species} onChange={(e) => setSpecies(e.target.value)}>
                 <option value="none">none（跳过富集）</option>
-                <option value="demo">demo（内置夹具注释）</option>
-                <option value="human">human（需本地 annotations/human）</option>
-                <option value="mouse">mouse（需本地 annotations/mouse）</option>
-                <option value="arabidopsis">arabidopsis（需本地 annotations）</option>
+                {(speciesRows.length
+                  ? speciesRows
+                  : [
+                      { species: "demo", label: "demo（内置夹具）", ready_go: true, ready_kegg: true },
+                      { species: "tryout", label: "tryout（demo 副本）", ready_go: false, ready_kegg: false },
+                      { species: "human", label: "human", ready_go: false, ready_kegg: false },
+                      { species: "mouse", label: "mouse", ready_go: false, ready_kegg: false },
+                      { species: "arabidopsis", label: "arabidopsis", ready_go: false, ready_kegg: false },
+                    ]
+                ).map((s) => (
+                  <option key={s.species} value={s.species}>
+                    {s.label}
+                    {s.ready_go || s.ready_kegg ? " · GO/KEGG就绪" : " · 未就绪"}
+                  </option>
+                ))}
               </select>
             </label>
             <label>
@@ -759,6 +816,37 @@ export function RnaseqRunner({ entitled, loggedIn }: { entitled: boolean; logged
           ) : null}
         </section>
 
+        <div className="rnaseq-ann-box">
+          <h3>注释与富集说明</h3>
+          <p className="form-note">
+            {annHelp ||
+              "把 gene2go.tsv / gene2kegg.tsv 放到 services/rnaseq-pipeline/annotations/<species>/。demo/tryout 仅供冒烟，勿作生物学结论。"}
+          </p>
+          <p className="form-note">
+            详见仓库{" "}
+            <span className="mono">services/rnaseq-pipeline/annotations/README.md</span>
+            ；本页锚点 <a href="#annotations">#annotations</a>。
+          </p>
+          <div className="actions">
+            <button type="button" className="btn" onClick={() => void seedDemoAnnotations()} disabled={!loggedIn || !entitled}>
+              一键复制 demo 注释到 tryout
+            </button>
+            <button type="button" className="btn" onClick={() => setSpecies("demo")}>
+              直接选用 demo
+            </button>
+          </div>
+          {annMsg ? <p className="form-note mono">{annMsg}</p> : null}
+          {speciesRows.length ? (
+            <ul className="rnaseq-ann-list mono">
+              {speciesRows.map((s) => (
+                <li key={s.species}>
+                  {s.species}: GO={s.ready_go ? "yes" : "no"} · KEGG={s.ready_kegg ? "yes" : "no"}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+
         <p className="form-note">
           主路径只需<strong>矩阵 + 此处分组与勾选对比</strong>。差异分析、可视化与维恩由系统自动完成并打包；结果含{" "}
           <span className="mono">methods.json</span> 记录实际 DE 引擎。
@@ -789,6 +877,8 @@ export function RnaseqRunner({ entitled, loggedIn }: { entitled: boolean; logged
           ) : null}
         </section>
       ) : null}
+
+      <ToolsJobHistory loggedIn={loggedIn} entitled={entitled} filterKind="rnaseq" />
     </div>
   );
 }

@@ -1,3 +1,5 @@
+import { emptyChecklist, checklistFromRunner } from "./ncbi-checklist";
+
 export type NcbiIssue = { level: "error" | "warning"; field: string; message: string };
 
 export type NcbiPayload = {
@@ -85,6 +87,9 @@ export function validateNcbiPayload(payload: NcbiPayload) {
   const { command, issues: ascpIssues } = buildAscpCommand(payload.ascp || ({} as NcbiPayload["ascp"]));
   issues.push(...ascpIssues);
   const ok = !issues.some((i) => i.level === "error");
+  const portal_checklist = ok
+    ? emptyChecklist(["validate"])
+    : emptyChecklist([]);
   return {
     ok,
     issues,
@@ -97,5 +102,9 @@ export function validateNcbiPayload(payload: NcbiPayload) {
       "使用生成的 ascp 命令上传（私钥仅留在本机）",
       "在 Portal 核对 MD5 / 文件清单后提交",
     ],
+    portal_checklist,
   };
 }
+
+export { checklistFromRunner, emptyChecklist };
+

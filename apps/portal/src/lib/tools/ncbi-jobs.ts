@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { jobDir, newJobId, readJson, writeJson } from "./job-store";
+import { jobDir, listJobMetas, newJobId, quotaForUser, readJson, writeJson } from "./job-store";
 import type { NcbiPayload } from "./ncbi-validate";
 
 export type NcbiJobStatus = "queued" | "running" | "succeeded" | "failed" | "dry_run";
@@ -140,3 +140,10 @@ save(job); process.exit(1);
   waiter.unref();
   return job;
 }
+
+
+export function listNcbiJobs(userId: string, limit = 30): NcbiJob[] {
+  return listJobMetas<NcbiJob>("ncbi", userId, limit);
+}
+
+export { quotaForUser };

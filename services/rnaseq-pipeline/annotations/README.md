@@ -7,6 +7,9 @@ annotations/
   demo/          # 内置夹具（已随仓库）
     gene2go.tsv
     gene2kegg.tsv
+  tryout/        # 门户「一键复制 demo」生成，仅试跑
+    gene2go.tsv
+    gene2kegg.tsv
   human/         # 可选：自行放入
     gene2go.tsv
     gene2kegg.tsv
@@ -42,3 +45,5 @@ Tab 分隔，首行为表头。列名可灵活识别：
 4. 门户物种下拉选 `human` / `mouse`，或 JSON `options.species` 填对应键。
 
 `species=demo` 使用夹具注释，仅供冒烟与界面演示，**不要**当作真实生物学结论。
+
+门户会员可在 `/tools/rnaseq` 点「一键复制 demo 注释到 tryout」，或直接选 `species=demo`。

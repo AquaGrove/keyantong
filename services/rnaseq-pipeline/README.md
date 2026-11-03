@@ -10,3 +10,24 @@ PYTHONPATH=. python3 -m unittest discover -s tests -v
 ```
 
 注释放置说明见 `annotations/README.md`。可选：`pip install 'pydeseq2>=0.4'`；R：`BiocManager::install(c("limma","edgeR","DESeq2"))`。
+
+
+## DE engines (R / Bioconductor)
+
+Preferred order for `de_engine=auto`: `r_limma` → `limma_like` → `welch`.
+Optional count engines: `r_edger`, `r_deseq2`, `pydeseq2`.
+
+Probe locally:
+
+```bash
+PYTHONPATH=. python3 -c 'from keyantong_rnaseq.r_backends import engine_probe_report; import json; print(json.dumps(engine_probe_report(), indent=2))'
+```
+
+Install (example, requires network):
+
+```r
+BiocManager::install(c("limma", "edgeR", "DESeq2"), ask = FALSE, update = FALSE)
+```
+
+On the developer Mac used for this branch (2026-11-04 Asia/Shanghai): limma / edgeR / DESeq2 installed successfully via BiocManager and are detected by unit tests. pydeseq2 remains optional and is not installed by default.
+

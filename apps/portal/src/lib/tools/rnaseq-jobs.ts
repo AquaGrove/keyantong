@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { jobDir, jobsRoot, newJobId, readJson, resolveDataDir, writeJson } from "./job-store";
+import { jobDir, jobsRoot, listJobMetas, newJobId, quotaForUser, readJson, resolveDataDir, writeJson } from "./job-store";
 
 export type RnaseqJobStatus = "queued" | "running" | "succeeded" | "failed";
 
@@ -308,3 +308,16 @@ export function ensureJobsRoot() {
   fs.mkdirSync(jobsRoot("rnaseq"), { recursive: true });
   return resolveDataDir();
 }
+
+
+export function listRnaseqJobs(userId: string, limit = 30): RnaseqJob[] {
+  return listJobMetas<RnaseqJob>("rnaseq", userId, limit);
+}
+
+export function rnaseqDownloadAvailable(job: RnaseqJob): boolean {
+  if (job.status !== "succeeded") return false;
+  const bundle = path.join(jobDir("rnaseq", job.id), "out", "rnaseq_results.zip");
+  return fs.existsSync(bundle);
+}
+
+export { quotaForUser };

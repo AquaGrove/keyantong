@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { isEntitled } from "@/lib/user-store";
 import { currentUser } from "@/lib/user-session";
 import type { NcbiPayload } from "@/lib/tools/ncbi-validate";
-import { enqueueNcbiJob, getNcbiJob } from "@/lib/tools/ncbi-jobs";
+import { enqueueNcbiJob, getNcbiJob, quotaForUser } from "@/lib/tools/ncbi-jobs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
   if (!id) return NextResponse.json({ error: "缺少 job id" }, { status: 400 });
   const job = getNcbiJob(id, user.id);
   if (!job) return NextResponse.json({ error: "任务不存在" }, { status: 404 });
-  return NextResponse.json({ job });
+  return NextResponse.json({ job, quota: quotaForUser(user.id) });
 }
 
 export async function POST(request: Request) {
@@ -40,5 +40,6 @@ export async function POST(request: Request) {
 
   const mode = ((body.mode || "dry-run").toLowerCase() === "run" ? "run" : "dry-run") as "dry-run" | "run";
   const job = enqueueNcbiJob({ userId: user.id, payload: body, mode });
-  return NextResponse.json({ job }, { status: 202 });
+  const quota = quotaForUser(user.id);
+  return NextResponse.json({ job, quota }, { status: 202 });
 }

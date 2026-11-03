@@ -16,6 +16,11 @@ SPECIES_MAP: dict[str, dict[str, str]] = {
         "gene2go": "demo/gene2go.tsv",
         "gene2kegg": "demo/gene2kegg.tsv",
     },
+    "tryout": {
+        "label": "Tryout (demo copy)",
+        "gene2go": "tryout/gene2go.tsv",
+        "gene2kegg": "tryout/gene2kegg.tsv",
+    },
     "human": {
         "label": "Homo sapiens (local cache if present)",
         "gene2go": "human/gene2go.tsv",

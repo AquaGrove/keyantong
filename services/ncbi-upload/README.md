@@ -8,3 +8,9 @@
 PYTHONPATH=. python3 -m unittest discover -s tests -v
 PYTHONPATH=. python3 -m keyantong_ncbi --payload payload.json --outdir /tmp/ncbi-out --dry-run
 ```
+
+## Portal checklist (no browser automation)
+
+`keyantong_ncbi.portal_checklist` tracks validate → dry-run → optional ascp → manual Submission Portal steps.
+The portal UI mirrors this state machine. We do **not** automate NCBI Submission Portal in the browser.
+
