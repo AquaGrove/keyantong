@@ -28,7 +28,22 @@ for d in portal redis caddy rnaseq; do
   [[ -e "$ROOT/$d" ]] && INCLUDE+=("$d")
 done
 if ((${#INCLUDE[@]})); then
-  tar -C "$ROOT" --exclude='backups' --exclude='rnaseq/incoming' -czf "$OUT_DIR/data-volumes.tgz" "${INCLUDE[@]}"
+  TAR=(tar)
+  if [[ ! -r "$ROOT/caddy/data" || ! -r "$ROOT/caddy/config" ]]; then
+    TAR=(sudo tar)
+  fi
+  "${TAR[@]}" -C "$ROOT" --exclude='backups' --exclude='rnaseq/incoming'     -czf "$OUT_DIR/data-volumes.tgz" "${INCLUDE[@]}" || {
+      echo "[backup] WARN: volume tar had errors; retry without caddy…"
+      INC2=()
+      for d in "${INCLUDE[@]}"; do [[ "$d" != caddy ]] && INC2+=("$d"); done
+      tar -C "$ROOT" --exclude='backups' --exclude='rnaseq/incoming'         -czf "$OUT_DIR/data-volumes.tgz" "${INC2[@]}"
+      if [[ -d "$ROOT/caddy" ]]; then
+        sudo tar -C "$ROOT" -czf "$OUT_DIR/caddy.tgz" caddy || true
+      fi
+    }
+  if [[ -f "$OUT_DIR/data-volumes.tgz" ]] && command -v sudo >/dev/null; then
+    sudo chown "$(id -u):$(id -g)" "$OUT_DIR/data-volumes.tgz" "$OUT_DIR/caddy.tgz" 2>/dev/null || true
+  fi
 fi
 if [[ -f "$ENV_FILE" ]]; then
   cp -a "$ENV_FILE" "$OUT_DIR/dotenv.encopy"
