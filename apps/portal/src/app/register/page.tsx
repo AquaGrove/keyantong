@@ -137,9 +137,12 @@ export default function RegisterPage() {
               autoComplete="new-password"
             />
           </label>
-          <button className="btn btn-primary" type="submit" disabled={busy}>
+          <button className="enter-submit-hidden" type="submit" disabled={busy}>
             {busy ? "提交中…" : "发送验证码"}
           </button>
+          <p className="enter-hint mono" aria-live="polite">
+            {busy ? "正在提交…" : "按 Enter 发送验证码"}
+          </p>
         </form>
       ) : null}
 
@@ -161,9 +164,12 @@ export default function RegisterPage() {
               autoComplete="one-time-code"
             />
           </label>
-          <button className="btn btn-primary" type="submit" disabled={busy}>
+          <button className="enter-submit-hidden" type="submit" disabled={busy}>
             {busy ? "验证中…" : "完成验证并开始试用"}
           </button>
+          <p className="enter-hint mono" aria-live="polite">
+            {busy ? "正在验证…" : "按 Enter 完成验证并开始试用"}
+          </p>
         </form>
       ) : null}
 

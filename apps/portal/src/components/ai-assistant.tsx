@@ -215,7 +215,7 @@ export function AiAssistant({
           </div>
 
           <div className="ai-composer">
-            <label className="ai-composer-row" htmlFor="ai-input">
+            <label className="ai-composer-solo" htmlFor="ai-input">
               <textarea
                 id="ai-input"
                 value={input}
@@ -223,24 +223,16 @@ export function AiAssistant({
                 placeholder="输入问题（勿粘贴测序原文、密钥或隐私标识）"
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                  if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
-                    void send();
+                    if (!busy && input.trim() && status?.configured) void send();
                   }
                 }}
               />
-              <button
-                type="button"
-                className="btn btn-primary"
-                disabled={busy || !input.trim() || !status?.configured}
-                onClick={() => void send()}
-              >
-                发送
-              </button>
             </label>
             {error ? <p className="ai-error">{error}</p> : null}
-            <p className="mono" style={{ margin: 0, color: "var(--muted)", fontSize: "0.82rem" }}>
-              ⌘/Ctrl + Enter 发送 · 点数 = ceil(tokens × 档位系数)
+            <p className="enter-hint mono">
+              Enter 发送 · Shift+Enter 换行 · 点数 = ceil(tokens × 档位系数)
             </p>
           </div>
         </section>

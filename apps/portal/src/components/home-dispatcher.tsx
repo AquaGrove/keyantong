@@ -143,7 +143,7 @@ export function HomeDispatcher({
         </div>
 
         <div className="ai-composer home-composer">
-          <label className="ai-composer-row" htmlFor="home-dispatch-input">
+          <label className="ai-composer-solo" htmlFor="home-dispatch-input">
             <textarea
               id="home-dispatch-input"
               value={input}
@@ -152,21 +152,14 @@ export function HomeDispatcher({
               rows={3}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
-                  void send();
+                  if (!busy && input.trim()) void send();
                 }
               }}
             />
-            <button
-              type="button"
-              className="btn btn-primary"
-              disabled={busy || !input.trim()}
-              onClick={() => void send()}
-            >
-              {t("home.chat.send")}
-            </button>
           </label>
+          <p className="enter-hint mono">{t("home.chat.enterHint")}</p>
           {error ? <p className="ai-error">{error}</p> : null}
         </div>
       </div>

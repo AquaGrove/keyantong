@@ -93,7 +93,8 @@ export function LiteratureHelpForm({ issuesNewBase, initialDoi = "" }: Props) {
         提交后会打开 GitHub Issue 预填模板。发帖即公开求助；他人用评论回复合法链接与步骤——
         <strong>不会、也不应出现 PDF 附件互传</strong>。
       </p>
-      <button className="btn btn-primary" type="submit">
+      <p className="enter-hint mono">按 Enter 提交求助</p>
+      <button className="enter-submit-hidden" type="submit">
         生成求助帖并打开
       </button>
     </form>

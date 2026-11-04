@@ -125,9 +125,12 @@ export default function LoginPage() {
               autoComplete="one-time-code"
             />
           </label>
-          <button className="btn btn-primary" type="submit" disabled={busy}>
+          <button className="enter-submit-hidden" type="submit" disabled={busy} aria-hidden={false}>
             {busy ? "验证中…" : "验证并登录"}
           </button>
+          <p className="enter-hint mono" aria-live="polite">
+            {busy ? "正在验证…" : "按 Enter 确认验证并登录"}
+          </p>
         </form>
       ) : (
         <form className="help-form" onSubmit={onSubmit}>
@@ -156,9 +159,16 @@ export default function LoginPage() {
               autoComplete="current-password"
             />
           </label>
-          <button className="btn btn-primary" type="submit" disabled={busy}>
+          <button className="enter-submit-hidden" type="submit" disabled={busy}>
             {busy ? "登录中…" : needReplace ? "注销最旧设备并登录" : "登录"}
           </button>
+          <p className="enter-hint mono" aria-live="polite">
+            {busy
+              ? "正在登录…"
+              : needReplace
+                ? "按 Enter：注销最旧设备并登录"
+                : "按 Enter 登录"}
+          </p>
         </form>
       )}
       <p className="form-note" style={{ marginTop: "1.25rem" }}>

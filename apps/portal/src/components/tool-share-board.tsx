@@ -381,7 +381,8 @@ function ShareForm({
         <input value={category} onChange={(e) => setCategory(e.target.value)} maxLength={40} />
       </label>
       {err && <p style={{ color: "crimson" }}>{err}</p>}
-      <button className="btn btn-primary" type="submit" disabled={busy}>
+      <p className="enter-hint mono">按 Enter 提交</p>
+      <button className="enter-submit-hidden" type="submit" disabled={busy}>
         {busy ? "提交中…" : "发布分享"}
       </button>
     </form>
@@ -473,7 +474,8 @@ function HelpForm({
         <input value={tags} onChange={(e) => setTags(e.target.value)} maxLength={200} />
       </label>
       {err && <p style={{ color: "crimson" }}>{err}</p>}
-      <button className="btn btn-primary" type="submit" disabled={busy}>
+      <p className="enter-hint mono">按 Enter 提交</p>
+      <button className="enter-submit-hidden" type="submit" disabled={busy}>
         {busy ? "提交中…" : "发布求助"}
       </button>
     </form>
@@ -548,7 +550,8 @@ function ResolveModal({
         </label>
         {err && <p style={{ color: "crimson" }}>{err}</p>}
         <div className="actions">
-          <button className="btn btn-primary" type="submit" disabled={busy}>
+          <p className="enter-hint mono">按 Enter 提交</p>
+      <button className="enter-submit-hidden" type="submit" disabled={busy}>
             {busy ? "提交中…" : "发布并标记解决"}
           </button>
           <button className="btn btn-secondary" type="button" onClick={onClose}>

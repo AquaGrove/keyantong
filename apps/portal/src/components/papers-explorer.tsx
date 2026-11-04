@@ -65,7 +65,8 @@ export function PapersExplorer({ entitled }: { entitled: boolean }) {
             required
           />
         </label>
-        <button className="btn btn-primary" type="submit">
+        <p className="enter-hint mono">按 Enter 搜索</p>
+        <button className="enter-submit-hidden" type="submit">
           搜索 OpenAlex
         </button>
       </form>
