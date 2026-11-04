@@ -21,6 +21,10 @@
 | 12 | [贡献者指南](./12-contribution.md) | 外部贡献者 | 如何贡献工具、知识、代码 |
 | 13 | [运维 Runbook](./13-runbook.md) | 运维 | 发布、回滚、故障处理 |
 | 14 | [决策记录 ADR](./14-adr.md) | 架构 | 关键技术决策与背景 |
+| 15 | [RNAseq / NCBI 工具](./15-rnaseq-ncbi-tools.md) | 研发 | 一键分析与上传辅助 |
+| 16 | [轻量云规格](./16-lightweight-cloud-sizing.md) | 运维 | 校园试用与拆分部署 |
+| 17 | [社区工具分享](./17-community-tool-share.md) | 产品 / 研发 | 工具分享/求助 MVP |
+| 18 | [安全基线落地](./18-security-baseline.md) | 全员 | 威胁模型与门户加固 |
 | 99 | [附录](./99-appendix.md) | 全员 | 目录骨架、环境变量、修订记录 |
 
 ## 状态说明
@@ -38,5 +42,10 @@
 - 重大架构变更：先更新对应章节，再补 ADR
 - API 变更：同步更新 `06-api.md` 与 OpenAPI（代码阶段）
 - 每个 PR 若触及行为约定，需更新相关文档片段
+
+## 工程落地补充
+
 - [15 · 转录组一键分析与 NCBI 上传协助](./15-rnaseq-ncbi-tools.md)
 - [16 · 轻量云服务器选型](./16-lightweight-cloud-sizing.md)
+- [17 · 社区工具分享与求助](./17-community-tool-share.md)
+- [18 · 开源门户安全基线](./18-security-baseline.md)

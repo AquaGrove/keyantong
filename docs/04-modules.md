@@ -34,6 +34,8 @@
 
 提供结构化科研互助场景，形成可搜索、可采纳、可入库的内容。
 
+门户 MVP 已落地 **工具分享 / 工具求助**（file-backed，见 [17-community-tool-share.md](./17-community-tool-share.md)）；文献互助仍走合规 Issue 模板。安全基线见 [18-security-baseline.md](./18-security-baseline.md)。
+
 ### 2.2 首发版块（6–8 个，禁止首发过度细分）
 
 | 版块 | 用途 | 建议标签示例 |

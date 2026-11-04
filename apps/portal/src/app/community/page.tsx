@@ -11,7 +11,7 @@ import { currentUser } from "@/lib/user-session";
 
 export const metadata: Metadata = {
   title: "社区",
-  description: "科研通合规互助社区：文献合法获取路径、环境排错与经验分享。",
+  description: "科研通合规互助社区：工具分享与求助、文献合法获取路径、环境排错与经验分享。",
 };
 
 export const dynamic = "force-dynamic";
@@ -30,12 +30,31 @@ export default async function CommunityPage({
     <main className="page">
       <h1 className="page-title">社区互助</h1>
       <p className="page-lead">
-        核心场景：你需要一篇文献的<strong>合法获取路径</strong> → 发结构化求助帖 →
-        有经验的人回复 OA / 馆藏 / 作者稿等途径 → 你按步骤拿到全文。
-        平台<strong>禁止 PDF 互传与盗版链接</strong>。
+        科研通社区两块核心场景：
+        <strong>工具分享 / 求助</strong>（外链 + 描述，可搜索）与
+        <strong>文献合法获取路径</strong>（禁止 PDF 互传与盗版链接）。
+        目标是互动交流、学习成长的大平台。
       </p>
 
-      <div className="flow" aria-label="互助流程">
+      <div className="hub-grid" style={{ marginBottom: "1.25rem" }}>
+        <Link className="hub-tile" href="/community/tools">
+          <span className="tag">Tools</span>
+          <h3>工具分享</h3>
+          <p>分享好用工具的下载链接与功能描述，大家搜索即可找到。</p>
+        </Link>
+        <Link className="hub-tile" href="/community/tools?tab=help">
+          <span className="tag">Help</span>
+          <h3>工具求助</h3>
+          <p>搜不到就发求助；有人能解决就去发分享帖并关联关闭。</p>
+        </Link>
+        <a className="hub-tile" href="#ask">
+          <span className="tag">Literature</span>
+          <h3>文献互助</h3>
+          <p>只讨论 OA / 馆藏 / 作者稿等合法路径，不传付费 PDF。</p>
+        </a>
+      </div>
+
+      <div className="flow" aria-label="文献互助流程">
         <div className="flow-step">
           <span className="flow-num">1</span>
           <div>
@@ -63,6 +82,7 @@ export default async function CommunityPage({
         <strong>合规红线：</strong>
         可以分享 Unpaywall、预印本、机构库、图书馆数据库操作说明、向作者 Request
         的方法；不可以上传出版社付费 PDF、不可以贴盗版站点、不可以把社区当「传 PDF」渠道。
+        工具区分享仅限合法授权软件外链，同样禁止盗版文献站。
       </div>
 
       <section className="section" id="ask">
@@ -112,6 +132,9 @@ export default async function CommunityPage({
           <a className="btn btn-secondary" href={GITHUB_DISCUSSIONS_URL}>
             去 Discussions 交流
           </a>
+          <Link className="btn btn-secondary" href="/community/tools?tab=help">
+            查看工具求助
+          </Link>
         </div>
       </section>
 

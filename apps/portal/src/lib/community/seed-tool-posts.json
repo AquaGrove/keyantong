@@ -1,0 +1,52 @@
+[
+  {
+    "id": "seed-share-fastqc",
+    "type": "tool_share",
+    "title": "FastQC：测序质量快速体检",
+    "description": "对 FASTQ 做碱基质量、GC、adapter 污染等可视化报告。适合 RNAseq / WGS 上机后第一关质控。官方包与 conda 均可装；本帖只分享官方下载与文档入口。",
+    "downloadUrl": "https://www.bioinformatics.babraham.ac.uk/projects/fastqc/",
+    "tags": ["rnaseq", "qc", "fastq", "java"],
+    "category": "生物信息",
+    "authorId": "seed-author-1",
+    "authorLabel": "s***@campus.edu.cn",
+    "createdAt": "2026-10-20T08:00:00.000Z",
+    "updatedAt": "2026-10-20T08:00:00.000Z",
+    "status": "open",
+    "linkedShareId": null,
+    "searchText": "fastqc 测序质量快速体检 对 fastq 做碱基质量 gc adapter 污染等可视化报告 适合 rnaseq wgs 上机后第一关质控 rnaseq qc fastq java 生物信息"
+  },
+  {
+    "id": "seed-share-igv",
+    "type": "tool_share",
+    "title": "IGV：基因组可视化浏览器",
+    "description": "Interactive Genome Viewer，查看 BAM/VCF/BED 等轨道，排查比对与变异位点。跨平台桌面版；请从官方渠道获取，勿上传安装包到本站。",
+    "downloadUrl": "https://igv.org/doc/desktop/",
+    "tags": ["genome", "visualization", "bam", "vcf"],
+    "category": "生物信息",
+    "authorId": "seed-author-2",
+    "authorLabel": "l***@univ.edu.cn",
+    "createdAt": "2026-10-22T10:30:00.000Z",
+    "updatedAt": "2026-10-22T10:30:00.000Z",
+    "status": "open",
+    "linkedShareId": null,
+    "searchText": "igv 基因组可视化浏览器 interactive genome viewer 查看 bam vcf bed 等轨道 排查比对与变异位点 genome visualization bam vcf 生物信息"
+  },
+  {
+    "id": "seed-help-volcano",
+    "type": "tool_help",
+    "title": "求推荐：差异表达结果画火山图的轻量工具",
+    "description": "已有 DESeq2 的 CSV（gene, log2FC, padj）。想找免写太多代码、最好有 GUI 或简单 R/Python 一键脚本的火山图工具。已试过 Excel 画散点不够用。",
+    "downloadUrl": null,
+    "tags": ["rnaseq", "visualization", "deseq2", "火山图"],
+    "category": "数据分析",
+    "authorId": "seed-author-3",
+    "authorLabel": "w***@mail.edu.cn",
+    "createdAt": "2026-10-28T03:15:00.000Z",
+    "updatedAt": "2026-10-28T03:15:00.000Z",
+    "status": "open",
+    "linkedShareId": null,
+    "tried": "Excel 散点；未装 RStudio 插件",
+    "expectedToolType": "可视化 / 绘图脚本",
+    "searchText": "求推荐 差异表达结果画火山图的轻量工具 已有 deseq2 的 csv gene log2fc padj 想找免写太多代码 最好有 gui 或简单 r python 一键脚本的火山图工具 rnaseq visualization deseq2 火山图 数据分析 excel 散点"
+  }
+]

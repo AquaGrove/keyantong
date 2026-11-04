@@ -13,8 +13,17 @@ import {
   createUserToken,
   sessionCookieOptions,
 } from "@/lib/user-session";
+import { clientIp, rateLimit } from "@/lib/security";
 
 export async function POST(request: Request) {
+  const ip = clientIp(request);
+  const rl = rateLimit(`auth:login:${ip}`, { windowMs: 60_000, max: 20 });
+  if (!rl.ok) {
+    return NextResponse.json(
+      { ok: false, error: "登录尝试过多，请稍后再试" },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } },
+    );
+  }
   const body = (await request.json().catch(() => null)) as {
     email?: string;
     password?: string;
