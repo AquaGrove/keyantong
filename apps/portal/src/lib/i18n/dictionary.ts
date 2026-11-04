@@ -53,7 +53,7 @@ const zh: Dict = {
   "tools.ai.title": "AI 助手",
   "tools.rnaseq.title": "转录组分析",
   "tools.ncbi.title": "NCBI 本机上传",
-  "askwho.label": "去问谁",
+  "askwho.label": "求助AI助手",
   "workers.title": "我的打工人",
   "workers.add": "添加我的打工人",
 };
@@ -107,7 +107,7 @@ const en: Dict = {
   "tools.ai.title": "AI assistant",
   "tools.rnaseq.title": "RNA-seq analysis",
   "tools.ncbi.title": "Local NCBI upload",
-  "askwho.label": "Ask who",
+  "askwho.label": "Ask AI helper",
   "workers.title": "My workers",
   "workers.add": "Add a worker",
 };

@@ -2074,8 +2074,9 @@ h1.page-title {
 }
 
 
-/* Enter-to-confirm: hide redundant submit; keep for a11y / native form Enter */
+/* Enter-to-confirm: visible text-like submit (also clickable) */
 .enter-submit-hidden {
+  /* legacy: keep usable for other forms that still reference it */
   position: absolute;
   width: 1px;
   height: 1px;
@@ -2091,6 +2092,33 @@ h1.page-title {
   margin: 0.35rem 0 0;
   color: var(--muted);
   font-size: 0.82rem;
+}
+
+.enter-confirm-btn {
+  justify-self: start;
+  margin: 0.15rem 0 0;
+  padding: 0.55rem 0.95rem;
+  border: 1px dashed var(--line-strong);
+  border-radius: 0.65rem;
+  background: rgba(15, 118, 110, 0.06);
+  color: var(--ink-soft);
+  font: inherit;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+
+.enter-confirm-btn:hover:not(:disabled) {
+  background: rgba(15, 118, 110, 0.12);
+  border-color: var(--accent);
+  color: var(--ink);
+}
+
+.enter-confirm-btn:disabled {
+  opacity: 0.7;
+  cursor: wait;
 }
 
 .ai-composer-solo {
@@ -2121,7 +2149,7 @@ h1.page-title {
 }
 
 
-/* —— Ask who + workers —— */
+/* —— Ask AI helper + workers —— */
 .ask-who-dock {
   position: fixed;
   left: 50%;
@@ -2129,6 +2157,11 @@ h1.page-title {
   transform: translateX(-50%);
   z-index: 60;
   pointer-events: none;
+  opacity: 0;
+}
+
+.ask-who-dock-ready {
+  opacity: 1;
 }
 
 .ask-who-dock-home {
@@ -2137,22 +2170,42 @@ h1.page-title {
 
 .ask-who-fab {
   pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
   border: 0;
-  cursor: pointer;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
   font: inherit;
   font-weight: 700;
-  font-size: 0.95rem;
-  padding: 0.85rem 1.45rem;
+  font-size: 0.92rem;
+  padding: 0.45rem 1.05rem 0.45rem 0.45rem;
   border-radius: 999px;
-  color: #ecfeff;
-  background: linear-gradient(160deg, #0f766e, #0d9488);
-  box-shadow: 0 14px 36px rgba(15, 118, 110, 0.35);
-  transition: transform 140ms ease, box-shadow 140ms ease;
+  color: #134e4a;
+  background: linear-gradient(160deg, #ecfeff, #ccfbf1);
+  border: 1px solid rgba(45, 212, 191, 0.55);
+  box-shadow: 0 14px 36px rgba(15, 118, 110, 0.22);
+  transition: box-shadow 140ms ease, transform 140ms ease;
+}
+
+.ask-who-fab:active {
+  cursor: grabbing;
 }
 
 .ask-who-fab:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 18px 40px rgba(15, 118, 110, 0.4);
+  box-shadow: 0 18px 40px rgba(15, 118, 110, 0.32);
+}
+
+.ask-who-avatar {
+  flex: 0 0 auto;
+  display: block;
+  filter: drop-shadow(0 2px 4px rgba(15, 118, 110, 0.2));
+}
+
+.ask-who-fab-text {
+  white-space: nowrap;
+  letter-spacing: 0.01em;
 }
 
 .ask-who-panel {

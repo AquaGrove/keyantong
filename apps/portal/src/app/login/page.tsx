@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, KeyboardEvent, useEffect, useRef, useState, type RefObject } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getOrCreateDeviceId } from "@/lib/device-client";
@@ -15,8 +15,14 @@ async function readJsonSafe(res: Response): Promise<Record<string, unknown>> {
   }
 }
 
+function isEnterConfirm(e: KeyboardEvent) {
+  return e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing;
+}
+
 export default function LoginPage() {
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
+  const verifyRef = useRef<HTMLFormElement>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
@@ -31,13 +37,15 @@ export default function LoginPage() {
   }, []);
 
   async function login(replaceOldest: boolean) {
+    const did = deviceId || getOrCreateDeviceId();
+    if (!deviceId) setDeviceId(did);
     const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        email,
+        email: email.trim(),
         password,
-        deviceId,
+        deviceId: did,
         deviceLabel: navigator.userAgent.slice(0, 80),
         replaceOldest,
       }),
@@ -67,6 +75,7 @@ export default function LoginPage() {
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
+    if (busy) return;
     setErr("");
     setBusy(true);
     try {
@@ -80,13 +89,14 @@ export default function LoginPage() {
 
   async function onVerify(e: FormEvent) {
     e.preventDefault();
+    if (busy) return;
     setErr("");
     setBusy(true);
     try {
       const res = await fetch("/api/auth/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code }),
+        body: JSON.stringify({ email: email.trim(), code: code.trim() }),
       });
       const data = await readJsonSafe(res);
       if (!res.ok) {
@@ -102,6 +112,15 @@ export default function LoginPage() {
     }
   }
 
+  function submitOnEnter(
+    e: KeyboardEvent<HTMLInputElement>,
+    ref: RefObject<HTMLFormElement | null>,
+  ) {
+    if (!isEnterConfirm(e)) return;
+    e.preventDefault();
+    ref.current?.requestSubmit();
+  }
+
   return (
     <main className="page">
       <h1 className="page-title">登录</h1>
@@ -113,7 +132,7 @@ export default function LoginPage() {
       ) : null}
 
       {needVerify ? (
-        <form className="help-form" onSubmit={onVerify}>
+        <form className="help-form" ref={verifyRef} onSubmit={onVerify}>
           <label>
             邮箱验证码
             <input
@@ -123,17 +142,15 @@ export default function LoginPage() {
               inputMode="numeric"
               disabled={busy}
               autoComplete="one-time-code"
+              onKeyDown={(e) => submitOnEnter(e, verifyRef)}
             />
           </label>
-          <button className="enter-submit-hidden" type="submit" disabled={busy} aria-hidden={false}>
-            {busy ? "验证中…" : "验证并登录"}
-          </button>
-          <p className="enter-hint mono" aria-live="polite">
+          <button className="enter-confirm-btn" type="submit" disabled={busy}>
             {busy ? "正在验证…" : "按 Enter 确认验证并登录"}
-          </p>
+          </button>
         </form>
       ) : (
-        <form className="help-form" onSubmit={onSubmit}>
+        <form className="help-form" ref={formRef} onSubmit={onSubmit}>
           <label>
             校园邮箱
             <input
@@ -146,6 +163,7 @@ export default function LoginPage() {
               }}
               disabled={busy}
               autoComplete="email"
+              onKeyDown={(e) => submitOnEnter(e, formRef)}
             />
           </label>
           <label>
@@ -157,18 +175,16 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               disabled={busy}
               autoComplete="current-password"
+              onKeyDown={(e) => submitOnEnter(e, formRef)}
             />
           </label>
-          <button className="enter-submit-hidden" type="submit" disabled={busy}>
-            {busy ? "登录中…" : needReplace ? "注销最旧设备并登录" : "登录"}
-          </button>
-          <p className="enter-hint mono" aria-live="polite">
+          <button className="enter-confirm-btn" type="submit" disabled={busy}>
             {busy
               ? "正在登录…"
               : needReplace
                 ? "按 Enter：注销最旧设备并登录"
                 : "按 Enter 登录"}
-          </p>
+          </button>
         </form>
       )}
       <p className="form-note" style={{ marginTop: "1.25rem" }}>

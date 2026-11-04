@@ -62,7 +62,7 @@ export function WorkerManager({ loggedIn }: { loggedIn: boolean }) {
         setErr(typeof data.error === "string" ? data.error : "创建失败");
         return;
       }
-      setMsg(locale === "zh" ? "已创建，可在任意页「去问谁」召唤" : "Created — summon via Ask who");
+      setMsg(locale === "zh" ? "已创建，可在任意页「求助AI助手」召唤" : "Created — summon via Ask AI helper");
       setName("");
       setPersona("");
       setSkills("");
@@ -87,7 +87,7 @@ export function WorkerManager({ loggedIn }: { loggedIn: boolean }) {
         <h2>{locale === "zh" ? "我的打工人" : "My workers"}</h2>
         <p className="section-lead">
           {locale === "zh"
-            ? "登录后可添加专属打工人或宠物：独立人设、擅长领域与记忆空间，全站「去问谁」随时召唤。"
+            ? "登录后可添加专属打工人或宠物：独立人设、擅长领域与记忆空间，全站「求助AI助手」随时召唤。"
             : "Sign in to add workers or pets with private persona, skills, and memory — summon from any page."}
         </p>
       </section>
@@ -110,8 +110,8 @@ export function WorkerManager({ loggedIn }: { loggedIn: boolean }) {
       </div>
       <p className="section-lead">
         {locale === "zh"
-          ? "每个角色有独立记忆与聊天窗。也可添加宠物同伴。在任意页点「去问谁」召唤。"
-          : "Each role has private memory and a chat window. Add pets too. Summon via Ask who on any page."}
+          ? "每个角色有独立记忆与聊天窗。也可添加宠物同伴。在任意页点「求助AI助手」召唤。"
+          : "Each role has private memory and a chat window. Add pets too. Summon via Ask AI helper on any page."}
       </p>
 
       {showForm ? (

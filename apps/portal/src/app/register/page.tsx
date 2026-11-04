@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, KeyboardEvent, useRef, useState, type RefObject } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getOrCreateDeviceId } from "@/lib/device-client";
@@ -15,8 +15,14 @@ async function readJsonSafe(res: Response): Promise<Record<string, unknown>> {
   }
 }
 
+function isEnterConfirm(e: KeyboardEvent) {
+  return e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing;
+}
+
 export default function RegisterPage() {
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
+  const verifyRef = useRef<HTMLFormElement>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
@@ -26,8 +32,18 @@ export default function RegisterPage() {
   const [devCode, setDevCode] = useState("");
   const [busy, setBusy] = useState(false);
 
+  function submitOnEnter(
+    e: KeyboardEvent<HTMLInputElement>,
+    ref: RefObject<HTMLFormElement | null>,
+  ) {
+    if (!isEnterConfirm(e)) return;
+    e.preventDefault();
+    ref.current?.requestSubmit();
+  }
+
   async function onRegister(e: FormEvent) {
     e.preventDefault();
+    if (busy) return;
     setErr("");
     setMsg("");
     setBusy(true);
@@ -35,7 +51,7 @@ export default function RegisterPage() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: email.trim(), password }),
       });
       const data = await readJsonSafe(res);
       if (!res.ok) {
@@ -57,13 +73,14 @@ export default function RegisterPage() {
 
   async function onVerify(e: FormEvent) {
     e.preventDefault();
+    if (busy) return;
     setErr("");
     setBusy(true);
     try {
       const res = await fetch("/api/auth/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code }),
+        body: JSON.stringify({ email: email.trim(), code: code.trim() }),
       });
       const data = await readJsonSafe(res);
       if (!res.ok) {
@@ -75,7 +92,7 @@ export default function RegisterPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email,
+          email: email.trim(),
           password,
           deviceId: getOrCreateDeviceId(),
           deviceLabel: navigator.userAgent.slice(0, 80),
@@ -112,7 +129,7 @@ export default function RegisterPage() {
       {msg ? <p className="section-lead">{msg}</p> : null}
 
       {step === "form" ? (
-        <form className="help-form" onSubmit={onRegister}>
+        <form className="help-form" ref={formRef} onSubmit={onRegister}>
           <label>
             校园邮箱
             <input
@@ -123,6 +140,7 @@ export default function RegisterPage() {
               placeholder="name@mail.hzau.edu.cn"
               disabled={busy}
               autoComplete="email"
+              onKeyDown={(e) => submitOnEnter(e, formRef)}
             />
           </label>
           <label>
@@ -135,19 +153,17 @@ export default function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)}
               disabled={busy}
               autoComplete="new-password"
+              onKeyDown={(e) => submitOnEnter(e, formRef)}
             />
           </label>
-          <button className="enter-submit-hidden" type="submit" disabled={busy}>
-            {busy ? "提交中…" : "发送验证码"}
-          </button>
-          <p className="enter-hint mono" aria-live="polite">
+          <button className="enter-confirm-btn" type="submit" disabled={busy}>
             {busy ? "正在提交…" : "按 Enter 发送验证码"}
-          </p>
+          </button>
         </form>
       ) : null}
 
       {step === "verify" ? (
-        <form className="help-form" onSubmit={onVerify}>
+        <form className="help-form" ref={verifyRef} onSubmit={onVerify}>
           {devCode ? (
             <p className="form-note">
               当前未配置 SMTP 发信，验证码已显示：<code className="mono">{devCode}</code>
@@ -162,14 +178,12 @@ export default function RegisterPage() {
               inputMode="numeric"
               disabled={busy}
               autoComplete="one-time-code"
+              onKeyDown={(e) => submitOnEnter(e, verifyRef)}
             />
           </label>
-          <button className="enter-submit-hidden" type="submit" disabled={busy}>
-            {busy ? "验证中…" : "完成验证并开始试用"}
-          </button>
-          <p className="enter-hint mono" aria-live="polite">
+          <button className="enter-confirm-btn" type="submit" disabled={busy}>
             {busy ? "正在验证…" : "按 Enter 完成验证并开始试用"}
-          </p>
+          </button>
         </form>
       ) : null}
 
