@@ -4,6 +4,7 @@ import { FormEvent, KeyboardEvent, useEffect, useRef, useState, type RefObject }
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getOrCreateDeviceId } from "@/lib/device-client";
+import { PageDecor } from "@/components/page-decor";
 
 async function readJsonSafe(res: Response): Promise<Record<string, unknown>> {
   const text = await res.text();
@@ -123,6 +124,7 @@ export default function LoginPage() {
 
   return (
     <main className="page">
+      <PageDecor variant="sparse" />
       <h1 className="page-title">登录</h1>
       <p className="page-lead">同一账号最多同时 2 台设备（用浏览器设备号识别，不是网卡 MAC）。</p>
       {err ? (

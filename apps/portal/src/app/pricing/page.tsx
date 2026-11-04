@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { PageDecor } from "@/components/page-decor";
 
 export const metadata: Metadata = {
   title: "会员",
@@ -9,6 +10,7 @@ export const metadata: Metadata = {
 export default function PricingPage() {
   return (
     <main className="page">
+      <PageDecor variant="sparse" />
       <h1 className="page-title">试用与会员</h1>
       <p className="page-lead">
         面向高校师生。校园邮箱验证后免费试用 7 天；之后开通 19.9 元永久会员（本期由站长人工开通，暂不在线支付）。

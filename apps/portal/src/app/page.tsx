@@ -1,4 +1,5 @@
 import { HomeDispatcher } from "@/components/home-dispatcher";
+import { PageDecor } from "@/components/page-decor";
 import { HomeIntro } from "@/components/home-intro";
 import { WorkerManager } from "@/components/worker-manager";
 import { isEntitled } from "@/lib/user-store";
@@ -12,6 +13,7 @@ export default async function HomePage() {
 
   return (
     <main className="page page-home">
+      <PageDecor variant="home" />
       <HomeIntro />
       <HomeDispatcher loggedIn={Boolean(user)} entitled={entitled} />
       <WorkerManager loggedIn={Boolean(user)} />

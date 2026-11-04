@@ -4,6 +4,7 @@ import { FormEvent, KeyboardEvent, useRef, useState, type RefObject } from "reac
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getOrCreateDeviceId } from "@/lib/device-client";
+import { PageDecor } from "@/components/page-decor";
 
 async function readJsonSafe(res: Response): Promise<Record<string, unknown>> {
   const text = await res.text();
@@ -115,6 +116,7 @@ export default function RegisterPage() {
 
   return (
     <main className="page">
+      <PageDecor variant="sparse" />
       <h1 className="page-title">校园邮箱注册</h1>
       <p className="page-lead">
         仅限师生校园邮箱（.edu.cn / .edu）。验证通过后试用 7 天；之后由站长开通 19.9

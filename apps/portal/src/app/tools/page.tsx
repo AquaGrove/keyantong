@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ToolsCatalog } from "@/components/tools-catalog";
 import { loadToolCards } from "@/lib/catalog";
 import { GITHUB_CONTRIBUTING_URL, GITHUB_URL } from "@/lib/site";
+import { PageDecor } from "@/components/page-decor";
 
 export const metadata: Metadata = {
   title: "工具",
@@ -14,6 +15,7 @@ export default function ToolsPage() {
 
   return (
     <main className="page">
+      <PageDecor variant="tools" />
       <div className="module-hero">
         <p className="page-kicker">Tools</p>
         <h1 className="page-title">工具目录</h1>

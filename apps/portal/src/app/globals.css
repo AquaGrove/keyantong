@@ -2344,10 +2344,12 @@ h1.page-title {
 
 .worker-window {
   position: fixed;
-  right: 1rem;
-  bottom: 5.2rem;
-  z-index: 80;
-  width: min(420px, calc(100% - 1.5rem));
+  left: 1.25rem;
+  top: 5.5rem;
+  right: auto;
+  bottom: auto;
+  z-index: 90;
+  width: min(400px, calc(100% - 1.5rem));
   max-height: min(78vh, 640px);
   display: grid;
   grid-template-rows: auto minmax(180px, 1fr) auto;
@@ -2356,6 +2358,11 @@ h1.page-title {
   background: var(--paper-elevated);
   box-shadow: var(--shadow);
   overflow: hidden;
+  opacity: 0;
+}
+
+.worker-window-ready {
+  opacity: 1;
 }
 
 .worker-window-head {
@@ -2365,6 +2372,22 @@ h1.page-title {
   padding: 0.75rem 0.9rem;
   border-bottom: 1px solid var(--line);
   background: color-mix(in srgb, var(--accent) 8%, #fff);
+}
+
+.worker-window-drag {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.worker-window-drag:active {
+  cursor: grabbing;
+}
+
+.worker-drag-hint {
+  font-weight: 500;
+  font-size: 0.75rem;
+  color: var(--muted);
 }
 
 .worker-thread {
@@ -2399,4 +2422,46 @@ h1.page-title {
 /* Inner pages: a bit more top padding without site header */
 body:has(.ask-who-dock:not(.ask-who-dock-home)) .page {
   padding-top: 1.25rem;
+}
+
+
+/* —— Page decorations (user assets under /public/decor) —— */
+.page {
+  position: relative;
+}
+
+.page-decor {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.page > *:not(.page-decor) {
+  position: relative;
+  z-index: 1;
+}
+
+.page-decor-item {
+  position: absolute;
+  max-width: min(280px, 34vw);
+  width: auto;
+  height: auto;
+  opacity: 0.55;
+  filter: saturate(0.92);
+}
+
+.page-decor-tl { top: 0.5rem; left: -0.5rem; }
+.page-decor-tr { top: 1.5rem; right: -0.75rem; }
+.page-decor-bl { bottom: 2rem; left: -1rem; max-width: min(320px, 38vw); }
+.page-decor-br { bottom: 1rem; right: -0.5rem; max-width: min(300px, 36vw); }
+
+.page-decor-home .page-decor-tl { max-width: min(240px, 28vw); opacity: 0.5; }
+.page-decor-home .page-decor-tr { max-width: min(260px, 30vw); opacity: 0.48; }
+.page-decor-home .page-decor-bl { opacity: 0.52; }
+.page-decor-home .page-decor-br { opacity: 0.45; }
+
+@media (max-width: 900px) {
+  .page-decor { display: none; }
 }

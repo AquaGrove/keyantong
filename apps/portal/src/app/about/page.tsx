@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { GITHUB_DOCS_URL, GITHUB_URL } from "@/lib/site";
+import { PageDecor } from "@/components/page-decor";
 
 export const metadata: Metadata = {
   title: "关于",
@@ -10,6 +11,7 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <main className="page">
+      <PageDecor variant="about" />
       <h1 className="page-title">关于科研通</h1>
       <p className="page-lead">
         科研通是面向科研人员的开源互助平台：社区沉淀可检索知识，规范贡献扩展工具，合规优先、人人可参与。

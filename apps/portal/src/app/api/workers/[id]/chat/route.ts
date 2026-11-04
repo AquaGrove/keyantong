@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { detectIntent, planForIntent, renderPlan } from "@/lib/dispatch/intent";
 import {
   appendMemory,
   buildWorkerSystemPrompt,
@@ -33,14 +34,49 @@ export async function POST(request: Request, ctx: Ctx) {
   const agent = await getWorker(user.id, id);
   if (!agent) return NextResponse.json({ error: "未找到该角色" }, { status: 404 });
 
-  let body: { message?: string };
+  let body: { message?: string; locale?: string };
   try {
-    body = (await request.json()) as { message?: string };
+    body = (await request.json()) as { message?: string; locale?: string };
   } catch {
     return NextResponse.json({ error: "bad json" }, { status: 400 });
   }
   const message = typeof body.message === "string" ? body.message.trim() : "";
   if (!message) return NextResponse.json({ error: "消息不能为空" }, { status: 400 });
+  const locale = body.locale === "en" ? "en" : "zh";
+
+  const intent = detectIntent(message);
+  const plan = planForIntent(intent);
+  const rendered = renderPlan(plan, locale);
+
+  // Actionable intents share the same checklist + Next CTA as home dispatcher.
+  if (intent !== "general") {
+    const intro =
+      locale === "zh"
+        ? `【${agent.name}】收到。我按科研通调度清单带你准备，准备好后点「下一步」进入对应页面。`
+        : `[${agent.name}] Got it. Here is the KeyanTong prep checklist — tap Next when ready.`;
+    const replyParts = [
+      intro,
+      "",
+      `**${rendered.title}**`,
+      rendered.body,
+      "",
+      ...(locale === "zh" ? ["请准备："] : ["Please prepare:"]),
+      ...rendered.checklist.map((c, i) => `${i + 1}. ${c}`),
+    ];
+    const reply = replyParts.join("\n");
+    const mem = await appendMemory(user.id, id, message, reply);
+    return NextResponse.json({
+      reply,
+      intent,
+      checklist: rendered.checklist,
+      next: rendered.next
+        ? { href: rendered.next.href, label: rendered.next.label }
+        : null,
+      source: "dispatch-rules",
+      agent: { id: agent.id, name: agent.name, kind: agent.kind },
+      memory: { summary: mem.summary, messages: mem.messages },
+    });
+  }
 
   const cfg = getLlmConfig();
   const tier = sceneToTier("chat");
@@ -55,7 +91,11 @@ export async function POST(request: Request, ctx: Ctx) {
   }
 
   const memory = await readMemory(user.id, id);
-  const systemExtra = buildWorkerSystemPrompt(agent, memory);
+  const dispatchHint =
+    locale === "zh"
+      ? "若用户想做转录组/NCBI上传/工具分享/文献求助，请引导其说明需求；系统会对这些意图自动给出准备清单与跳转。不要只闲聊。"
+      : "If the user wants RNA-seq / NCBI upload / tool share / literature help, acknowledge and let the portal checklist take over; do not only chit-chat.";
+  const systemExtra = `${buildWorkerSystemPrompt(agent, memory)}\n\n${dispatchHint}`;
   const history = memory.messages.slice(-12).map((m) => ({
     role: m.role as "user" | "assistant",
     content: m.content,
@@ -68,6 +108,7 @@ export async function POST(request: Request, ctx: Ctx) {
       `worker_id=${agent.id}`,
       `worker_name=${agent.name}`,
       `worker_kind=${agent.kind}`,
+      "rule=worker_aligned_with_home_dispatch",
     ],
     systemExtra,
     history,
@@ -91,6 +132,12 @@ export async function POST(request: Request, ctx: Ctx) {
 
   return NextResponse.json({
     reply: result.text,
+    intent: "general",
+    next: rendered.next
+      ? { href: rendered.next.href, label: rendered.next.label }
+      : null,
+    checklist: rendered.checklist,
+    source: "llm",
     agent: { id: agent.id, name: agent.name, kind: agent.kind },
     memory: { summary: mem.summary, messages: mem.messages },
     model: result.model,

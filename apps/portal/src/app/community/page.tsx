@@ -8,6 +8,7 @@ import {
 } from "@/lib/site";
 import { isEntitled } from "@/lib/user-store";
 import { currentUser } from "@/lib/user-session";
+import { PageDecor } from "@/components/page-decor";
 
 export const metadata: Metadata = {
   title: "社区",
@@ -28,6 +29,7 @@ export default async function CommunityPage({
 
   return (
     <main className="page">
+      <PageDecor variant="sparse" />
       <div className="module-hero">
         <p className="page-kicker">Community</p>
         <h1 className="page-title">社区互助</h1>
