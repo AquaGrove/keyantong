@@ -54,17 +54,19 @@ services:
       EMAIL_DEV_ECHO: ${EMAIL_DEV_ECHO:-false}
       # Never enable server-side ascp in production cloud
       NCBI_ALLOW_SERVER_ASCP: "0"
-      LLM_BASE_URL: ${LLM_BASE_URL:-https://api.deepseek.com/v1}
+      RNASEQ_DATA_ROOT: /data/rnaseq
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://api.siliconflow.cn/v1}
       LLM_API_KEY: ${LLM_API_KEY:-}
-      LLM_MODEL: ${LLM_MODEL:-deepseek-chat}
-      LLM_MODEL_FAST: ${LLM_MODEL_FAST:-deepseek-chat}
-      LLM_MODEL_REASONING: ${LLM_MODEL_REASONING:-deepseek-reasoner}
+      LLM_MODEL: ${LLM_MODEL:-deepseek-ai/DeepSeek-V3}
+      LLM_MODEL_FAST: ${LLM_MODEL_FAST:-Qwen/Qwen2.5-7B-Instruct}
+      LLM_MODEL_REASONING: ${LLM_MODEL_REASONING:-deepseek-ai/DeepSeek-R1}
       LLM_DAILY_TOKEN_BUDGET: ${LLM_DAILY_TOKEN_BUDGET:-200000}
       LLM_DAILY_CALL_BUDGET: ${LLM_DAILY_CALL_BUDGET:-80}
       LLM_TIMEOUT_MS: ${LLM_TIMEOUT_MS:-45000}
       LLM_ALLOW_ANY_MODEL: ${LLM_ALLOW_ANY_MODEL:-0}
     volumes:
       - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/portal:/data/portal
+      - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/rnaseq:/data/rnaseq
     depends_on:
       postgres:
         condition: service_healthy
@@ -139,6 +141,7 @@ services:
       - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/rnaseq:/data/rnaseq
       # Optional: mount pre-built annotations (do not bake large TSVs into image)
       - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/rnaseq/refs:/data/rnaseq/refs:ro
+      - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/rnaseq/annotations:/data/rnaseq/annotations:ro
     depends_on:
       redis:
         condition: service_healthy
@@ -151,10 +154,12 @@ services:
   # Inject provider Key via UI under DSH_HOME or runtime env (do not bake into image).
   harness:
     profiles: ["harness"]
+    # Prefer local least-privilege image (node:24 + pinned dsh). Community smanx image
+    # currently fails native ABI (node-v137) on this host — override with HARNESS_IMAGE if needed.
     build:
       context: ./harness
       dockerfile: Dockerfile
-    image: keyantong-harness:local
+    image: ${HARNESS_IMAGE:-keyantong-harness:local}
     restart: unless-stopped
     environment:
       DSH_HOME: /data/harness
@@ -166,6 +171,9 @@ services:
       # Placeholders — configure in UI if unused by current dsh build
       DSH_LLM_API_KEY: ${DSH_LLM_API_KEY:-}
       DSH_LLM_BASE_URL: ${DSH_LLM_BASE_URL:-}
+      OPENAI_API_KEY: ${DSH_LLM_API_KEY:-}
+      OPENAI_BASE_URL: ${DSH_LLM_BASE_URL:-}
+      SILICONFLOW_API_KEY: ${DSH_LLM_API_KEY:-}
     volumes:
       - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/harness:/data/harness
     # No secrets dir mounts. No portal/pg volumes.

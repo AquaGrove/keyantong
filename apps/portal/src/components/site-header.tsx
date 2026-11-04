@@ -7,6 +7,7 @@ const links = [
   { href: "/papers", label: "文献网" },
   { href: "/community", label: "社区" },
   { href: "/tools", label: "工具" },
+  { href: "/tools/ai", label: "AI" },
   { href: "/pricing", label: "定价" },
   { href: "/about", label: "关于" },
 ];

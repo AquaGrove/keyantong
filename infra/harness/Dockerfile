@@ -1,9 +1,10 @@
 # DeepSeek Harness (developer preview) — least privilege + loopback + proxy
 # See docs/22-llm-gateway-and-harness.md and upstream SAFETY.md
-FROM node:24-bookworm-slim
+FROM node:24-bookworm
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends ca-certificates curl \
+  && apt-get install -y --no-install-recommends \
+       ca-certificates curl python3 make g++ \
   && rm -rf /var/lib/apt/lists/* \
   && groupadd -g 10001 dsh \
   && useradd -m -u 10001 -g 10001 -s /bin/bash dsh
@@ -24,14 +25,13 @@ ENV DSH_HOME=/data/harness
 ENV HOME=/home/dsh
 ENV DSH_PORT=3079
 ENV PROXY_PORT=3080
-# Placeholder — configure provider Key in UI or inject DSH_* at runtime (never bake secrets)
 ENV DSH_LLM_API_KEY=""
 ENV DSH_LLM_BASE_URL=""
 
 USER dsh
 EXPOSE 3080
 VOLUME ["/data/harness"]
-HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=5 \
+HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=8 \
   CMD curl -fsS http://127.0.0.1:3080/ >/dev/null || exit 1
 
 ENTRYPOINT ["/opt/dsh/entrypoint.sh"]

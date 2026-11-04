@@ -28,13 +28,16 @@ export default async function CommunityPage({
 
   return (
     <main className="page">
-      <h1 className="page-title">社区互助</h1>
-      <p className="page-lead">
-        科研通社区两块核心场景：
-        <strong>工具分享 / 求助</strong>（外链 + 描述，可搜索）与
-        <strong>文献合法获取路径</strong>（禁止 PDF 互传与盗版链接）。
-        目标是互动交流、学习成长的大平台。
-      </p>
+      <div className="module-hero">
+        <p className="page-kicker">Community</p>
+        <h1 className="page-title">社区互助</h1>
+        <p className="page-lead">
+          科研通社区两块核心场景：
+          <strong>工具分享 / 求助</strong>（外链 + 描述，可搜索）与
+          <strong>文献合法获取路径</strong>（禁止 PDF 互传与盗版链接）。
+          目标是互动交流、学习成长的大平台。
+        </p>
+      </div>
 
       <div className="hub-grid" style={{ marginBottom: "1.25rem" }}>
         <Link className="hub-tile" href="/community/tools">

@@ -191,6 +191,7 @@ docker compose -f infra/docker-compose.prod.yml --env-file infra/.env \
 ```
 
 - 数据：`KEYANTONG_DATA_ROOT/harness` → 容器 `/data/harness`（`DSH_HOME`）  
+- 宿主机目录属主须为容器用户：`sudo chown -R 10001:10001 /data/keyantong/harness`  
 - 宿主机仅 `127.0.0.1:3080:3080`（默认）  
 - 可选 Caddy：先配 DNS，再合并 `infra/caddy/Caddyfile.harness.example`（Basic Auth：`HARNESS_BASIC_USER` / `HARNESS_BASIC_HASH`）；默认主 Caddyfile **不含** harness 子域，以免无 DNS 时 ACME 影响主站  
 
@@ -253,3 +254,21 @@ Harness
 | Compose | `infra/docker-compose.prod.yml` profile `harness` |
 | 镜像 | `infra/harness/Dockerfile` + `proxy.mjs` |
 | 环境模板 | `infra/.env.example`、`apps/portal/.env.example` |
+
+---
+
+## 8. 生产配置快照（硅基流动 · 2026-11）
+
+| 项 | 值 |
+|----|-----|
+| `LLM_BASE_URL` | `https://api.siliconflow.cn/v1` |
+| `LLM_MODEL_FAST` | `Qwen/Qwen2.5-7B-Instruct` |
+| `LLM_MODEL` | `deepseek-ai/DeepSeek-V3` |
+| `LLM_MODEL_REASONING` | `deepseek-ai/DeepSeek-R1` |
+| Key 存放 | 仅 `infra/.env` / 保险库；**永不**进 Git、镜像层、浏览器 |
+| Harness 镜像 | 默认 `smanx/deepseek-harness:latest`（内置环回代理）；数据卷 `/data/keyantong/harness` |
+| 访问 Harness | `ssh -L 3080:127.0.0.1:3080 ubuntu@SERVER` → `http://127.0.0.1:3080` |
+
+点数公式仍为 `points = ceil(tokens × k)`，`k∈{1.0,1.5,3.0}` 对应 fast/default/reasoning。
+
+若 API Key 曾出现在聊天或工单中，**务必在硅基流动控制台轮换**后再写入 `.env`。

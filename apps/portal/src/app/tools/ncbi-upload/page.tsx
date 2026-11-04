@@ -17,14 +17,17 @@ export default async function NcbiUploadPage() {
 
   return (
     <main className="page">
-      <p className="mono">
+      <p className="page-crumb">
         <Link href="/tools">← 工具目录</Link>
       </p>
-      <h1 className="page-title">NCBI SRA 上传协助</h1>
-      <p className="page-lead">
-        网站提供入口与校验；<strong>自动上传发生在你的电脑上</strong>。测序大数据不经过科研通服务器（资源也不够中转）。
-        你填写元数据与本机路径 → 生成 ascp 命令 / 本地助手脚本 → 本机直连 NCBI。密钥永不落库。
-      </p>
+      <div className="module-hero">
+        <p className="page-kicker">NCBI · Local upload</p>
+        <h1 className="page-title">NCBI SRA 上传协助</h1>
+        <p className="page-lead">
+          网站提供入口与校验；<strong>自动上传发生在你的电脑上</strong>。测序大数据不经过科研通服务器（资源也不够中转）。
+          你填写元数据与本机路径 → 生成 ascp 命令 / 本地助手脚本 → 本机直连 NCBI。密钥永不落库。
+        </p>
+      </div>
       <NcbiUploadAssist loggedIn={Boolean(user)} entitled={entitled} />
     </main>
   );

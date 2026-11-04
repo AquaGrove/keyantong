@@ -17,14 +17,17 @@ export default async function RnaseqToolPage() {
 
   return (
     <main className="page">
-      <p className="mono">
+      <p className="page-crumb">
         <Link href="/tools">← 工具目录</Link>
       </p>
-      <h1 className="page-title">转录组一键下游分析</h1>
-      <p className="page-lead">
-        只需提供<strong>表达矩阵</strong>，在页面上用<strong>分组卡片</strong>（颜色、角色、样本芯片）配置对照与多个实验组。
-        系统自动跑多对比差异分析、PCA、火山图、热图，以及上调/下调与多组维恩；有物种注释时再做 GO/KEGG。
-      </p>
+      <div className="module-hero">
+        <p className="page-kicker">RNAseq</p>
+        <h1 className="page-title">转录组一键下游分析</h1>
+        <p className="page-lead">
+          只需提供<strong>表达矩阵</strong>，在页面上用<strong>分组卡片</strong>（颜色、角色、样本芯片）配置对照与多个实验组。
+          系统自动跑多对比差异分析、PCA、火山图、热图，以及上调/下调与多组维恩；有物种注释时再做 GO/KEGG。
+        </p>
+      </div>
       <RnaseqRunner loggedIn={Boolean(user)} entitled={entitled} />
       <section className="section" style={{ marginTop: "1.5rem" }}>
         <h2>本地 CLI（开发 / 离线）</h2>

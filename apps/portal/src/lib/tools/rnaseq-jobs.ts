@@ -3,7 +3,12 @@ import fs from "node:fs";
 import path from "node:path";
 import { jobDir, jobsRoot, listJobMetas, newJobId, quotaForUser, readJson, resolveDataDir, writeJson } from "./job-store";
 
-export type RnaseqJobStatus = "queued" | "running" | "succeeded" | "failed";
+export type RnaseqJobStatus =
+  | "queued"
+  | "running"
+  | "succeeded"
+  | "failed"
+  | "pending_upstream";
 
 export type RnaseqJob = {
   id: string;
@@ -16,6 +21,8 @@ export type RnaseqJob = {
   species: string;
   error?: string;
   message?: string;
+  /** When set, job is consumed by rnaseq-worker under RNASEQ_DATA_ROOT */
+  dispatch?: "local" | "worker";
   summary?: {
     n_genes?: number;
     n_samples?: number;
@@ -41,6 +48,24 @@ function pipelineRoot() {
   return candidates[0];
 }
 
+/** Shared volume with rnaseq-worker (compose: /data/rnaseq). */
+export function workerDataRoot(): string | null {
+  const root = (process.env.RNASEQ_DATA_ROOT || "").trim();
+  if (!root) return null;
+  try {
+    fs.mkdirSync(path.join(root, "jobs"), { recursive: true });
+    fs.accessSync(root, fs.constants.W_OK);
+    return root;
+  } catch {
+    return null;
+  }
+}
+
+function useWorkerDispatch(): boolean {
+  if (process.env.RNASEQ_FORCE_LOCAL === "1") return false;
+  return Boolean(workerDataRoot());
+}
+
 function metaPath(id: string) {
   return path.join(jobDir("rnaseq", id), "job.json");
 }
@@ -49,25 +74,99 @@ function writeMeta(job: RnaseqJob) {
   writeJson(metaPath(job.id), job);
 }
 
-export function getRnaseqJob(id: string, userId: string): RnaseqJob | null {
-  const job = readJson<RnaseqJob>(metaPath(id));
-  if (!job || job.userId !== userId) return null;
-  return job;
+function workerJobDir(id: string) {
+  const root = workerDataRoot();
+  if (!root) throw new Error("RNASEQ_DATA_ROOT missing");
+  return path.join(root, "jobs", id);
 }
 
-export function getRnaseqBundlePath(id: string, userId: string): string | null {
-  const job = getRnaseqJob(id, userId);
-  if (!job || job.status !== "succeeded") return null;
-  const bundle = path.join(jobDir("rnaseq", id), "out", "rnaseq_results.zip");
-  return fs.existsSync(bundle) ? bundle : null;
+function workerMetaPath(id: string) {
+  return path.join(workerJobDir(id), "job.json");
+}
+
+function workerResultZip(id: string) {
+  const root = workerDataRoot();
+  if (!root) return null;
+  const candidates = [
+    path.join(root, "results", id, "rnaseq_results.zip"),
+    path.join(root, "results", id, "out", "rnaseq_results.zip"),
+    path.join(root, "jobs", id, "out", "rnaseq_results.zip"),
+  ];
+  for (const c of candidates) if (fs.existsSync(c)) return c;
+  return null;
+}
+
+function numberOrUndef(v: unknown) {
+  return typeof v === "number" && Number.isFinite(v) ? v : undefined;
 }
 
 function sanitizeName(name: string) {
   return name.replace(/[^a-zA-Z0-9._-]+/g, "_").slice(0, 120);
 }
 
-function numberOrUndef(v: unknown) {
-  return typeof v === "number" && Number.isFinite(v) ? v : undefined;
+function syncFromWorker(job: RnaseqJob): RnaseqJob {
+  if (job.dispatch !== "worker") return job;
+  const wp = workerMetaPath(job.id);
+  if (!fs.existsSync(wp)) return job;
+  try {
+    const w = JSON.parse(fs.readFileSync(wp, "utf8")) as Record<string, unknown>;
+    const status = String(w.status || job.status) as RnaseqJobStatus;
+    const next: RnaseqJob = {
+      ...job,
+      status,
+      updatedAt: new Date().toISOString(),
+      message: typeof w.message === "string" ? w.message : job.message,
+      error: typeof w.error === "string" ? w.error : job.error,
+    };
+    if (status === "succeeded" || status === "failed" || status === "pending_upstream") {
+      next.finishedAt = next.finishedAt || new Date().toISOString();
+    }
+    const summary = w.summary;
+    if (summary && typeof summary === "object") {
+      const s = summary as Record<string, unknown>;
+      next.summary = {
+        n_genes: numberOrUndef(s.n_genes),
+        n_samples: numberOrUndef(s.n_samples),
+        n_up: numberOrUndef(s.n_up),
+        n_down: numberOrUndef(s.n_down),
+        control_label: typeof s.control_label === "string" ? s.control_label : undefined,
+        treatment_label: typeof s.treatment_label === "string" ? s.treatment_label : undefined,
+        enrichment: typeof s.enrichment === "string" ? s.enrichment : undefined,
+        n_contrasts: numberOrUndef(s.n_contrasts),
+        de_engine: typeof s.de_engine === "string" ? s.de_engine : undefined,
+      };
+    }
+    // Mirror zip into portal job out/ for stable download path
+    if (status === "succeeded") {
+      const zip = workerResultZip(job.id);
+      if (zip) {
+        const destDir = path.join(jobDir("rnaseq", job.id), "out");
+        fs.mkdirSync(destDir, { recursive: true });
+        const dest = path.join(destDir, "rnaseq_results.zip");
+        if (!fs.existsSync(dest) || fs.statSync(dest).size !== fs.statSync(zip).size) {
+          fs.copyFileSync(zip, dest);
+        }
+      }
+    }
+    writeMeta(next);
+    return next;
+  } catch {
+    return job;
+  }
+}
+
+export function getRnaseqJob(id: string, userId: string): RnaseqJob | null {
+  const job = readJson<RnaseqJob>(metaPath(id));
+  if (!job || job.userId !== userId) return null;
+  return syncFromWorker(job);
+}
+
+export function getRnaseqBundlePath(id: string, userId: string): string | null {
+  const job = getRnaseqJob(id, userId);
+  if (!job || job.status !== "succeeded") return null;
+  const local = path.join(jobDir("rnaseq", id), "out", "rnaseq_results.zip");
+  if (fs.existsSync(local)) return local;
+  return workerResultZip(id);
 }
 
 function launchPipeline(job: RnaseqJob, matrixPath: string, groupsPath: string, outDir: string, lfc?: number, padj?: number) {
@@ -102,73 +201,35 @@ function launchPipeline(job: RnaseqJob, matrixPath: string, groupsPath: string, 
     ...job,
     status: "running",
     updatedAt: new Date().toISOString(),
-    message: "pipeline running",
+    message: "pipeline running (local)",
+    dispatch: "local",
   };
   writeMeta(running);
-
-  const resultJsonPath = path.join(jobDir("rnaseq", job.id), "result.json");
-  // Watcher process: wait for child, parse log/result
   child.unref();
 
-  // Also attach a lightweight local waiter without blocking HTTP request:
-  // spawn a tiny node inline waiter as sibling when possible.
   const waiter = spawn(
     process.execPath,
     [
       "-e",
       `
-const fs=require('fs');const {spawnSync}=require('child_process');
-const jobPath=${JSON.stringify(metaPath(job.id))};
-const logPath=${JSON.stringify(logPath)};
-const outDir=${JSON.stringify(outDir)};
+const fs=require('fs');
+const {spawnSync}=require('child_process');
+const meta=${JSON.stringify(metaPath(job.id))};
 const pid=${child.pid || 0};
-function load(){return JSON.parse(fs.readFileSync(jobPath,'utf8'));}
-function save(j){fs.writeFileSync(jobPath, JSON.stringify(j,null,2));}
-function waitPid(pid){
-  if(!pid) return 1;
-  try{
-    // poll until process gone
-    for(;;){
-      try{process.kill(pid,0);}catch(e){return 0;}
-      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,500);
-    }
-  }catch(e){return 1;}
-}
-// Prefer re-running sync wait via spawnSync on a noop? Instead: poll job dir for zip/manifest.
-const deadline=Date.now()+60*60*1000;
-let code=null;
-while(Date.now()<deadline){
-  if(pid){
-    try{process.kill(pid,0);}catch(e){code=0;break;}
-  }
-  const zip=require('path').join(outDir,'rnaseq_results.zip');
-  const manifest=require('path').join(outDir,'manifest.json');
-  if(fs.existsSync(zip) && fs.existsSync(manifest)){code=0;break;}
-  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,800);
-}
-const zip=require('path').join(outDir,'rnaseq_results.zip');
-const manifest=require('path').join(outDir,'manifest.json');
-let job=load();
-if(fs.existsSync(zip) && fs.existsSync(manifest)){
+const resultJson=${JSON.stringify(path.join(jobDir("rnaseq", job.id), "result.json"))};
+function load(){try{return JSON.parse(fs.readFileSync(meta,'utf8'))}catch{return null}}
+function save(j){fs.writeFileSync(meta, JSON.stringify(j,null,2))}
+if(pid){try{process.kill(pid,0)}catch{}}
+const wait=spawnSync(process.execPath,['-e','setInterval(()=>{try{process.kill('+pid+',0)}catch{process.exit(0)}},500)'],{timeout:2*60*60*1000});
+let j=load()||{};
+try{
   let summary={};
-  try{
-    const m=JSON.parse(fs.readFileSync(manifest,'utf8'));
-    const s=m.summary||{};
-    summary={
-      n_genes:s.n_genes,n_samples:s.n_samples,n_up:s.n_up,n_down:s.n_down,
-      enrichment:s.enrichment,n_contrasts:s.n_contrasts,de_engine:s.de_engine||m.de_engine,
-      control_label:(m.contrast&&m.contrast.control)||undefined,
-      treatment_label:Array.isArray(m.contrast&&m.contrast.treatments)?m.contrast.treatments.join(','):undefined,
-    };
-  }catch{}
-  job={...job,status:'succeeded',finishedAt:new Date().toISOString(),updatedAt:new Date().toISOString(),summary,message:'done'};
-  save(job);
-  process.exit(0);
-}
-const log=fs.existsSync(logPath)?fs.readFileSync(logPath,'utf8').slice(-2000):'pipeline failed';
-job={...job,status:'failed',finishedAt:new Date().toISOString(),updatedAt:new Date().toISOString(),error:log,message:'failed'};
-save(job);
-process.exit(1);
+  if(fs.existsSync(resultJson)){try{summary=JSON.parse(fs.readFileSync(resultJson,'utf8'))}catch{}}
+  const zip=${JSON.stringify(path.join(outDir, "rnaseq_results.zip"))};
+  const ok=fs.existsSync(zip);
+  j={...j,status:ok?'succeeded':'failed',finishedAt:new Date().toISOString(),updatedAt:new Date().toISOString(),summary:ok?summary:{ },error:ok?undefined:'missing rnaseq_results.zip'};
+  save(j);
+}catch(e){j={...j,status:'failed',error:String(e).slice(0,2000),finishedAt:new Date().toISOString(),updatedAt:new Date().toISOString()};save(j)}
 `,
     ],
     { detached: true, stdio: "ignore" },
@@ -176,9 +237,35 @@ process.exit(1);
   waiter.unref();
 }
 
-/**
- * Async enqueue: returns immediately with queued/running; client polls GET.
- */
+function enqueueToWorker(opts: {
+  id: string;
+  userId: string;
+  matrixPath: string;
+  groupsPath: string;
+  species: string;
+  lfc?: number;
+  padj?: number;
+}) {
+  const wdir = workerJobDir(opts.id);
+  const inputDir = path.join(wdir, "input");
+  fs.mkdirSync(inputDir, { recursive: true });
+  fs.copyFileSync(opts.matrixPath, path.join(inputDir, "matrix.csv"));
+  fs.copyFileSync(opts.groupsPath, path.join(inputDir, "groups.json"));
+  const workerJob = {
+    id: opts.id,
+    kind: "downstream",
+    userId: opts.userId,
+    status: "queued",
+    species: opts.species,
+    lfc: opts.lfc,
+    padj: opts.padj,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    message: "queued for rnaseq-worker",
+  };
+  fs.writeFileSync(workerMetaPath(opts.id), JSON.stringify(workerJob, null, 2));
+}
+
 export function enqueueRnaseqJob(opts: {
   userId: string;
   matrixBuf: Buffer;
@@ -202,6 +289,8 @@ export function enqueueRnaseqJob(opts: {
   fs.writeFileSync(groupsPath, opts.groupsBuf);
 
   const now = new Date().toISOString();
+  const species = opts.species || "none";
+  const worker = useWorkerDispatch();
   const job: RnaseqJob = {
     id,
     kind: "rnaseq",
@@ -209,99 +298,26 @@ export function enqueueRnaseqJob(opts: {
     status: "queued",
     createdAt: now,
     updatedAt: now,
-    species: opts.species || "none",
-    message: "queued",
+    species,
+    message: worker ? "queued for rnaseq-worker" : "queued",
+    dispatch: worker ? "worker" : "local",
   };
   writeMeta(job);
-  launchPipeline(job, matrixPath, groupsPath, outDir, opts.lfc, opts.padj);
-  return getRnaseqJob(id, opts.userId) || job;
-}
 
-/** @deprecated sync path kept for smoke/scripts */
-export function runRnaseqJobSync(opts: {
-  userId: string;
-  matrixBuf: Buffer;
-  matrixName: string;
-  groupsBuf: Buffer;
-  groupsName: string;
-  species?: string;
-  lfc?: number;
-  padj?: number;
-}): RnaseqJob {
-  const { spawnSync } = require("node:child_process") as typeof import("node:child_process");
-  const id = newJobId();
-  const dir = jobDir("rnaseq", id);
-  const inputDir = path.join(dir, "input");
-  const outDir = path.join(dir, "out");
-  fs.mkdirSync(inputDir, { recursive: true });
-  fs.mkdirSync(outDir, { recursive: true });
-  const matrixPath = path.join(inputDir, sanitizeName(opts.matrixName) || "matrix.csv");
-  const groupsPath = path.join(inputDir, sanitizeName(opts.groupsName) || "groups.json");
-  fs.writeFileSync(matrixPath, opts.matrixBuf);
-  fs.writeFileSync(groupsPath, opts.groupsBuf);
-  let job: RnaseqJob = {
-    id,
-    kind: "rnaseq",
-    userId: opts.userId,
-    status: "running",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    species: opts.species || "none",
-  };
-  writeMeta(job);
-  const root = pipelineRoot();
-  const py = process.env.PYTHON_BIN || "python3";
-  const args = [
-    "-m",
-    "keyantong_rnaseq",
-    "--matrix",
-    matrixPath,
-    "--groups",
-    groupsPath,
-    "--outdir",
-    outDir,
-    "--species",
-    job.species,
-  ];
-  if (typeof opts.lfc === "number" && Number.isFinite(opts.lfc)) args.push("--lfc", String(opts.lfc));
-  if (typeof opts.padj === "number" && Number.isFinite(opts.padj)) args.push("--padj", String(opts.padj));
-  const result = spawnSync(py, args, {
-    cwd: root,
-    env: { ...process.env, PYTHONPATH: root + (process.env.PYTHONPATH ? `:${process.env.PYTHONPATH}` : "") },
-    encoding: "utf8",
-    maxBuffer: 8 * 1024 * 1024,
-  });
-  if (result.status !== 0) {
-    job = {
-      ...job,
-      status: "failed",
-      finishedAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      error: (result.stderr || result.stdout || "pipeline failed").slice(0, 2000),
-    };
-    writeMeta(job);
-    return job;
+  if (worker) {
+    enqueueToWorker({
+      id,
+      userId: opts.userId,
+      matrixPath,
+      groupsPath,
+      species,
+      lfc: opts.lfc,
+      padj: opts.padj,
+    });
+  } else {
+    launchPipeline(job, matrixPath, groupsPath, outDir, opts.lfc, opts.padj);
   }
-  let summary: RnaseqJob["summary"] = {};
-  try {
-    const parsed = JSON.parse(result.stdout || "{}") as Record<string, unknown>;
-    summary = {
-      n_genes: numberOrUndef(parsed.n_genes),
-      n_samples: numberOrUndef(parsed.n_samples),
-      n_up: numberOrUndef(parsed.n_up),
-      n_down: numberOrUndef(parsed.n_down),
-      control_label: typeof parsed.control_label === "string" ? parsed.control_label : undefined,
-      treatment_label: typeof parsed.treatment_label === "string" ? parsed.treatment_label : undefined,
-      enrichment: typeof parsed.enrichment === "string" ? parsed.enrichment : undefined,
-      n_contrasts: Array.isArray(parsed.contrasts) ? parsed.contrasts.length : numberOrUndef(parsed.n_contrasts),
-      de_engine: typeof parsed.de_engine === "string" ? parsed.de_engine : undefined,
-    };
-  } catch {
-    summary = {};
-  }
-  job = { ...job, status: "succeeded", finishedAt: new Date().toISOString(), updatedAt: new Date().toISOString(), summary };
-  writeMeta(job);
-  return job;
+  return getRnaseqJob(id, opts.userId) || job;
 }
 
 export function ensureJobsRoot() {
@@ -309,15 +325,15 @@ export function ensureJobsRoot() {
   return resolveDataDir();
 }
 
-
 export function listRnaseqJobs(userId: string, limit = 30): RnaseqJob[] {
-  return listJobMetas<RnaseqJob>("rnaseq", userId, limit);
+  return listJobMetas<RnaseqJob>("rnaseq", userId, limit).map((j) => syncFromWorker(j));
 }
 
 export function rnaseqDownloadAvailable(job: RnaseqJob): boolean {
   if (job.status !== "succeeded") return false;
   const bundle = path.join(jobDir("rnaseq", job.id), "out", "rnaseq_results.zip");
-  return fs.existsSync(bundle);
+  if (fs.existsSync(bundle)) return true;
+  return Boolean(workerResultZip(job.id));
 }
 
 export { quotaForUser };
