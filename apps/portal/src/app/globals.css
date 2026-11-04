@@ -2465,3 +2465,32 @@ body:has(.ask-who-dock:not(.ask-who-dock-home)) .page {
 @media (max-width: 900px) {
   .page-decor { display: none; }
 }
+
+
+/* NCBI enum / organism fields */
+.ncbi-enum-field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.ncbi-enum-field select,
+.ncbi-enum-field .ncbi-enum-other,
+.ncbi-enum-field input[list] {
+  font: inherit;
+  font-weight: 400;
+  padding: 0.7rem 0.8rem;
+  border-radius: 0.45rem;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  width: 100%;
+  max-width: 100%;
+}
+
+.ncbi-enum-field select {
+  cursor: pointer;
+}
+
+.ncbi-enum-field .form-note {
+  margin: 0;
+}

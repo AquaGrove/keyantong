@@ -2,7 +2,17 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import Link from "next/link";
+import { NcbiEnumField, NcbiOrganismField } from "@/components/ncbi-enum-field";
 import { ToolsJobHistory } from "@/components/tools-job-history";
+import {
+  BIOPROJECT_DATA_TYPES,
+  COMMON_ORGANISMS,
+  LIBRARY_LAYOUTS,
+  LIBRARY_SELECTIONS,
+  LIBRARY_SOURCES,
+  LIBRARY_STRATEGIES,
+  suggestLibraryForDataType,
+} from "@/lib/tools/ncbi-vocab";
 
 type Issue = { level: string; field: string; message: string };
 
@@ -286,19 +296,34 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
               描述
               <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} required />
             </label>
-            <label>
-              数据类型
-              <input value={dataType} onChange={(e) => setDataType(e.target.value)} required />
-            </label>
+            <NcbiEnumField
+              label="数据类型（BioProject data type）"
+              value={dataType}
+              required
+              options={BIOPROJECT_DATA_TYPES}
+              hint="覆盖 NCBI BioProject 常见数据类型；列表外可选「其他」手填。"
+              onChange={(v) => {
+                setDataType(v);
+                const sug = suggestLibraryForDataType(v);
+                if (sug) {
+                  setStrategy(sug.strategy);
+                  setSource(sug.source);
+                  setSelection(sug.selection);
+                }
+              }}
+            />
             <h2>BioSample（必要）</h2>
             <label>
               sample_name
               <input value={sampleName} onChange={(e) => setSampleName(e.target.value)} required />
             </label>
-            <label>
-              organism
-              <input value={organism} onChange={(e) => setOrganism(e.target.value)} required />
-            </label>
+            <NcbiOrganismField
+              label="organism（物种学名）"
+              value={organism}
+              onChange={setOrganism}
+              options={COMMON_ORGANISMS}
+              required
+            />
             <label>
               isolate / breed
               <input value={isolate} onChange={(e) => setIsolate(e.target.value)} required />
@@ -313,25 +338,36 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
               />
             </label>
             <h2>文库（必要）</h2>
-            <label>
-              library_strategy
-              <input value={strategy} onChange={(e) => setStrategy(e.target.value)} required />
-            </label>
-            <label>
-              library_source
-              <input value={source} onChange={(e) => setSource(e.target.value)} required />
-            </label>
-            <label>
-              library_selection
-              <input value={selection} onChange={(e) => setSelection(e.target.value)} required />
-            </label>
-            <label>
-              library_layout
-              <select value={layout} onChange={(e) => setLayout(e.target.value)}>
-                <option value="paired">paired</option>
-                <option value="single">single</option>
-              </select>
-            </label>
+            <NcbiEnumField
+              label="library_strategy"
+              value={strategy}
+              onChange={setStrategy}
+              options={LIBRARY_STRATEGIES}
+              required
+              hint="INSDC/SRA 文库策略；含 WGS、RNA-Seq、ChIP-Seq、ATAC-seq、Hi-C 等。"
+            />
+            <NcbiEnumField
+              label="library_source"
+              value={source}
+              onChange={setSource}
+              options={LIBRARY_SOURCES}
+              required
+            />
+            <NcbiEnumField
+              label="library_selection"
+              value={selection}
+              onChange={setSelection}
+              options={LIBRARY_SELECTIONS}
+              required
+            />
+            <NcbiEnumField
+              label="library_layout"
+              value={layout}
+              onChange={setLayout}
+              options={LIBRARY_LAYOUTS}
+              required
+              allowOther={false}
+            />
             <button type="button" className="btn btn-primary" onClick={() => setStep(2)}>
               下一步：文件清单
             </button>
