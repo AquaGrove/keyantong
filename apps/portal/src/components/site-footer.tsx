@@ -1,30 +1,43 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   GITHUB_CONTRIBUTING_URL,
   GITHUB_DOCS_URL,
   GITHUB_ISSUES_URL,
   GITHUB_URL,
 } from "@/lib/site";
+import { useI18n } from "@/lib/i18n";
 
 export function SiteFooter() {
+  const { t } = useI18n();
+  const pathname = usePathname();
+  const isHome = pathname === "/";
+
   return (
-    <footer className="site-footer">
+    <footer className={`site-footer${isHome ? " site-footer-home" : ""}`}>
       <div className="footer-row">
-        <p className="footer-brand">科研通 KeyanTong</p>
-        <p className="footer-note">开源共享 · 合规互助 · Apache-2.0</p>
+        <p className="footer-brand">{t("brand.name")} KeyanTong</p>
+        <p className="footer-note">{t("brand.tagline")}</p>
       </div>
       <div className="footer-links">
-        <Link href="/papers">文献网</Link>
-        <Link href="/community">社区</Link>
-        <Link href="/tools">工具</Link>
-        <Link href="/pricing">定价</Link>
-        <Link href="/about">关于</Link>
-        <Link href="/account">账号</Link>
-        <a href={GITHUB_ISSUES_URL}>联系我们</a>
+        {!isHome ? (
+          <>
+            <Link href="/papers">{t("nav.papers")}</Link>
+            <Link href="/community">{t("nav.community")}</Link>
+            <Link href="/tools">{t("nav.tools")}</Link>
+          </>
+        ) : null}
+        <Link href="/pricing">{t("nav.pricing")}</Link>
+        <Link href="/about">{t("nav.about")}</Link>
+        <Link href="/account">{t("nav.account")}</Link>
+        <Link href="/notifications">{t("nav.notifications")}</Link>
+        <a href={GITHUB_ISSUES_URL}>{t("footer.contact")}</a>
         <a href={GITHUB_URL}>GitHub</a>
-        <a href={GITHUB_DOCS_URL}>文档</a>
-        <a href={GITHUB_CONTRIBUTING_URL}>贡献指南</a>
-        <a href="https://www.apache.org/licenses/LICENSE-2.0">许可证</a>
+        <a href={GITHUB_DOCS_URL}>{t("footer.docs")}</a>
+        <a href={GITHUB_CONTRIBUTING_URL}>{t("footer.contribute")}</a>
+        <a href="https://www.apache.org/licenses/LICENSE-2.0">{t("footer.license")}</a>
       </div>
     </footer>
   );

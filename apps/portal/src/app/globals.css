@@ -1819,3 +1819,220 @@ h1.page-title {
   color: var(--accent-ink);
 }
 
+
+
+/* —— Chat-first home + i18n + notifications —— */
+.page-home {
+  padding-top: 0.25rem;
+  padding-bottom: 3rem;
+  max-width: 860px;
+}
+
+.home-intro {
+  text-align: center;
+  padding: 1.25rem 0 1rem;
+  animation: rise 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.home-title {
+  margin: 0 0 0.65rem;
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 6vw, 3.6rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.home-lead {
+  margin: 0 auto;
+  max-width: 38rem;
+  color: var(--ink-soft);
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.home-dispatch {
+  animation: rise 800ms 80ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.home-dispatch-card {
+  padding: 1.15rem 1.2rem 1.25rem;
+  border-radius: 1.25rem;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(165deg, rgba(20, 184, 166, 0.08), transparent 42%),
+    var(--paper-elevated);
+  box-shadow: var(--shadow);
+}
+
+.home-dispatch-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+}
+
+.home-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  border: 1px solid rgba(15, 118, 110, 0.2);
+}
+
+.home-thread {
+  display: grid;
+  gap: 0.75rem;
+  min-height: 280px;
+  max-height: min(52vh, 480px);
+  overflow: auto;
+  padding: 0.9rem;
+  border-radius: 1rem;
+  background: rgba(10, 28, 46, 0.03);
+  border: 1px solid var(--line);
+  margin-bottom: 0.85rem;
+}
+
+.home-msg-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.home-next-row {
+  margin-top: 0.75rem;
+}
+
+.home-next-btn {
+  font-size: 0.92rem;
+  padding: 0.65rem 1rem;
+}
+
+.home-suggest {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 0.85rem;
+}
+
+.home-suggest-chip {
+  background: color-mix(in srgb, var(--accent) 8%, #fff);
+  border-color: rgba(15, 118, 110, 0.22);
+  color: var(--accent-ink);
+}
+
+.home-suggest-chip:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, #fff);
+}
+
+.home-composer textarea {
+  min-height: 88px;
+}
+
+.locale-toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  gap: 0.1rem;
+}
+
+.locale-btn {
+  border: 0;
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.locale-btn.is-on {
+  background: var(--accent);
+  color: #ecfeff;
+}
+
+.nav-home-hint {
+  display: none;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding: 0.35rem 0.5rem;
+}
+
+@media (min-width: 720px) {
+  .nav-home-hint {
+    display: inline-block;
+  }
+}
+
+.site-footer-home .footer-links {
+  justify-content: flex-end;
+}
+
+.notif-list {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.notif-item {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.85rem;
+  padding: 0.95rem 1rem;
+  border-radius: 0.85rem;
+  border: 1px solid var(--line);
+  background: var(--paper-elevated);
+}
+
+.notif-item.is-read {
+  opacity: 0.72;
+}
+
+.notif-item-main {
+  flex: 1 1 16rem;
+  min-width: 0;
+}
+
+.notif-item-main strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--h3-size);
+  margin-bottom: 0.25rem;
+}
+
+.notif-item-main p {
+  margin: 0 0 0.45rem;
+  color: var(--ink-soft);
+  line-height: 1.55;
+}
+
+.notif-item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: flex-start;
+}
+
+.site-header .nav {
+  gap: 0.3rem 0.55rem;
+}
