@@ -62,10 +62,15 @@ function readDb(): DbFile {
 }
 
 function writeDb(db: DbFile) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  const tmp = `${dbPath()}.${process.pid}.tmp`;
-  fs.writeFileSync(tmp, JSON.stringify(db, null, 2));
-  fs.renameSync(tmp, dbPath());
+  try {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+    const tmp = `${dbPath()}.${process.pid}.tmp`;
+    fs.writeFileSync(tmp, JSON.stringify(db, null, 2));
+    fs.renameSync(tmp, dbPath());
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(`无法写入用户数据目录（${DATA_DIR}）：${msg}`);
+  }
 }
 
 export function listUsers(): User[] {

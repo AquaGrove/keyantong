@@ -5,6 +5,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getOrCreateDeviceId } from "@/lib/device-client";
 
+async function readJsonSafe(res: Response): Promise<Record<string, unknown>> {
+  const text = await res.text();
+  if (!text) return {};
+  try {
+    return JSON.parse(text) as Record<string, unknown>;
+  } catch {
+    return { error: `服务器返回了无法解析的响应（HTTP ${res.status}）` };
+  }
+}
+
 export default function RegisterPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -14,55 +24,76 @@ export default function RegisterPage() {
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
   const [devCode, setDevCode] = useState("");
+  const [busy, setBusy] = useState(false);
 
   async function onRegister(e: FormEvent) {
     e.preventDefault();
     setErr("");
-    const res = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      setErr(data.error || "注册失败");
-      return;
+    setMsg("");
+    setBusy(true);
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await readJsonSafe(res);
+      if (!res.ok) {
+        setErr(String(data.error || `注册失败（HTTP ${res.status}）`));
+        return;
+      }
+      setMsg(String(data.message || "请查收验证码"));
+      if (typeof data.devCode === "string" && data.devCode) {
+        setDevCode(data.devCode);
+        setCode(data.devCode);
+      }
+      setStep("verify");
+    } catch (ex) {
+      setErr(ex instanceof Error ? ex.message : "网络异常，请稍后重试");
+    } finally {
+      setBusy(false);
     }
-    setMsg(data.message);
-    if (data.devCode) setDevCode(data.devCode);
-    setStep("verify");
   }
 
   async function onVerify(e: FormEvent) {
     e.preventDefault();
     setErr("");
-    const res = await fetch("/api/auth/verify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, code }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      setErr(data.error || "验证失败");
-      return;
+    setBusy(true);
+    try {
+      const res = await fetch("/api/auth/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code }),
+      });
+      const data = await readJsonSafe(res);
+      if (!res.ok) {
+        setErr(String(data.error || `验证失败（HTTP ${res.status}）`));
+        return;
+      }
+      setMsg(String(data.message || "验证成功"));
+      const loginRes = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          password,
+          deviceId: getOrCreateDeviceId(),
+          deviceLabel: navigator.userAgent.slice(0, 80),
+        }),
+      });
+      const loginData = await readJsonSafe(loginRes);
+      if (loginRes.ok) {
+        router.push("/account");
+        router.refresh();
+        return;
+      }
+      setErr(String(loginData.error || "验证成功，但自动登录失败，请手动登录"));
+      setStep("done");
+    } catch (ex) {
+      setErr(ex instanceof Error ? ex.message : "网络异常，请稍后重试");
+    } finally {
+      setBusy(false);
     }
-    setMsg(data.message);
-    const loginRes = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email,
-        password,
-        deviceId: getOrCreateDeviceId(),
-        deviceLabel: navigator.userAgent.slice(0, 80),
-      }),
-    });
-    if (loginRes.ok) {
-      router.push("/account");
-      router.refresh();
-      return;
-    }
-    setStep("done");
   }
 
   return (
@@ -73,7 +104,11 @@ export default function RegisterPage() {
         永久会员。
       </p>
 
-      {err ? <p className="rules-banner">{err}</p> : null}
+      {err ? (
+        <p className="rules-banner" role="alert">
+          {err}
+        </p>
+      ) : null}
       {msg ? <p className="section-lead">{msg}</p> : null}
 
       {step === "form" ? (
@@ -86,6 +121,8 @@ export default function RegisterPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="name@mail.hzau.edu.cn"
+              disabled={busy}
+              autoComplete="email"
             />
           </label>
           <label>
@@ -96,10 +133,12 @@ export default function RegisterPage() {
               minLength={8}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={busy}
+              autoComplete="new-password"
             />
           </label>
-          <button className="btn btn-primary" type="submit">
-            发送验证码
+          <button className="btn btn-primary" type="submit" disabled={busy}>
+            {busy ? "提交中…" : "发送验证码"}
           </button>
         </form>
       ) : null}
@@ -108,7 +147,7 @@ export default function RegisterPage() {
         <form className="help-form" onSubmit={onVerify}>
           {devCode ? (
             <p className="form-note">
-              开发回显验证码：<code className="mono">{devCode}</code>
+              当前未配置 SMTP 发信，验证码已显示：<code className="mono">{devCode}</code>
             </p>
           ) : null}
           <label>
@@ -118,10 +157,12 @@ export default function RegisterPage() {
               onChange={(e) => setCode(e.target.value)}
               required
               inputMode="numeric"
+              disabled={busy}
+              autoComplete="one-time-code"
             />
           </label>
-          <button className="btn btn-primary" type="submit">
-            完成验证并开始试用
+          <button className="btn btn-primary" type="submit" disabled={busy}>
+            {busy ? "验证中…" : "完成验证并开始试用"}
           </button>
         </form>
       ) : null}
