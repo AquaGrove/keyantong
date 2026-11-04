@@ -47,6 +47,7 @@ RUN groupadd --system --gid 1001 nodejs && useradd --system --uid 1001 --gid nod
 # Next standalone traces monorepo layout under apps/portal
 COPY --from=builder /app/apps/portal/.next/standalone ./
 COPY --from=builder /app/apps/portal/.next/static ./apps/portal/.next/static
+COPY --from=builder /app/apps/portal/public ./apps/portal/public
 # Catalog + ncbi helpers for runtime file lookups relative to cwd
 COPY --from=builder /app/catalog ./catalog
 COPY --from=builder /app/services/ncbi-upload ./services/ncbi-upload
