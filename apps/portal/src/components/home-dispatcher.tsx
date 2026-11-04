@@ -94,14 +94,13 @@ export function HomeDispatcher({
   return (
     <section className="home-dispatch" aria-label="AI dispatcher">
       <div className="home-dispatch-card">
-        <div className="home-dispatch-top">
-          <span className="home-badge">{t("home.intro.badge")}</span>
-          {(loggedIn || entitled) && (
+        {(loggedIn || entitled) ? (
+          <div className="home-dispatch-top">
             <span className={`ai-pill ${entitled ? "is-ok" : "is-warn"}`}>
               {entitled ? (locale === "zh" ? "会员 · 可增强" : "Member · LLM on") : locale === "zh" ? "已登录" : "Signed in"}
             </span>
-          )}
-        </div>
+          </div>
+        ) : null}
 
         <div className="home-thread" aria-live="polite">
           {msgs.map((m) => (

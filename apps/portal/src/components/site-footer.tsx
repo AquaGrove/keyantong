@@ -13,22 +13,18 @@ import { useI18n } from "@/lib/i18n";
 export function SiteFooter() {
   const { t } = useI18n();
   const pathname = usePathname();
-  const isHome = pathname === "/";
+  if (pathname === "/") return null;
 
   return (
-    <footer className={`site-footer${isHome ? " site-footer-home" : ""}`}>
+    <footer className="site-footer">
       <div className="footer-row">
         <p className="footer-brand">{t("brand.name")} KeyanTong</p>
         <p className="footer-note">{t("brand.tagline")}</p>
       </div>
       <div className="footer-links">
-        {!isHome ? (
-          <>
-            <Link href="/papers">{t("nav.papers")}</Link>
-            <Link href="/community">{t("nav.community")}</Link>
-            <Link href="/tools">{t("nav.tools")}</Link>
-          </>
-        ) : null}
+        <Link href="/papers">{t("nav.papers")}</Link>
+        <Link href="/community">{t("nav.community")}</Link>
+        <Link href="/tools">{t("nav.tools")}</Link>
         <Link href="/pricing">{t("nav.pricing")}</Link>
         <Link href="/about">{t("nav.about")}</Link>
         <Link href="/account">{t("nav.account")}</Link>

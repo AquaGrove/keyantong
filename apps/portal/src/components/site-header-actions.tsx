@@ -25,43 +25,75 @@ export function SiteHeaderActions({
   const { t } = useI18n();
   const isHome = pathname === "/";
 
+  if (isHome) {
+    return (
+      <header className="site-header site-header-home">
+        <nav className="nav nav-home-center" aria-label="primary">
+          <LocaleToggle />
+          {loggedIn ? (
+            <>
+              <Link className="nav-link nav-bell" href="/notifications">
+                {t("nav.notifications")}
+              </Link>
+              <Link className="nav-cta" href="/account">
+                {t("nav.account")}
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link className="btn btn-secondary nav-register" href="/register">
+                {t("nav.register")}
+              </Link>
+              <Link className="nav-cta" href="/login">
+                {t("nav.login")}
+              </Link>
+            </>
+          )}
+        </nav>
+      </header>
+    );
+  }
+
   return (
-    <nav className="nav" aria-label="primary">
-      {!isHome ? (
-        <>
-          <Link href="/" className="nav-link">
-            {t("nav.home")}
+    <header className="site-header">
+      <Link href="/" className="logo" aria-label="KeyanTong home">
+        <span className="logo-mark" aria-hidden />
+        <span className="logo-text">科研通</span>
+      </Link>
+      <nav className="nav" aria-label="primary">
+        <Link href="/" className="nav-link">
+          {t("nav.home")}
+        </Link>
+        {MODULE_LINKS.map((l) => (
+          <Link
+            key={l.href}
+            href={l.href === "/community" ? communityHref : l.href}
+            className="nav-link"
+          >
+            {t(l.key)}
           </Link>
-          {MODULE_LINKS.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href === "/community" ? communityHref : l.href}
-              className="nav-link"
-            >
-              {t(l.key)}
+        ))}
+        <LocaleToggle />
+        {loggedIn ? (
+          <Link className="nav-link nav-bell" href="/notifications">
+            {t("nav.notifications")}
+          </Link>
+        ) : null}
+        {loggedIn ? (
+          <Link className="nav-cta" href="/account">
+            {t("nav.account")}
+          </Link>
+        ) : (
+          <>
+            <Link className="btn btn-secondary nav-register" href="/register">
+              {t("nav.register")}
             </Link>
-          ))}
-        </>
-      ) : (
-        <span className="nav-home-hint" aria-hidden>
-          {t("home.intro.badge")}
-        </span>
-      )}
-      <LocaleToggle />
-      {loggedIn ? (
-        <Link className="nav-link nav-bell" href="/notifications">
-          {t("nav.notifications")}
-        </Link>
-      ) : null}
-      {loggedIn ? (
-        <Link className="nav-cta" href="/account">
-          {t("nav.account")}
-        </Link>
-      ) : (
-        <Link className="nav-cta" href="/login">
-          {t("nav.login")}
-        </Link>
-      )}
-    </nav>
+            <Link className="nav-cta" href="/login">
+              {t("nav.login")}
+            </Link>
+          </>
+        )}
+      </nav>
+    </header>
   );
 }
