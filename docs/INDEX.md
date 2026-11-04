@@ -25,6 +25,7 @@
 | 16 | [轻量云规格](./16-lightweight-cloud-sizing.md) | 运维 | 校园试用与拆分部署 |
 | 17 | [社区工具分享](./17-community-tool-share.md) | 产品 / 研发 | 工具分享/求助 MVP |
 | 18 | [安全基线落地](./18-security-baseline.md) | 全员 | 威胁模型与门户加固 |
+| 19 | [NCBI 本机直连上传](./19-ncbi-local-upload-architecture.md) | 产品 / 研发 | 大数据不经门户 |
 | 99 | [附录](./99-appendix.md) | 全员 | 目录骨架、环境变量、修订记录 |
 
 ## 状态说明
@@ -49,3 +50,4 @@
 - [16 · 轻量云服务器选型](./16-lightweight-cloud-sizing.md)
 - [17 · 社区工具分享与求助](./17-community-tool-share.md)
 - [18 · 开源门户安全基线](./18-security-baseline.md)
+- [19 · NCBI 本机直连上传](./19-ncbi-local-upload-architecture.md)

@@ -42,6 +42,7 @@ export function getNcbiJob(id: string, userId: string): NcbiJob | null {
   return job;
 }
 
+/** @deprecated Portal no longer spawns ascp. Kept for reading legacy jobs only. Do not call from routes. */
 export function enqueueNcbiJob(opts: {
   userId: string;
   payload: NcbiPayload;
@@ -76,6 +77,20 @@ export function enqueueNcbiJob(opts: {
     message: "queued",
   };
   writeJson(metaPath(id), job);
+
+  if (process.env.NCBI_ALLOW_SERVER_ASCP !== "1") {
+    job = {
+      ...job,
+      status: "failed",
+      finishedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      error:
+        "SERVER_ASCP_DISABLED: 测序上传必须在用户本机执行。请使用 /api/tools/ncbi-run 返回的本地助手脚本。",
+      message: "server ascp disabled",
+    };
+    writeJson(metaPath(id), job);
+    return job;
+  }
 
   const root = ncbiRoot();
   const py = process.env.PYTHON_BIN || "python3";

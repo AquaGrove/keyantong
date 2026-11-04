@@ -27,9 +27,10 @@ PYTHONPATH=. python3 -m unittest discover -s tests -v
 
 ### NCBI SRA 上传协助
 
-- 校验 + 命令生成 + 本机 dry-run/ascp（异步 Job 轮询）。
-- **密钥仅路径**，内容不落库。
-- **Submission Portal 网页代填 / 自动提交 = 明确不做**；提供 checklist 状态机跟踪人工步骤（`portal_checklist`，`automation_policy=no_browser_automation`）。
+- **架构（硬约束）**：大数据**不经**科研通服务器；门户只做元数据校验 + 生成本地 ascp 命令/助手脚本；用户本机 ascp 直连 NCBI。详见 [19 · 本机直连架构](./19-ncbi-local-upload-architecture.md)。
+- **密钥仅路径**，内容不落库；API 拒绝文件 multipart / 超大 body。
+- **Submission Portal 网页代填 / 自动提交 = 明确不做**；checklist 跟踪人工步骤。
+- 服务器端 ascp Job：**已禁用**（历史任务只读）。
 
 ```bash
 cd services/ncbi-upload && PYTHONPATH=. python3 -m unittest discover -s tests -v
@@ -44,7 +45,8 @@ cd services/ncbi-upload && PYTHONPATH=. python3 -m unittest discover -s tests -v
 | Python limma_like / Welch / 可选 pydeseq2 | 已接 |
 | GO + KEGG（本地 TSV） | demo 可跑；human/mouse 需自备映射 |
 | 异步 Job 轮询（rnaseq/ncbi） | 文件型本地队列；非云端 worker |
-| NCBI 校验 + dry-run/ascp | 已接 |
+| NCBI 校验 + 本地命令/助手包 | 已接（服务器不跑 ascp） |
+| 用户本机 ascp 直连 NCBI | CLI/脚本；需自装 Aspera |
 | Portal 网页自动填表提交 | **不做**（checklist 仅跟踪） |
 
-相关：[16 · 轻量云服务器选型](./16-lightweight-cloud-sizing.md)
+相关：[16 · 轻量云](./16-lightweight-cloud-sizing.md) · [19 · NCBI 本机直连](./19-ncbi-local-upload-architecture.md)

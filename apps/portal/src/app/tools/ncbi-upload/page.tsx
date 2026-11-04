@@ -6,7 +6,7 @@ import { currentUser } from "@/lib/user-session";
 
 export const metadata: Metadata = {
   title: "NCBI SRA 上传协助",
-  description: "填写必要元数据与本机路径，自动校验并生成 ascp 命令。",
+  description: "门户只做元数据校验与本机命令生成；测序文件在用户本机经 ascp 直连 NCBI，不经过科研通服务器。",
 };
 
 export const dynamic = "force-dynamic";
@@ -22,7 +22,8 @@ export default async function NcbiUploadPage() {
       </p>
       <h1 className="page-title">NCBI SRA 上传协助</h1>
       <p className="page-lead">
-        你只需填写必要信息与本机运行时路径；系统自动校验字段、对账文件名并生成 ascp 命令。密钥永不落库。
+        网站提供入口与校验；<strong>自动上传发生在你的电脑上</strong>。测序大数据不经过科研通服务器（资源也不够中转）。
+        你填写元数据与本机路径 → 生成 ascp 命令 / 本地助手脚本 → 本机直连 NCBI。密钥永不落库。
       </p>
       <NcbiUploadAssist loggedIn={Boolean(user)} entitled={entitled} />
     </main>

@@ -35,8 +35,8 @@ type PortalChecklist = {
 
 const FALLBACK_STEPS: ChecklistStep[] = [
   { id: "validate", label: "字段与文件清单校验通过", done: false, kind: "auto", hint: "本工具自动" },
-  { id: "dry_run", label: "本机 ascp dry-run 成功", done: false, kind: "auto", hint: "不实际上传" },
-  { id: "ascp_upload", label: "本机 ascp 实际上传成功（可选）", done: false, kind: "auto", hint: "真实 ascp" },
+  { id: "dry_run", label: "已生成本地 dry-run 助手包", done: false, kind: "auto", hint: "在用户本机执行" },
+  { id: "ascp_upload", label: "本机 ascp 直连 NCBI 成功（用户勾选）", done: false, kind: "manual", hint: "用户本机完成后勾选" },
   { id: "portal_login", label: "用户已在浏览器登录 Submission Portal", done: false, kind: "manual", hint: "浏览器手动" },
   { id: "bioproject", label: "用户已创建/选择 BioProject", done: false, kind: "manual", hint: "浏览器手动" },
   { id: "biosample", label: "用户已创建 BioSample 并粘贴校验字段", done: false, kind: "manual", hint: "浏览器手动" },
@@ -85,6 +85,9 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
   const [manualDone, setManualDone] = useState<Record<string, boolean>>({});
   const [runStatus, setRunStatus] = useState<RunStatus | null>(null);
   const [lastMode, setLastMode] = useState<"dry-run" | "run" | null>(null);
+  const [helperScript, setHelperScript] = useState<string | null>(null);
+  const [howToRun, setHowToRun] = useState<string[]>([]);
+  const [copied, setCopied] = useState(false);
 
   const viewChecklist = useMemo(
     () => mergeChecklist(portalChecklist, manualDone),
@@ -170,10 +173,21 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
     }
   }
 
-  async function onRun(mode: "dry-run" | "run") {
+  function downloadText(filename: string, content: string, mime = "text/plain;charset=utf-8") {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function onPrepareLocal(mode: "dry-run" | "run") {
     setErr("");
     setRunStatus(null);
     setLastMode(mode);
+    setCopied(false);
     if (!loggedIn || !entitled) {
       setErr("需要登录且具备会员权限");
       return;
@@ -186,74 +200,34 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
         body: JSON.stringify({ ...payload(), mode }),
       });
       const data = await res.json();
-      if (!res.ok && !data.job) {
-        setErr(data.error || "提交失败");
-        return;
-      }
-      if (!data.job && (data.status || data.command)) {
-        setRunStatus(data as RunStatus);
-        if (data.command) setCommand(data.command);
+      if (!res.ok && !data.ascp_command && !data.helper_script) {
+        setErr(data.error || "生成失败");
         if (Array.isArray(data.issues)) setIssues(data.issues);
-        if (data.portal_checklist) applyPortalChecklist(data.portal_checklist);
-        else if (data.status) {
-          // derive checklist from runner status on client
-          const st = data as RunStatus;
-          applyPortalChecklist(
-            mergeChecklist(portalChecklist, {
-              validate: true,
-              dry_run: st.status === "dry_run" && st.ok ? true : undefined,
-              ascp_upload: st.status === "succeeded" && st.ok ? true : undefined,
-            } as Record<string, boolean>),
-          );
-        }
-        if (!data.ok && data.status !== "dry_run") setErr(data.message || "运行失败");
         return;
       }
-      let job = data.job as {
-        id: string;
-        status: string;
-        message?: string;
-        error?: string;
-        result?: RunStatus & { portal_checklist?: PortalChecklist };
-      };
-      const started = Date.now();
-      while (
-        job &&
-        (job.status === "queued" || job.status === "running") &&
-        Date.now() - started < 2 * 60 * 60 * 1000
-      ) {
-        await new Promise((r) => setTimeout(r, 1200));
-        const poll = await fetch(`/api/tools/ncbi-run?id=${encodeURIComponent(job.id)}`);
-        const body = await poll.json();
-        if (!poll.ok || !body.job) {
-          setErr(body.error || "轮询任务失败");
-          break;
-        }
-        job = body.job;
-      }
-      const result = (job?.result || null) as (RunStatus & { portal_checklist?: PortalChecklist }) | null;
-      if (result) {
-        setRunStatus(result);
-        if (result.command) setCommand(String(result.command));
-        if (Array.isArray(result.issues)) setIssues(result.issues);
-        if (result.portal_checklist) applyPortalChecklist(result.portal_checklist);
-        else {
-          applyPortalChecklist(
-            mergeChecklist(portalChecklist, {
-              validate: true,
-              ...(result.status === "dry_run" && result.ok ? { dry_run: true } : {}),
-              ...(result.status === "succeeded" && result.ok ? { dry_run: true, ascp_upload: true } : {}),
-            }),
-          );
-        }
-      } else if (job?.status === "dry_run") {
-        applyPortalChecklist(mergeChecklist(portalChecklist, { validate: true, dry_run: true }));
-      } else if (job?.status === "succeeded") {
+      if (Array.isArray(data.issues)) setIssues(data.issues);
+      if (data.ascp_command) setCommand(String(data.ascp_command));
+      if (data.helper_script) setHelperScript(String(data.helper_script));
+      if (Array.isArray(data.how_to_run)) setHowToRun(data.how_to_run);
+      if (data.portal_checklist) applyPortalChecklist(data.portal_checklist);
+      if (data.ok) {
         applyPortalChecklist(
-          mergeChecklist(portalChecklist, { validate: true, dry_run: true, ascp_upload: true }),
+          mergeChecklist(portalChecklist || data.portal_checklist, {
+            validate: true,
+            dry_run: mode === "dry-run" || mode === "run" ? true : undefined,
+          }),
         );
+        setRunStatus({
+          status: mode === "dry-run" ? "local_pack_dry_run" : "local_pack_run",
+          ok: true,
+          dry_run: mode === "dry-run",
+          command: data.ascp_command,
+          message: data.message || "已生成本地助手包（服务器未执行 ascp）",
+        });
+        setErr("");
+      } else {
+        setErr(data.error || data.message || "校验未通过，未生成助手包");
       }
-      if (job?.status === "failed") setErr(job.error || job.message || "运行失败");
     } catch (ex) {
       setErr(ex instanceof Error ? ex.message : "网络错误");
     } finally {
@@ -261,7 +235,18 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
     }
   }
 
-  function toggleManual(id: string) {
+  async function copyCommand() {
+    if (!command) return;
+    try {
+      await navigator.clipboard.writeText(command);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setErr("复制失败，请手动选中命令");
+    }
+  }
+
+    function toggleManual(id: string) {
     const stepMeta = viewChecklist.steps.find((s) => s.id === id);
     if (stepMeta?.kind === "auto") return;
     setManualDone((prev) => ({ ...prev, [id]: !viewChecklist.steps.find((s) => s.id === id)?.done }));
@@ -269,6 +254,11 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
 
   return (
     <div className="ncbi-wizard">
+      <div className="rules-banner" role="note">
+        <strong>架构原则：</strong>
+        测序大数据<strong>不经过科研通服务器</strong>。本页只收集元数据、校验字段、生成你可在本机运行的 ascp
+        命令 / 助手脚本；文件由你的电脑经 Aspera <strong>直连 NCBI</strong>。禁止把 FASTQ/BAM 上传到本站再转发。
+      </div>
       {!loggedIn ? (
         <p className="rules-banner">
           请先 <Link href="/login">登录</Link>。
@@ -281,7 +271,7 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
         <li className={step === 1 ? "is-on" : ""}>① 必要元数据</li>
         <li className={step === 2 ? "is-on" : ""}>② 文件清单</li>
         <li className={step === 3 ? "is-on" : ""}>③ Aspera 本机路径</li>
-        <li className={step === 4 ? "is-on" : ""}>④ 校验 / dry-run / 上传</li>
+        <li className={step === 4 ? "is-on" : ""}>④ 校验 / 本机命令</li>
       </ol>
 
       <form className="help-form" onSubmit={onValidate}>
@@ -396,7 +386,8 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
               <input value={accountFolder} onChange={(e) => setAccountFolder(e.target.value)} required />
             </label>
             <p className="form-note">
-              私钥内容请勿粘贴到网页。本机 dry-run / 运行仅使用路径；密钥内容不落库、不进日志。
+              私钥内容请勿粘贴到网页。这里只记录<strong>本机绝对路径字符串</strong>，用于生成命令；
+              科研通服务器不会读取该路径下的文件，也不会代传测序数据。
             </p>
             <div className="actions">
               <button type="button" className="btn" onClick={() => setStep(2)}>
@@ -411,17 +402,20 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
 
         {step === 4 ? (
           <>
-            <h2>校验结果 · Dry-run · 真实上传</h2>
+            <h2>校验结果 · 生成本地上传助手</h2>
             <div className="ncbi-mode-cards">
               <article className={`ncbi-mode-card${lastMode === "dry-run" ? " is-on" : ""}`}>
-                <h3>Dry-run（推荐先跑）</h3>
-                <p>只校验路径与生成 ascp 命令，<strong>不上传任何文件</strong>。用于确认密钥路径、本地文件夹、账号目录是否写对。</p>
+                <h3>生成本地 dry-run 包</h3>
+                <p>
+                  门户只做元数据校验并生成脚本；<strong>不在服务器读你的测序文件</strong>。
+                  你在本机跑脚本时才会检查路径（仍不上传）。
+                </p>
               </article>
               <article className={`ncbi-mode-card${lastMode === "run" ? " is-on" : ""}`}>
-                <h3>真实运行（本机 ascp）</h3>
+                <h3>生成本机实际上传包</h3>
                 <p>
-                  在本机执行 ascp 上传。密钥仍只读本机路径、不落库。
-                  <strong>不会</strong>自动登录或代填 NCBI Submission Portal 网页。
+                  下载助手后在你的电脑执行 ascp，<strong>直连 NCBI</strong>。
+                  密钥仅本机路径、不落库。本站<strong>不做</strong> Submission Portal 网页代填。
                 </p>
               </article>
             </div>
@@ -454,8 +448,8 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
                 ))}
               </ul>
               <p className="form-note">
-                自动步骤由校验 / dry-run / ascp 结果驱动；手动步骤请你在浏览器完成后勾选。本站<strong>不做</strong>{" "}
-                Submission Portal 浏览器自动化。
+                校验与「生成本地包」可自动勾选；真正 ascp 成功请你在本机跑完后手动勾选。本站<strong>不做</strong>{" "}
+                Submission Portal 浏览器自动化，也<strong>不中转</strong>测序文件。
               </p>
             </section>
 
@@ -475,29 +469,54 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
                 type="button"
                 className="btn btn-primary"
                 disabled={busy}
-                onClick={() => void onRun("dry-run")}
-                title="不上传，只检查"
+                onClick={() => void onPrepareLocal("dry-run")}
+                title="生成 dry-run 本地助手"
               >
-                {busy && lastMode === "dry-run" ? "Dry-run 中…" : "① Dry-run（不上传）"}
+                {busy && lastMode === "dry-run" ? "生成中…" : "① 生成本地 dry-run 包"}
               </button>
               <button
                 type="button"
                 className="btn"
                 disabled={busy}
-                onClick={() => {
-                  if (
-                    typeof window !== "undefined" &&
-                    !window.confirm("确认对本机执行真实 ascp 上传？这会传输文件到 NCBI，但不会代填 Portal 网页。")
-                  ) {
-                    return;
-                  }
-                  void onRun("run");
-                }}
-                title="真实 ascp"
+                onClick={() => void onPrepareLocal("run")}
+                title="生成实际上传本地助手"
               >
-                {busy && lastMode === "run" ? "上传中…" : "② 真实运行 ascp"}
+                {busy && lastMode === "run" ? "生成中…" : "② 生成本机上传包"}
+              </button>
+              <button type="button" className="btn" disabled={!command || busy} onClick={() => void copyCommand()}>
+                {copied ? "已复制命令" : "复制 ascp 命令"}
+              </button>
+              <button
+                type="button"
+                className="btn"
+                disabled={!helperScript || busy}
+                onClick={() => helperScript && downloadText("keyantong-ncbi-local-upload.sh", helperScript)}
+              >
+                下载本地助手 .sh
+              </button>
+              <button
+                type="button"
+                className="btn"
+                disabled={!command || busy}
+                onClick={() =>
+                  downloadText("ncbi-payload.json", JSON.stringify(payload(), null, 2), "application/json")
+                }
+              >
+                下载 payload.json
               </button>
             </div>
+            {howToRun.length ? (
+              <ol className="check-list" style={{ marginTop: "1rem" }}>
+                {howToRun.map((h) => (
+                  <li key={h}>{h}</li>
+                ))}
+              </ol>
+            ) : null}
+            <p className="form-note">
+              本机执行示例：
+              <code className="mono">chmod +x keyantong-ncbi-local-upload.sh && ./keyantong-ncbi-local-upload.sh</code>
+              ；或直接粘贴 ascp 命令。ascp 需自行安装 Aspera Connect（IBM 许可）。
+            </p>
           </>
         ) : null}
 
@@ -538,7 +557,7 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
 
       {runStatus ? (
         <section className="section" style={{ marginTop: "1rem" }}>
-          <h2>运行状态</h2>
+          <h2>本地助手包状态</h2>
           <p className="mono">
             mode={lastMode || "?"} · status={runStatus.status} · ok={String(runStatus.ok)} · dry_run=
             {String(runStatus.dry_run)}
