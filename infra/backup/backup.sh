@@ -22,9 +22,9 @@ if docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" ps postgres --status
 else
   echo "[backup] WARN: postgres not running; skipping pg_dump"
 fi
-echo "[backup] packing portal + redis + caddy + rnaseq (excl backups)…"
+echo "[backup] packing portal + redis + caddy + rnaseq + harness (excl backups)…"
 INCLUDE=()
-for d in portal redis caddy rnaseq; do
+for d in portal redis caddy rnaseq harness; do
   [[ -e "$ROOT/$d" ]] && INCLUDE+=("$d")
 done
 if ((${#INCLUDE[@]})); then

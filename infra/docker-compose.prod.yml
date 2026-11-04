@@ -21,6 +21,8 @@ services:
       - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/caddy/config:/config
     environment:
       SITE_ADDRESS: ${SITE_ADDRESS:-keyantong.online}
+      HARNESS_BASIC_USER: ${HARNESS_BASIC_USER:-}
+      HARNESS_BASIC_HASH: ${HARNESS_BASIC_HASH:-}
     depends_on:
       portal:
         condition: service_healthy
@@ -52,6 +54,15 @@ services:
       EMAIL_DEV_ECHO: ${EMAIL_DEV_ECHO:-false}
       # Never enable server-side ascp in production cloud
       NCBI_ALLOW_SERVER_ASCP: "0"
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://api.deepseek.com/v1}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-deepseek-chat}
+      LLM_MODEL_FAST: ${LLM_MODEL_FAST:-deepseek-chat}
+      LLM_MODEL_REASONING: ${LLM_MODEL_REASONING:-deepseek-reasoner}
+      LLM_DAILY_TOKEN_BUDGET: ${LLM_DAILY_TOKEN_BUDGET:-200000}
+      LLM_DAILY_CALL_BUDGET: ${LLM_DAILY_CALL_BUDGET:-80}
+      LLM_TIMEOUT_MS: ${LLM_TIMEOUT_MS:-45000}
+      LLM_ALLOW_ANY_MODEL: ${LLM_ALLOW_ANY_MODEL:-0}
     volumes:
       - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/portal:/data/portal
     depends_on:
@@ -134,6 +145,39 @@ services:
     networks:
       - kt
 
+
+  # Optional DeepSeek Harness (developer preview) — profile harness
+  # NEVER publish 3080 on 0.0.0.0; host bind is loopback only. Prefer SSH tunnel.
+  # Inject provider Key via UI under DSH_HOME or runtime env (do not bake into image).
+  harness:
+    profiles: ["harness"]
+    build:
+      context: ./harness
+      dockerfile: Dockerfile
+    image: keyantong-harness:local
+    restart: unless-stopped
+    environment:
+      DSH_HOME: /data/harness
+      DSH_PORT: "3079"
+      PROXY_PORT: "3080"
+      # Optional proxy Basic Auth (also put Basic Auth on Caddy if exposing subdomain)
+      PROXY_USERNAME: ${HARNESS_PROXY_USER:-}
+      PROXY_PASSWORD: ${HARNESS_PROXY_PASSWORD:-}
+      # Placeholders — configure in UI if unused by current dsh build
+      DSH_LLM_API_KEY: ${DSH_LLM_API_KEY:-}
+      DSH_LLM_BASE_URL: ${DSH_LLM_BASE_URL:-}
+    volumes:
+      - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/harness:/data/harness
+    # No secrets dir mounts. No portal/pg volumes.
+    networks:
+      - kt
+    ports:
+      - "127.0.0.1:3080:3080"
+    security_opt:
+      - no-new-privileges:true
+    read_only: false
+    tmpfs:
+      - /tmp
 
 networks:
   kt:

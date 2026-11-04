@@ -1,7 +1,7 @@
 # 20 · 生产部署与整机迁移（keyantong.online）
 
 **状态：** Accepted  
-**范围：** MVP 生产 —— Caddy + Portal + Postgres + Redis（可选 profile：`rnaseq-worker`）  
+**范围：** MVP 生产 —— Caddy + Portal + Postgres + Redis（可选 profile：`rnaseq-worker`、`harness`）  
 **原则：** NCBI 大数据仍用户本机直传；分析可在本云主机 worker 跑；一个月后可整包迁机。
 
 ## 1. 服务器布局
@@ -15,6 +15,7 @@
 | `/data/keyantong/caddy` | ACME 证书 |
 | `/data/keyantong/rnaseq/` | 上游/下游分析数据（见 [21](./21-rnaseq-upstream-worker.md)） |
 | `/data/keyantong/backups` | `backup.sh` 输出 |
+| `/data/keyantong/harness` | DeepSeek Harness `DSH_HOME`（可选 profile） |
 
 Compose：`infra/docker-compose.prod.yml`  
 密钥：`infra/.env`（**永不进 Git**；模板 `infra/.env.example`）
@@ -29,6 +30,8 @@ Compose：`infra/docker-compose.prod.yml`
 6. 验证 `https://keyantong.online/api/health`。
 
 可选启用分析 worker：`--profile rnaseq-worker`（需足够磁盘；见文档 21）。
+
+可选启用 DeepSeek Harness 总管：`--profile harness`（**开发者预览**，仅 `127.0.0.1:3080` 或 Basic Auth 子域；见 [22](./22-llm-gateway-and-harness.md)）。门户 LLM Gateway 只需在 `infra/.env` 填 `LLM_*`，不必开 harness profile。
 
 ## 3. 备份 / 恢复 / 迁机
 
@@ -49,4 +52,6 @@ Compose：`infra/docker-compose.prod.yml`
 ## 5. MVP 限制
 
 - NodeBB/RAG/Bridge 默认未启。
+- Harness 默认未启；开启后仍须按文档 22 注入供应商 Key，且勿裸奔公网。
+- 门户 `/api/ai/*` 在未配置 `LLM_API_KEY` 时返回 503，属预期。
 - 上游 FASTQ 流水线以 worker 骨架落地，完整比对索引需按文档 21 挂载 `refs/`。
