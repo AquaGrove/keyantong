@@ -11,6 +11,10 @@ export type LlmChatInput = {
   json?: boolean;
   /** Override tier model; still must pass whitelist. */
   model?: string;
+  /** Extra system instructions (e.g. worker persona + memory). */
+  systemExtra?: string;
+  /** Prior turns (user/assistant only); truncated by caller. */
+  history?: { role: "user" | "assistant"; content: string }[];
 };
 
 export type LlmChatResult = {
@@ -69,12 +73,24 @@ export async function llmChat(input: LlmChatInput): Promise<LlmChatResult> {
     facts,
   });
 
+  const systemContent = [SYSTEM_PROMPT, (input.systemExtra || "").trim().slice(0, 4000)]
+    .filter(Boolean)
+    .join("\n\n");
+  const historyMsgs = (input.history || [])
+    .filter((m) => m && (m.role === "user" || m.role === "assistant") && m.content)
+    .slice(-12)
+    .map((m) => ({
+      role: m.role,
+      content: redactForModel(String(m.content)).slice(0, 2000),
+    }));
+
   const body: Record<string, unknown> = {
     model,
     temperature: tier === "reasoning" ? 0.3 : 0.2,
     max_tokens: maxTokensForScene(input.scene),
     messages: [
-      { role: "system", content: SYSTEM_PROMPT },
+      { role: "system", content: systemContent },
+      ...historyMsgs,
       { role: "user", content: userPayload },
     ],
   };

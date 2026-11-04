@@ -2119,3 +2119,231 @@ h1.page-title {
 .home-composer .ai-composer-solo textarea {
   min-height: 88px;
 }
+
+
+/* —— Ask who + workers —— */
+.ask-who-dock {
+  position: fixed;
+  left: 50%;
+  bottom: 1.5rem;
+  transform: translateX(-50%);
+  z-index: 60;
+  pointer-events: none;
+}
+
+.ask-who-dock-home {
+  bottom: 1.25rem;
+}
+
+.ask-who-fab {
+  pointer-events: auto;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.85rem 1.45rem;
+  border-radius: 999px;
+  color: #ecfeff;
+  background: linear-gradient(160deg, #0f766e, #0d9488);
+  box-shadow: 0 14px 36px rgba(15, 118, 110, 0.35);
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.ask-who-fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px rgba(15, 118, 110, 0.4);
+}
+
+.ask-who-panel {
+  position: fixed;
+  left: 50%;
+  bottom: 4.6rem;
+  transform: translateX(-50%);
+  z-index: 70;
+  width: min(420px, calc(100% - 1.5rem));
+  max-height: min(70vh, 560px);
+  overflow: auto;
+  padding: 1rem 1.05rem 1.1rem;
+  border-radius: 1.1rem;
+  border: 1px solid var(--line);
+  background: var(--paper-elevated);
+  box-shadow: var(--shadow);
+}
+
+.ask-who-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.ask-who-section {
+  margin-bottom: 0.9rem;
+}
+
+.ask-who-label {
+  margin: 0 0 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.ask-who-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.ask-who-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  text-decoration: none;
+  border: 1px solid var(--line);
+  background: rgba(10, 28, 46, 0.03);
+  color: var(--ink);
+  border-radius: 0.7rem;
+  padding: 0.65rem 0.75rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.ask-who-item:hover {
+  border-color: rgba(15, 118, 110, 0.4);
+  background: var(--accent-soft);
+}
+
+.ask-who-summon {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.ask-who-summon em {
+  font-style: normal;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.ask-who-add {
+  margin-top: 0.45rem;
+  border-style: dashed;
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+.ask-who-locale {
+  margin-top: 0.55rem;
+}
+
+.worker-home {
+  margin-top: 1.25rem;
+}
+
+.worker-home-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.worker-home-head h2 {
+  margin: 0;
+}
+
+.worker-card-list {
+  list-style: none;
+  margin: 0.85rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.worker-card {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  border-radius: 0.85rem;
+  border: 1px solid var(--line);
+  background: var(--paper-elevated);
+}
+
+.worker-card p {
+  margin: 0.35rem 0;
+  color: var(--ink-soft);
+  line-height: 1.5;
+  font-size: 0.92rem;
+}
+
+.worker-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: flex-start;
+}
+
+.worker-window {
+  position: fixed;
+  right: 1rem;
+  bottom: 5.2rem;
+  z-index: 80;
+  width: min(420px, calc(100% - 1.5rem));
+  max-height: min(78vh, 640px);
+  display: grid;
+  grid-template-rows: auto minmax(180px, 1fr) auto;
+  border-radius: 1.1rem;
+  border: 1px solid var(--line);
+  background: var(--paper-elevated);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.worker-window-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0.9rem;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--accent) 8%, #fff);
+}
+
+.worker-thread {
+  overflow: auto;
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.55rem;
+  background: rgba(10, 28, 46, 0.03);
+}
+
+.worker-composer {
+  padding: 0.7rem 0.85rem 0.85rem;
+  border-top: 1px solid var(--line);
+}
+
+.worker-composer textarea {
+  width: 100%;
+  font: inherit;
+  border-radius: 0.7rem;
+  border: 1px solid var(--line-strong);
+  padding: 0.65rem 0.75rem;
+  resize: vertical;
+  min-height: 72px;
+  background: #fff;
+}
+
+.worker-composer textarea:focus {
+  outline: 2px solid rgba(20, 184, 166, 0.35);
+  border-color: var(--accent);
+}
+
+/* Inner pages: a bit more top padding without site header */
+body:has(.ask-who-dock:not(.ask-who-dock-home)) .page {
+  padding-top: 1.25rem;
+}

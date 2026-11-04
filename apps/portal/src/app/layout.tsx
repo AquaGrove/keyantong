@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import { AskWhoHost } from "@/components/ask-who-host";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { I18nProvider } from "@/lib/i18n/provider";
@@ -44,6 +45,7 @@ export default async function RootLayout({
           <SiteHeader />
           {children}
           <SiteFooter />
+          <AskWhoHost />
         </I18nProvider>
       </body>
     </html>

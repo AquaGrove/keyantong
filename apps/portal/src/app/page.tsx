@@ -1,7 +1,8 @@
 import { HomeDispatcher } from "@/components/home-dispatcher";
+import { HomeIntro } from "@/components/home-intro";
+import { WorkerManager } from "@/components/worker-manager";
 import { isEntitled } from "@/lib/user-store";
 import { currentUser } from "@/lib/user-session";
-import { HomeIntro } from "@/components/home-intro";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,7 @@ export default async function HomePage() {
     <main className="page page-home">
       <HomeIntro />
       <HomeDispatcher loggedIn={Boolean(user)} entitled={entitled} />
+      <WorkerManager loggedIn={Boolean(user)} />
     </main>
   );
 }

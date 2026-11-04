@@ -5,8 +5,5 @@ import { currentUser } from "@/lib/user-session";
 export async function SiteHeader() {
   const community = getCommunityHref();
   const user = await currentUser();
-
-  return (
-    <SiteHeaderActions loggedIn={Boolean(user)} communityHref={community} />
-  );
+  return <SiteHeaderActions loggedIn={Boolean(user)} communityHref={community} />;
 }
