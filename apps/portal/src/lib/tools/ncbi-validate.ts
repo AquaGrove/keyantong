@@ -33,6 +33,17 @@ function missing(obj: Record<string, string>, keys: readonly string[], prefix: s
   return out;
 }
 
+function isAbsoluteLocalPath(p: string): boolean {
+  if (!p) return false;
+  if (p.startsWith("/")) return true; // POSIX
+  if (/^[A-Za-z]:[\\/]/.test(p)) return true; // Windows drive
+  if (p.startsWith("\\\\")) return true; // UNC
+  return false;
+}
+
+/** NCBI Aspera preload endpoint — never the account email. */
+export const NCBI_ASCP_REMOTE = "subasp@upload.ncbi.nlm.nih.gov";
+
 export function buildAscpCommand(ascp: NcbiPayload["ascp"]): { command: string | null; issues: NcbiIssue[] } {
   const issues: NcbiIssue[] = [];
   const key = (ascp.key_path || "").trim();
@@ -41,14 +52,31 @@ export function buildAscpCommand(ascp: NcbiPayload["ascp"]): { command: string |
   const account = (ascp.account_folder || "").trim();
   const rate = (ascp.rate || "100m").trim() || "100m";
   if (!key) issues.push({ level: "error", field: "ascp.key_path", message: "需要本机 Aspera 私钥绝对路径（不会上传到服务器）" });
-  else if (!key.startsWith("/")) issues.push({ level: "error", field: "ascp.key_path", message: "密钥路径必须是绝对路径" });
+  else if (!isAbsoluteLocalPath(key)) {
+    issues.push({
+      level: "error",
+      field: "ascp.key_path",
+      message: "密钥路径必须是绝对路径（POSIX /… 或 Windows C:\\…）",
+    });
+  }
   if (!folder) issues.push({ level: "error", field: "ascp.local_folder", message: "需要本地待上传文件夹路径" });
-  if (!email.includes("@")) issues.push({ level: "error", field: "ascp.ncbi_user_email", message: "需要 NCBI 账户邮箱（ascp 目标用户）" });
+  else if (!isAbsoluteLocalPath(folder) && !folder.startsWith("./")) {
+    // soft: allow relative; warn only
+  }
+  if (email && !email.includes("@")) {
+    issues.push({ level: "warning", field: "ascp.ncbi_user_email", message: "NCBI 账户邮箱格式异常（仅作账号标识，不是 ascp 远程用户）" });
+  } else if (!email) {
+    issues.push({
+      level: "warning",
+      field: "ascp.ncbi_user_email",
+      message: "建议填写 NCBI 账户邮箱作备忘；ascp 远程用户固定为 subasp@upload.ncbi.nlm.nih.gov",
+    });
+  }
   if (!account) issues.push({ level: "error", field: "ascp.account_folder", message: "需要 NCBI 分配的 uploads 子目录名" });
-  if (issues.length) return { command: null, issues };
+  if (issues.some((i) => i.level === "error")) return { command: null, issues };
   return {
-    command: `ascp -i ${key} -QT -l${rate} -k1 -d ${folder} ${email}:uploads/${account}`,
-    issues: [],
+    command: `ascp -i ${key} -QT -l${rate} -k1 -d ${folder} ${NCBI_ASCP_REMOTE}:uploads/${account}`,
+    issues,
   };
 }
 

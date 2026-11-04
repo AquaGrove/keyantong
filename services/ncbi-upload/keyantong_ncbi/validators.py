@@ -117,21 +117,41 @@ def build_ascp_command(
     else:
         kp = Path(key_path)
         if not kp.is_absolute():
-            issues.append(ValidationIssue("error", "ascp.key_path", "密钥路径必须是绝对路径"))
+            # Path.is_absolute handles POSIX and Windows when running on that OS;
+            # also accept explicit Windows drive / UNC strings when validating cross-platform.
+            s = str(key_path)
+            win = len(s) >= 3 and s[1] == ":" and s[2] in "\\/" or s.startswith("\\")
+            if not win:
+                issues.append(ValidationIssue("error", "ascp.key_path", "密钥路径必须是绝对路径（POSIX 或 Windows）"))
     if not local_folder or not str(local_folder).strip():
         issues.append(ValidationIssue("error", "ascp.local_folder", "需要本地待上传文件夹路径"))
-    if not ncbi_user_email or "@" not in ncbi_user_email:
-        issues.append(ValidationIssue("error", "ascp.ncbi_user_email", "需要 NCBI 账户邮箱（ascp 目标用户）"))
+    if ncbi_user_email and "@" not in ncbi_user_email:
+        issues.append(
+            ValidationIssue(
+                "warning",
+                "ascp.ncbi_user_email",
+                "NCBI 账户邮箱格式异常（仅作账号标识；ascp 远程用户固定为 subasp@upload.ncbi.nlm.nih.gov）",
+            )
+        )
+    elif not ncbi_user_email:
+        issues.append(
+            ValidationIssue(
+                "warning",
+                "ascp.ncbi_user_email",
+                "建议填写 NCBI 账户邮箱作备忘；ascp 远程用户固定为 subasp@upload.ncbi.nlm.nih.gov",
+            )
+        )
     if not account_folder or not str(account_folder).strip():
         issues.append(ValidationIssue("error", "ascp.account_folder", "需要 NCBI 分配的 uploads 子目录名"))
-    if issues:
+    if any(i.level == "error" for i in issues):
         return None, issues
     # Never embed key content — only the path placeholder the user already provided locally.
+    # Remote user is ALWAYS subasp@upload.ncbi.nlm.nih.gov (not the account email).
     cmd = (
         f"ascp -i {key_path} -QT -l{rate} -k1 -d "
-        f"{local_folder} {ncbi_user_email}:uploads/{account_folder}"
+        f"{local_folder} subasp@upload.ncbi.nlm.nih.gov:uploads/{account_folder}"
     )
-    return cmd, []
+    return cmd, issues
 
 
 def validate_submission(payload: dict[str, Any]) -> ValidationResult:

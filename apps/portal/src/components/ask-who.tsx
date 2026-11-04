@@ -115,19 +115,57 @@ export function AskWho({ loggedIn }: { loggedIn: boolean }) {
   } | null>(null);
   const fabRef = useRef<HTMLButtonElement>(null);
 
+  const [auth, setAuth] = useState<"unknown" | "in" | "out">(loggedIn ? "in" : "unknown");
+  const [loadingAgents, setLoadingAgents] = useState(false);
+
   const load = useCallback(async () => {
-    if (!loggedIn) {
-      setAgents([]);
-      return;
-    }
+    setLoadingAgents(true);
+    setErr(null);
     try {
-      const res = await fetch("/api/workers", { credentials: "same-origin" });
-      const data = await res.json();
-      if (res.ok && Array.isArray(data.agents)) setAgents(data.agents);
-    } catch {
-      /* ignore */
+      const res = await fetch("/api/workers", {
+        credentials: "same-origin",
+        cache: "no-store",
+        headers: { Accept: "application/json" },
+      });
+      if (res.status === 401) {
+        setAuth("out");
+        setAgents([]);
+        return;
+      }
+      const data = (await res.json().catch(() => ({}))) as {
+        agents?: Agent[];
+        workers?: Agent[];
+        error?: string;
+      };
+      const list = Array.isArray(data.agents)
+        ? data.agents
+        : Array.isArray(data.workers)
+          ? data.workers
+          : [];
+      setAuth("in");
+      setAgents(
+        list
+          .map((a) => {
+            const kind: Agent["kind"] = a.kind === "pet" ? "pet" : "worker";
+            return {
+              id: String(a.id || ""),
+              name: String(a.name || "未命名"),
+              kind,
+              persona: String(a.persona || ""),
+              skills: Array.isArray(a.skills) ? a.skills.map(String) : [],
+            };
+          })
+          .filter((a) => a.id),
+      );
+      if (!res.ok) {
+        setErr(typeof data.error === "string" ? data.error : `加载失败 HTTP ${res.status}`);
+      }
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "加载打工人失败");
+    } finally {
+      setLoadingAgents(false);
     }
-  }, [loggedIn]);
+  }, []);
 
   useEffect(() => {
     setPos(loadPos());
@@ -135,8 +173,14 @@ export function AskWho({ loggedIn }: { loggedIn: boolean }) {
   }, []);
 
   useEffect(() => {
-    void load();
+    // Always probe session + workers when panel opens (do not trust SSR loggedIn alone).
+    if (open) void load();
   }, [load, open]);
+
+  useEffect(() => {
+    // Warm list once after mount if SSR already thinks we are signed in.
+    if (loggedIn) void load();
+  }, [loggedIn, load]);
 
   useEffect(() => {
     function onResize() {
@@ -241,7 +285,7 @@ export function AskWho({ loggedIn }: { loggedIn: boolean }) {
             <Link className="ask-who-item" href="/" onClick={() => setOpen(false)}>
               {locale === "zh" ? "回首页对话" : "Home dispatcher"}
             </Link>
-            {!loggedIn ? (
+            {auth === "out" || (auth !== "in" && !loggedIn) ? (
               <>
                 <Link className="ask-who-item" href="/login" onClick={() => setOpen(false)}>
                   {t("nav.login")}
@@ -268,12 +312,17 @@ export function AskWho({ loggedIn }: { loggedIn: boolean }) {
           <div className="ask-who-section">
             <p className="ask-who-label">
               {locale === "zh" ? "我的打工人 / 宠物" : "My workers / pets"}
+              {loadingAgents ? (
+                <span className="mono"> · {locale === "zh" ? "加载中…" : "loading…"}</span>
+              ) : null}
             </p>
-            {!loggedIn ? (
+            {auth === "out" || (auth === "unknown" && !loggedIn && !loadingAgents) ? (
               <p className="mono">{locale === "zh" ? "登录后可召唤专属角色" : "Sign in to summon roles"}</p>
+            ) : loadingAgents && agents.length === 0 ? (
+              <p className="mono">{locale === "zh" ? "正在加载已创建角色…" : "Loading your roles…"}</p>
             ) : agents.length === 0 ? (
               <p className="mono">
-                {locale === "zh" ? "还没有角色 — 回首页添加" : "None yet — add on home"}
+                {locale === "zh" ? "还没有角色 — 可下方添加" : "None yet — add below"}
               </p>
             ) : (
               <ul className="ask-who-list">
@@ -290,13 +339,17 @@ export function AskWho({ loggedIn }: { loggedIn: boolean }) {
                       <span>
                         {a.kind === "pet" ? "🐾" : "👷"} {a.name}
                       </span>
-                      <em>{a.skills.slice(0, 2).join(" · ") || a.persona.slice(0, 28)}</em>
+                      <em>
+                        {(a.skills || []).slice(0, 2).join(" · ") ||
+                          (a.persona || "").slice(0, 28) ||
+                          (locale === "zh" ? "点击召唤" : "Summon")}
+                      </em>
                     </button>
                   </li>
                 ))}
               </ul>
             )}
-            {loggedIn ? (
+            {auth === "in" || loggedIn ? (
               <Link className="ask-who-item ask-who-add" href="/#workers" onClick={() => setOpen(false)}>
                 {locale === "zh" ? "+ 添加我的打工人" : "+ Add a worker"}
               </Link>

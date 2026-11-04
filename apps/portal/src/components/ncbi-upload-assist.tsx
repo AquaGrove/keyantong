@@ -414,8 +414,8 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
               />
             </label>
             <label>
-              NCBI 账户邮箱（ascp 用户）
-              <input type="email" value={ncbiEmail} onChange={(e) => setNcbiEmail(e.target.value)} required />
+              NCBI 账户邮箱（账号备忘；ascp 远程用户固定为 subasp@upload.ncbi.nlm.nih.gov）
+              <input type="email" value={ncbiEmail} onChange={(e) => setNcbiEmail(e.target.value)} placeholder="you@example.com" />
             </label>
             <label>
               uploads 子目录名
