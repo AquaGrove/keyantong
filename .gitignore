@@ -58,3 +58,8 @@ services/rnaseq-pipeline/annotations/mouse/*.tsv
 services/rnaseq-pipeline/annotations/arabidopsis/*.tsv
 services/rnaseq-pipeline/annotations/fetch_meta.json
 services/rnaseq-pipeline/.venv/
+
+# Production secrets on server sync tree
+infra/.env
+
+.deploy-artifacts/

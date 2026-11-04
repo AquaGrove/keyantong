@@ -51,3 +51,5 @@
 - [17 · 社区工具分享与求助](./17-community-tool-share.md)
 - [18 · 开源门户安全基线](./18-security-baseline.md)
 - [19 · NCBI 本机直连上传](./19-ncbi-local-upload-architecture.md)
+- [20 生产部署与迁移](./20-production-deploy-migrate.md)
+- [21 上游 RNAseq Worker](./21-rnaseq-upstream-worker.md)

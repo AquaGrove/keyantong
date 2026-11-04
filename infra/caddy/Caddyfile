@@ -1,0 +1,17 @@
+# Production Caddy for KeyanTong
+# SITE_ADDRESS from compose env (default keyantong.online)
+
+{$SITE_ADDRESS:keyantong.online} {
+	encode gzip zstd
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+	reverse_proxy portal:3000
+}
+
+www.{$SITE_ADDRESS:keyantong.online} {
+	redir https://{$SITE_ADDRESS:keyantong.online}{uri} permanent
+}

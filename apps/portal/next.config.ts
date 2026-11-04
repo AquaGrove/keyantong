@@ -49,6 +49,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   reactStrictMode: true,
   transpilePackages: ["@keyantong/ops-shared"],
   poweredByHeader: false,

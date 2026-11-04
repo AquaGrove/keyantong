@@ -1,0 +1,140 @@
+# Production stack for KeyanTong (migratable single Compose project).
+# Usage on server (from /opt/keyantong):
+#   docker compose -f infra/docker-compose.prod.yml --env-file infra/.env up -d --build
+#
+# Data lives under KEYANTONG_DATA_ROOT (default /data/keyantong) so a later
+# machine move is: stop → backup/rsync that tree + infra/.env → restore → up.
+
+name: keyantong
+
+services:
+  caddy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/caddy/data:/data
+      - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/caddy/config:/config
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-keyantong.online}
+    depends_on:
+      portal:
+        condition: service_healthy
+    networks:
+      - kt
+
+  portal:
+    build:
+      context: ..
+      dockerfile: apps/portal/Dockerfile
+      args:
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://keyantong.online}
+        NEXT_PUBLIC_GITHUB_OWNER: ${NEXT_PUBLIC_GITHUB_OWNER:-AquaGrove}
+        NEXT_PUBLIC_GITHUB_REPO: ${NEXT_PUBLIC_GITHUB_REPO:-keyantong}
+    image: keyantong-portal:local
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: 0.0.0.0
+      DATA_DIR: /data/portal
+      DATABASE_URL: postgres://${POSTGRES_USER:-kt}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-keyantong}
+      REDIS_URL: redis://redis:6379/0
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://keyantong.online}
+      PUBLIC_PORTAL_URL: ${NEXT_PUBLIC_SITE_URL:-https://keyantong.online}
+      PORTAL_URL: ${NEXT_PUBLIC_SITE_URL:-https://keyantong.online}
+      EMAIL_DEV_ECHO: ${EMAIL_DEV_ECHO:-false}
+      # Never enable server-side ascp in production cloud
+      NCBI_ALLOW_SERVER_ASCP: "0"
+    volumes:
+      - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/portal:/data/portal
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+    networks:
+      - kt
+    # Do not publish 3000 publicly; Caddy terminates TLS
+    expose:
+      - "3000"
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-kt}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-keyantong}
+    volumes:
+      - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-kt} -d ${POSTGRES_DB:-keyantong}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - kt
+    # Not published to host — only internal network
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
+    volumes:
+      - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - kt
+
+  # Optional upstream/downstream analysis worker (profile rnaseq-worker)
+  rnaseq-worker:
+    profiles: ["rnaseq-worker"]
+    build:
+      context: ..
+      dockerfile: services/rnaseq-worker/Dockerfile
+    image: keyantong-rnaseq-worker:local
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      RNASEQ_DATA_ROOT: /data/rnaseq
+      RNASEQ_JOB_MAX_BYTES: ${RNASEQ_JOB_MAX_BYTES:-85899345920}
+      RNASEQ_MAX_CONCURRENT: ${RNASEQ_MAX_CONCURRENT:-1}
+      RNASEQ_QUEUE_MAX: ${RNASEQ_QUEUE_MAX:-8}
+      RNASEQ_DISK_WATERMARK: ${RNASEQ_DISK_WATERMARK:-85}
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/rnaseq:/data/rnaseq
+      # Optional: mount pre-built annotations (do not bake large TSVs into image)
+      - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/rnaseq/refs:/data/rnaseq/refs:ro
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - kt
+
+
+networks:
+  kt:
+    driver: bridge
