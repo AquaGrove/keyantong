@@ -1,0 +1,9 @@
+[Unit]
+Description=Hourly KeyanTong NCBI staging cleanup
+
+[Timer]
+OnCalendar=hourly
+Persistent=yes
+
+[Install]
+WantedBy=timers.target

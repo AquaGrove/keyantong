@@ -1,0 +1,18 @@
+id: rnaseq-oneclick
+name: 转录组一键下游分析
+summary: 上传表达矩阵，用彩色分组卡配置多组对照/实验；系统自动多对比差异分析、PCA、火山图、热图与上调/下调/多组维恩并打包（GO/KEGG 在有物种注释时启用）。
+categories: [rnaseq, visualization, analysis]
+license: Apache-2.0
+author: keyantong
+install:
+  notes: |
+    门户路径 /analysis/rnaseq。本地 CLI：services/rnaseq-pipeline（python3 -m keyantong_rnaseq）。
+    输入约定：矩阵首列为 gene_id；分组可为 sample,group CSV，或含 groups[{id,name,role,color,samples}] 的 JSON。
+common_pitfalls:
+  - 对照与各实验组各自少于 2 个生物学重复
+  - 分组样本名与矩阵列名不一致
+  - 把已经算好的 DEG 表当成主输入（本工具主路径不需要）
+links:
+  docs: https://github.com/AquaGrove/keyantong/tree/main/services/rnaseq-pipeline
+  portal: /analysis/rnaseq
+  forum_tags: [rnaseq, deg, pca, venn]

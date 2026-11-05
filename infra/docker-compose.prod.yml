@@ -1,0 +1,233 @@
+# Production stack for KeyanTong (migratable single Compose project).
+# Usage on server (from /opt/keyantong):
+#   docker compose -f infra/docker-compose.prod.yml --env-file infra/.env up -d --build
+#
+# Data lives under KEYANTONG_DATA_ROOT (default /data/keyantong) so a later
+# machine move is: stop → backup/rsync that tree + infra/.env → restore → up.
+
+name: keyantong
+
+services:
+  caddy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/caddy/data:/data
+      - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/caddy/config:/config
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-keyantong.online}
+      HARNESS_BASIC_USER: ${HARNESS_BASIC_USER:-}
+      HARNESS_BASIC_HASH: ${HARNESS_BASIC_HASH:-}
+    depends_on:
+      portal:
+        condition: service_healthy
+    networks:
+      - kt
+
+  portal:
+    build:
+      context: ..
+      dockerfile: apps/portal/Dockerfile
+      args:
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://keyantong.online}
+        NEXT_PUBLIC_GITHUB_OWNER: ${NEXT_PUBLIC_GITHUB_OWNER:-AquaGrove}
+        NEXT_PUBLIC_GITHUB_REPO: ${NEXT_PUBLIC_GITHUB_REPO:-keyantong}
+    image: keyantong-portal:local
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: 0.0.0.0
+      DATA_DIR: /data/portal
+      DATABASE_URL: postgres://${POSTGRES_USER:-kt}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-keyantong}
+      REDIS_URL: redis://redis:6379/0
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://keyantong.online}
+      PUBLIC_PORTAL_URL: ${NEXT_PUBLIC_SITE_URL:-https://keyantong.online}
+      PORTAL_URL: ${NEXT_PUBLIC_SITE_URL:-https://keyantong.online}
+      EMAIL_DEV_ECHO: ${EMAIL_DEV_ECHO:-false}
+      # Never enable server-side ascp in production cloud
+      NCBI_ALLOW_SERVER_ASCP: "0"
+      RNASEQ_DATA_ROOT: /data/rnaseq
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://api.siliconflow.cn/v1}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-deepseek-ai/DeepSeek-V3}
+      LLM_MODEL_FAST: ${LLM_MODEL_FAST:-Qwen/Qwen2.5-7B-Instruct}
+      LLM_MODEL_REASONING: ${LLM_MODEL_REASONING:-deepseek-ai/DeepSeek-R1}
+      LLM_DAILY_TOKEN_BUDGET: ${LLM_DAILY_TOKEN_BUDGET:-200000}
+      LLM_DAILY_CALL_BUDGET: ${LLM_DAILY_CALL_BUDGET:-80}
+      LLM_TIMEOUT_MS: ${LLM_TIMEOUT_MS:-45000}
+      LLM_ALLOW_ANY_MODEL: ${LLM_ALLOW_ANY_MODEL:-0}
+      HARNESS_WORKER_URL: ${HARNESS_WORKER_URL:-}
+      HARNESS_WORKER_TOKEN: ${HARNESS_WORKER_TOKEN:-}
+    volumes:
+      - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/portal:/data/portal
+      - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/rnaseq:/data/rnaseq
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'node -e "fetch(''http://127.0.0.1:3000/api/health'').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"',
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+    networks:
+      - kt
+    # Do not publish 3000 publicly; Caddy terminates TLS
+    expose:
+      - "3000"
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-kt}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-keyantong}
+    volumes:
+      - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/pg:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-kt} -d ${POSTGRES_DB:-keyantong}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - kt
+    # Not published to host — only internal network
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
+    volumes:
+      - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - kt
+
+  # Optional upstream/downstream analysis worker (profile rnaseq-worker)
+  rnaseq-worker:
+    profiles: ["rnaseq-worker"]
+    build:
+      context: ..
+      dockerfile: services/rnaseq-worker/Dockerfile
+    image: keyantong-rnaseq-worker:local
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      RNASEQ_DATA_ROOT: /data/rnaseq
+      RNASEQ_JOB_MAX_BYTES: ${RNASEQ_JOB_MAX_BYTES:-85899345920}
+      RNASEQ_MAX_CONCURRENT: ${RNASEQ_MAX_CONCURRENT:-1}
+      RNASEQ_QUEUE_MAX: ${RNASEQ_QUEUE_MAX:-8}
+      RNASEQ_DISK_WATERMARK: ${RNASEQ_DISK_WATERMARK:-85}
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/rnaseq:/data/rnaseq
+      # Optional: mount pre-built annotations (do not bake large TSVs into image)
+      - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/rnaseq/refs:/data/rnaseq/refs:ro
+      - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/rnaseq/annotations:/data/rnaseq/annotations:ro
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - kt
+
+  # Personal roles: same pinned Harness runtime, separate homes from operations.
+  # Enable explicitly; never publish a host port for this internal API.
+  harness-workers:
+    profiles: ["harness-workers"]
+    build:
+      context: ./harness
+      dockerfile: Dockerfile
+    image: keyantong-harness-workers:local
+    entrypoint: ["node", "/opt/dsh/worker-bridge.mjs"]
+    restart: unless-stopped
+    environment:
+      HARNESS_WORKER_TOKEN: ${HARNESS_WORKER_TOKEN:-}
+      HARNESS_WORKER_API_KEY: ${HARNESS_WORKER_API_KEY:-}
+      HARNESS_WORKER_BASE_URL: ${HARNESS_WORKER_BASE_URL:-https://api.deepseek.com}
+      HARNESS_WORKER_MODEL: ${HARNESS_WORKER_MODEL:-deepseek-chat}
+      HARNESS_WORKER_ROOT: /data/workers
+      HARNESS_WORKER_TIMEOUT_MS: "90000"
+    volumes:
+      - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/harness-workers:/data/workers
+    networks: [kt]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    pids_limit: 128
+    mem_limit: 2g
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3090/health',{headers:{Authorization:'Bearer '+process.env.HARNESS_WORKER_TOKEN}}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # Optional DeepSeek Harness (developer preview) — profile harness
+  # NEVER publish 3080 on 0.0.0.0; host bind is loopback only. Prefer SSH tunnel.
+  # Inject provider Key via UI under DSH_HOME or runtime env (do not bake into image).
+  harness:
+    profiles: ["harness"]
+    # Prefer local least-privilege image (node:24 + pinned dsh). Community smanx image
+    # currently fails native ABI (node-v137) on this host — override with HARNESS_IMAGE if needed.
+    build:
+      context: ./harness
+      dockerfile: Dockerfile
+    image: ${HARNESS_IMAGE:-keyantong-harness:local}
+    restart: unless-stopped
+    environment:
+      DSH_HOME: /data/harness
+      DSH_PORT: "3079"
+      PROXY_PORT: "3080"
+      # Optional proxy Basic Auth (also put Basic Auth on Caddy if exposing subdomain)
+      PROXY_USERNAME: ${HARNESS_PROXY_USER:-}
+      PROXY_PASSWORD: ${HARNESS_PROXY_PASSWORD:-}
+      # Placeholders — configure in UI if unused by current dsh build
+      DSH_LLM_API_KEY: ${DSH_LLM_API_KEY:-}
+      DSH_LLM_BASE_URL: ${DSH_LLM_BASE_URL:-}
+      OPENAI_API_KEY: ${DSH_LLM_API_KEY:-}
+      OPENAI_BASE_URL: ${DSH_LLM_BASE_URL:-}
+      SILICONFLOW_API_KEY: ${DSH_LLM_API_KEY:-}
+    volumes:
+      - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/harness:/data/harness
+    # No secrets dir mounts. No portal/pg volumes.
+    networks:
+      - kt
+    ports:
+      - "127.0.0.1:3080:3080"
+    security_opt:
+      - no-new-privileges:true
+    read_only: false
+    tmpfs:
+      - /tmp
+
+networks:
+  kt:
+    driver: bridge

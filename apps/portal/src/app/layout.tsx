@@ -1,7 +1,23 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import { ConversationProvider } from "@/components/conversation/provider";
+import { ConversationBackground } from "@/components/conversation/background";
+import { currentUser } from "@/lib/user-session";
+import { isEntitled } from "@/lib/user-store";
 import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
+
+import { I18nProvider } from "@/lib/i18n/provider";
+import {
+  DEFAULT_LOCALE,
+  LOCALE_COOKIE,
+  isLocale,
+  type Locale,
+} from "@/lib/i18n/dictionary";
 import "./globals.css";
+import "@/styles/workspace.css";
+import "@/styles/community.css";
+import "@/styles/resources.css";
+import "@/styles/conversation.css";
 
 export const metadata: Metadata = {
   title: {
@@ -9,16 +25,21 @@ export const metadata: Metadata = {
     template: "%s · 科研通",
   },
   description:
-    "开源共享的科研互助平台：社区问答、工具沉淀与可复现协作。合规优先，人人可贡献。",
+    "开源共享的科研互助平台：对话调度入口、社区问答、工具沉淀与可复现协作。合规优先，人人可贡献。",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = await currentUser().catch(() => null);
+  const jar = await cookies();
+  const raw = jar.get(LOCALE_COOKIE)?.value;
+  const initialLocale: Locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
+
   return (
-    <html lang="zh-CN">
+    <html lang={initialLocale === "zh" ? "zh-CN" : "en"}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
@@ -32,10 +53,22 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <div className="grain" aria-hidden />
-        <SiteHeader />
-        {children}
-        <SiteFooter />
+        <ConversationBackground />
+        <I18nProvider initialLocale={initialLocale}>
+          <a className="skip-link" href="#main-content">
+            跳转到主要内容
+          </a>
+          <ConversationProvider
+            identity={user ? { id: user.id, entitled: isEntitled(user) } : null}
+          >
+            <div className="conversation-layout">
+              <div id="main-content" tabIndex={-1}>
+                {children}
+              </div>
+            </div>
+            <SiteFooter />
+          </ConversationProvider>
+        </I18nProvider>
       </body>
     </html>
   );

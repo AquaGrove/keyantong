@@ -1,29 +1,33 @@
 import { NextResponse } from "next/server";
 import { normalizeEmail } from "@/lib/campus";
-import { consumeCode, getUserByEmail, upsertUser } from "@/lib/user-store";
-
+import { verifyRegistration } from "@/lib/user-store";
+import { rateLimit, clientIp } from "@/lib/security";
+import { authFailure } from "@/lib/auth/http";
 export async function POST(request: Request) {
-  const body = (await request.json().catch(() => null)) as {
-    email?: string;
-    code?: string;
-  } | null;
-  const email = normalizeEmail(body?.email || "");
-  const code = (body?.code || "").trim();
-  const user = getUserByEmail(email);
-  if (!user) {
-    return NextResponse.json({ ok: false, error: "请先注册" }, { status: 400 });
+  try {
+    const gate = rateLimit(`auth:verify:${clientIp(request)}`, {
+      windowMs: 60000,
+      max: 20,
+    });
+    if (!gate.ok)
+      return NextResponse.json(
+        { error: "验证请求过多，请稍后重试" },
+        { status: 429 },
+      );
+    const body = await request.json().catch(() => null);
+    const email = normalizeEmail(
+      typeof body?.email === "string" ? body.email : "",
+    );
+    const code = typeof body?.code === "string" ? body.code.trim() : "";
+    if (!/^\d{6}$/.test(code))
+      return NextResponse.json({ error: "请输入 6 位验证码" }, { status: 400 });
+    const user = await verifyRegistration(email, code);
+    return NextResponse.json({
+      ok: true,
+      trialEndsAt: user.trialEndsAt,
+      message: "校园邮箱已验证，试用 7 天已开始",
+    });
+  } catch (e) {
+    return authFailure(e);
   }
-  if (!consumeCode(email, code, "register")) {
-    return NextResponse.json({ ok: false, error: "验证码无效或已过期" }, { status: 400 });
-  }
-  const now = new Date();
-  user.campusVerifiedAt = now.toISOString();
-  user.trialEndsAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
-  user.membership = "trial";
-  upsertUser(user);
-  return NextResponse.json({
-    ok: true,
-    trialEndsAt: user.trialEndsAt,
-    message: "校园邮箱已验证，试用 7 天已开始",
-  });
 }

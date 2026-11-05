@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "groups": [
+    {"id": "ctrl", "name": "对照", "role": "control", "color": "#0072B2", "samples": ["C1", "C2", "C3"]},
+    {"id": "ta", "name": "实验A", "role": "treatment", "color": "#E69F00", "samples": ["A1", "A2", "A3"]},
+    {"id": "tb", "name": "实验B", "role": "treatment", "color": "#009E73", "samples": ["B1", "B2", "B3"]}
+  ],
+  "options": {
+    "species": "none",
+    "lfc": 1.0,
+    "padj": 0.05,
+    "de_engine": "limma_like",
+    "plots": {"pca": true, "volcano": true, "heatmap": true, "venn": true, "formats": ["png", "svg"]},
+    "venn": {"modes": ["up_down_per_contrast", "multi_group_up"], "contrasts": null, "colors": {"up": "#D55E00", "down": "#0072B2"}},
+    "contrasts": [
+      {"id": "实验A_vs_对照", "treatment": "ta", "control": "ctrl", "label": "实验A vs 对照"}
+    ]
+  }
+}

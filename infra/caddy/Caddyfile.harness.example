@@ -1,0 +1,18 @@
+# Optional: append (or merge) after DNS A/AAAA for harness.<domain> exists.
+# Generate hash: docker run --rm caddy:2.8-alpine caddy hash-password --plaintext 'your-pass'
+# Set HARNESS_BASIC_USER / HARNESS_BASIC_HASH in infra/.env and pass into caddy service env.
+# Prefer SSH tunnel when possible: ssh -L 3080:127.0.0.1:3080 ubuntu@SERVER
+
+harness.{$SITE_ADDRESS:keyantong.online} {
+	encode gzip zstd
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+	basic_auth {
+		{$HARNESS_BASIC_USER} {$HARNESS_BASIC_HASH}
+	}
+	reverse_proxy harness:3080
+}

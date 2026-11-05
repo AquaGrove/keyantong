@@ -1,0 +1,161 @@
+gene	go_id	go_name
+GENE001	GO:0006950	response to stress
+GENE002	GO:0006952	defense response
+GENE003	GO:0005975	carbohydrate metabolic process
+GENE003	GO:0006952	defense response
+GENE004	GO:0006468	protein phosphorylation
+GENE005	GO:0006355	regulation of transcription
+GENE006	GO:0006810	transport
+GENE006	GO:0005975	carbohydrate metabolic process
+GENE007	GO:0006950	response to stress
+GENE008	GO:0006952	defense response
+GENE009	GO:0005975	carbohydrate metabolic process
+GENE009	GO:0006468	protein phosphorylation
+GENE010	GO:0006468	protein phosphorylation
+GENE011	GO:0006355	regulation of transcription
+GENE012	GO:0006810	transport
+GENE012	GO:0006355	regulation of transcription
+GENE013	GO:0006950	response to stress
+GENE014	GO:0006952	defense response
+GENE015	GO:0005975	carbohydrate metabolic process
+GENE015	GO:0006810	transport
+GENE016	GO:0006468	protein phosphorylation
+GENE017	GO:0006355	regulation of transcription
+GENE018	GO:0006810	transport
+GENE018	GO:0006950	response to stress
+GENE019	GO:0006950	response to stress
+GENE020	GO:0006952	defense response
+GENE021	GO:0005975	carbohydrate metabolic process
+GENE021	GO:0006952	defense response
+GENE022	GO:0006468	protein phosphorylation
+GENE023	GO:0006355	regulation of transcription
+GENE024	GO:0006810	transport
+GENE024	GO:0005975	carbohydrate metabolic process
+GENE025	GO:0006950	response to stress
+GENE026	GO:0006952	defense response
+GENE027	GO:0005975	carbohydrate metabolic process
+GENE027	GO:0006468	protein phosphorylation
+GENE028	GO:0006468	protein phosphorylation
+GENE029	GO:0006355	regulation of transcription
+GENE030	GO:0006810	transport
+GENE030	GO:0006355	regulation of transcription
+GENE031	GO:0006950	response to stress
+GENE032	GO:0006952	defense response
+GENE033	GO:0005975	carbohydrate metabolic process
+GENE033	GO:0006810	transport
+GENE034	GO:0006468	protein phosphorylation
+GENE035	GO:0006355	regulation of transcription
+GENE036	GO:0006810	transport
+GENE036	GO:0006950	response to stress
+GENE037	GO:0006950	response to stress
+GENE038	GO:0006952	defense response
+GENE039	GO:0005975	carbohydrate metabolic process
+GENE039	GO:0006952	defense response
+GENE040	GO:0006468	protein phosphorylation
+GENE041	GO:0006355	regulation of transcription
+GENE042	GO:0006810	transport
+GENE042	GO:0005975	carbohydrate metabolic process
+GENE043	GO:0006950	response to stress
+GENE044	GO:0006952	defense response
+GENE045	GO:0005975	carbohydrate metabolic process
+GENE045	GO:0006468	protein phosphorylation
+GENE046	GO:0006468	protein phosphorylation
+GENE047	GO:0006355	regulation of transcription
+GENE048	GO:0006810	transport
+GENE048	GO:0006355	regulation of transcription
+GENE049	GO:0006950	response to stress
+GENE050	GO:0006952	defense response
+GENE051	GO:0005975	carbohydrate metabolic process
+GENE051	GO:0006810	transport
+GENE052	GO:0006468	protein phosphorylation
+GENE053	GO:0006355	regulation of transcription
+GENE054	GO:0006810	transport
+GENE054	GO:0006950	response to stress
+GENE055	GO:0006950	response to stress
+GENE056	GO:0006952	defense response
+GENE057	GO:0005975	carbohydrate metabolic process
+GENE057	GO:0006952	defense response
+GENE058	GO:0006468	protein phosphorylation
+GENE059	GO:0006355	regulation of transcription
+GENE060	GO:0006810	transport
+GENE060	GO:0005975	carbohydrate metabolic process
+GENE061	GO:0006950	response to stress
+GENE062	GO:0006952	defense response
+GENE063	GO:0005975	carbohydrate metabolic process
+GENE063	GO:0006468	protein phosphorylation
+GENE064	GO:0006468	protein phosphorylation
+GENE065	GO:0006355	regulation of transcription
+GENE066	GO:0006810	transport
+GENE066	GO:0006355	regulation of transcription
+GENE067	GO:0006950	response to stress
+GENE068	GO:0006952	defense response
+GENE069	GO:0005975	carbohydrate metabolic process
+GENE069	GO:0006810	transport
+GENE070	GO:0006468	protein phosphorylation
+GENE071	GO:0006355	regulation of transcription
+GENE072	GO:0006810	transport
+GENE072	GO:0006950	response to stress
+GENE073	GO:0006950	response to stress
+GENE074	GO:0006952	defense response
+GENE075	GO:0005975	carbohydrate metabolic process
+GENE075	GO:0006952	defense response
+GENE076	GO:0006468	protein phosphorylation
+GENE077	GO:0006355	regulation of transcription
+GENE078	GO:0006810	transport
+GENE078	GO:0005975	carbohydrate metabolic process
+GENE079	GO:0006950	response to stress
+GENE080	GO:0006952	defense response
+GENE081	GO:0005975	carbohydrate metabolic process
+GENE081	GO:0006468	protein phosphorylation
+GENE082	GO:0006468	protein phosphorylation
+GENE083	GO:0006355	regulation of transcription
+GENE084	GO:0006810	transport
+GENE084	GO:0006355	regulation of transcription
+GENE085	GO:0006950	response to stress
+GENE086	GO:0006952	defense response
+GENE087	GO:0005975	carbohydrate metabolic process
+GENE087	GO:0006810	transport
+GENE088	GO:0006468	protein phosphorylation
+GENE089	GO:0006355	regulation of transcription
+GENE090	GO:0006810	transport
+GENE090	GO:0006950	response to stress
+GENE091	GO:0006950	response to stress
+GENE092	GO:0006952	defense response
+GENE093	GO:0005975	carbohydrate metabolic process
+GENE093	GO:0006952	defense response
+GENE094	GO:0006468	protein phosphorylation
+GENE095	GO:0006355	regulation of transcription
+GENE096	GO:0006810	transport
+GENE096	GO:0005975	carbohydrate metabolic process
+GENE097	GO:0006950	response to stress
+GENE098	GO:0006952	defense response
+GENE099	GO:0005975	carbohydrate metabolic process
+GENE099	GO:0006468	protein phosphorylation
+GENE100	GO:0006468	protein phosphorylation
+GENE101	GO:0006355	regulation of transcription
+GENE102	GO:0006810	transport
+GENE102	GO:0006355	regulation of transcription
+GENE103	GO:0006950	response to stress
+GENE104	GO:0006952	defense response
+GENE105	GO:0005975	carbohydrate metabolic process
+GENE105	GO:0006810	transport
+GENE106	GO:0006468	protein phosphorylation
+GENE107	GO:0006355	regulation of transcription
+GENE108	GO:0006810	transport
+GENE108	GO:0006950	response to stress
+GENE109	GO:0006950	response to stress
+GENE110	GO:0006952	defense response
+GENE111	GO:0005975	carbohydrate metabolic process
+GENE111	GO:0006952	defense response
+GENE112	GO:0006468	protein phosphorylation
+GENE113	GO:0006355	regulation of transcription
+GENE114	GO:0006810	transport
+GENE114	GO:0005975	carbohydrate metabolic process
+GENE115	GO:0006950	response to stress
+GENE116	GO:0006952	defense response
+GENE117	GO:0005975	carbohydrate metabolic process
+GENE117	GO:0006468	protein phosphorylation
+GENE118	GO:0006468	protein phosphorylation
+GENE119	GO:0006355	regulation of transcription
+GENE120	GO:0006810	transport
+GENE120	GO:0006355	regulation of transcription

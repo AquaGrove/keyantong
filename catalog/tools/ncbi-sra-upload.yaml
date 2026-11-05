@@ -1,0 +1,18 @@
+id: ncbi-sra-upload
+name: NCBI SRA 上传协助
+summary: 填写 BioProject/BioSample/文库与文件清单等必要信息后，自动校验、对账文件名并生成 ascp 命令；私钥只在本机使用，不上传服务器。
+categories: [ncbi, data-deposit, sra]
+license: Apache-2.0
+author: keyantong
+install:
+  notes: |
+    门户路径 /tools/ncbi-upload。校验逻辑在 services/ncbi-upload。
+    需本机安装 IBM Aspera（ascp）；完整上传在用户机器执行。
+common_pitfalls:
+  - ascp 密钥写成相对路径（必须绝对路径）
+  - paired 文库文件数非偶数或 R1/R2 命名对不上
+  - 把私钥内容粘贴到网页（禁止；只填本机路径）
+links:
+  docs: https://github.com/AquaGrove/keyantong/tree/main/services/ncbi-upload
+  portal: /tools/ncbi-upload
+  forum_tags: [ncbi, sra, aspera]

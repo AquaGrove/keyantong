@@ -3,12 +3,14 @@ import path from "node:path";
 
 export type ToolCard = {
   id: string;
+  resourceType?: "plugin" | "software" | "website";
   name: string;
   summary: string;
   categories?: string[];
   license?: string;
   author?: string;
   docsUrl?: string;
+  portalPath?: string;
 };
 
 function catalogDir(): string {
@@ -47,21 +49,34 @@ function pickDocs(text: string): string | undefined {
   return m?.[1];
 }
 
+function pickPortal(text: string): string | undefined {
+  const m = text.match(/^\s+portal:\s+(\S+)/m);
+  return m?.[1];
+}
+
 export function loadToolCards(): ToolCard[] {
   const dir = catalogDir();
   if (!fs.existsSync(dir)) return [];
-  const files = fs.readdirSync(dir).filter((f) => f.endsWith(".yaml") || f.endsWith(".yml"));
+  const files = fs
+    .readdirSync(dir)
+    .filter((f) => f.endsWith(".yaml") || f.endsWith(".yml"));
   return files
     .map((file) => {
       const raw = fs.readFileSync(path.join(dir, file), "utf8");
       return {
         id: pick(raw, "id") ?? file.replace(/\.ya?ml$/, ""),
         name: pick(raw, "name") ?? file,
+        resourceType: (["plugin", "software", "website"].includes(
+          pick(raw, "resource_type") || "",
+        )
+          ? pick(raw, "resource_type")
+          : undefined) as ToolCard["resourceType"],
         summary: pick(raw, "summary") ?? "",
         categories: pickList(raw, "categories"),
         license: pick(raw, "license"),
         author: pick(raw, "author"),
         docsUrl: pickDocs(raw),
+        portalPath: pickPortal(raw),
       } satisfies ToolCard;
     })
     .sort((a, b) => a.name.localeCompare(b.name, "zh-CN"));

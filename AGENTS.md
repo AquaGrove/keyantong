@@ -8,6 +8,8 @@ KeyanTong（科研通）— open-source research mutual-aid platform (portal + f
 
 - `apps/portal` — Next.js 15 portal (primary UI)
 - `services/bridge`, `services/rag` — FastAPI stubs
+- `services/rnaseq-pipeline` — matrix+groups one-click RNAseq downstream
+- `services/ncbi-upload` — NCBI SRA validate + ascp command assist
 - `packages/contracts` — shared types / OpenAPI
 - `catalog/tools` — community tool-card YAML
 - `forum/nodebb` — NodeBB Compose
@@ -20,7 +22,7 @@ pnpm install --ignore-scripts
 pnpm --dir apps/portal dev          # http://localhost:3000
 pnpm --dir apps/admin dev           # http://localhost:3001
 pnpm --dir apps/portal exec tsc --noEmit
-./scripts/smoke.sh
+./scripts/smoke.sh                  # includes rnaseq + ncbi checks
 docker compose -f infra/docker-compose.dev.yml up -d   # Postgres + Redis
 ```
 

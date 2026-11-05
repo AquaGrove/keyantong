@@ -1,0 +1,31 @@
+# Apply after the verified identity import; base env_file still holds existing app settings.
+# docker compose -f infra/docker-compose.prod.yml -f infra/docker-compose.storage.yml --env-file infra/.env up -d --no-deps portal
+services:
+  portal:
+    image: keyantong-portal:storage-20261105
+    env_file:
+      - ${KT_STORAGE_SECRETS_DIR:-/data/keyantong/storage-secrets}/portal.env
+    environment:
+      AUTH_STORE: postgres
+      # Never expose owner/migration database credentials to the public application.
+      DATABASE_URL: ""
+      DATABASE_MIGRATION_URL: ""
+      POSTGRES_PASSWORD: ""
+      POSTGRES_USER: ""
+    labels:
+      keyantong.storage-release: "20261105"
+  storage-dispatcher:
+    build:
+      context: ..
+      dockerfile: apps/portal/Dockerfile
+      target: operations
+    image: keyantong-storage-ops:20261105
+    restart: unless-stopped
+    env_file:
+      - ${KT_STORAGE_SECRETS_DIR:-/data/keyantong/storage-secrets}/dispatcher.env
+    networks: [kt]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    user: "1001:1001"
+    read_only: true
+    tmpfs: [/tmp]

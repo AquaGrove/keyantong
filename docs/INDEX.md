@@ -21,6 +21,14 @@
 | 12 | [贡献者指南](./12-contribution.md) | 外部贡献者 | 如何贡献工具、知识、代码 |
 | 13 | [运维 Runbook](./13-runbook.md) | 运维 | 发布、回滚、故障处理 |
 | 14 | [决策记录 ADR](./14-adr.md) | 架构 | 关键技术决策与背景 |
+| 15 | [RNAseq / NCBI 工具](./15-rnaseq-ncbi-tools.md) | 研发 | 一键分析与上传辅助 |
+| 16 | [轻量云规格](./16-lightweight-cloud-sizing.md) | 运维 | 校园试用与拆分部署 |
+| 17 | [社区工具分享](./17-community-tool-share.md) | 产品 / 研发 | 工具分享/求助 MVP |
+| 18 | [安全基线落地](./18-security-baseline.md) | 全员 | 威胁模型与门户加固 |
+| 19 | [NCBI 本机直连上传](./19-ncbi-local-upload-architecture.md) | 产品 / 研发 | 大数据不经门户 |
+| 20 | [生产部署与迁移](./20-production-deploy-migrate.md) | 运维 | keyantong.online Compose |
+| 21 | [上游 RNAseq Worker](./21-rnaseq-upstream-worker.md) | 研发 / 运维 | ≤80GB 分析 |
+| 22 | [LLM 网关与 Harness](./22-llm-gateway-and-harness.md) | 产品 / 研发 / 运维 | 额度与智能总管 |
 | 99 | [附录](./99-appendix.md) | 全员 | 目录骨架、环境变量、修订记录 |
 
 ## 状态说明
@@ -38,3 +46,23 @@
 - 重大架构变更：先更新对应章节，再补 ADR
 - API 变更：同步更新 `06-api.md` 与 OpenAPI（代码阶段）
 - 每个 PR 若触及行为约定，需更新相关文档片段
+
+## 工程落地补充
+
+- [15 · 转录组一键分析与 NCBI 上传协助](./15-rnaseq-ncbi-tools.md)
+- [16 · 轻量云服务器选型](./16-lightweight-cloud-sizing.md)
+- [17 · 社区工具分享与求助](./17-community-tool-share.md)
+- [18 · 开源门户安全基线](./18-security-baseline.md)
+- [19 · NCBI 本机直连上传](./19-ncbi-local-upload-architecture.md)
+- [20 生产部署与迁移](./20-production-deploy-migrate.md)
+- [21 上游 RNAseq Worker](./21-rnaseq-upstream-worker.md)
+- [22 LLM 网关与 DeepSeek Harness](./22-llm-gateway-and-harness.md)
+
+- [27 门户视觉与响应式改造、项目实现现状](./27-ui-refresh.md)
+
+- [28 科研互助模块与专属角色](./28-research-commons.md)
+- [29 NCBI 本机自动化设计与实现](./29-ncbi-automation.md)
+- [30 统一存储、用户权限迁移与恢复](./30-unified-storage.md)
+- [31 组学分析环境、GWAS/BSA 与植物资源图鉴](./31-omics-and-resource-atlas.md)
+- [32 对话即操作：门户转型与执行边界](32-conversation-native-portal.md)
+- [33 对话闭环：Harness、执行回执与任务追踪](33-conversation-execution-loop.md)

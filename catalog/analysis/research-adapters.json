@@ -1,0 +1,210 @@
+[
+  {
+    "id": "gapit_ecmlm",
+    "name": "GAPIT / CMLM-ECMLM family",
+    "priorEvidence": "E1_contract_executable",
+    "priorScope": "source-reference validation and native-execution promotion plan",
+    "portalStatus": "planned",
+    "note": "前期工作区记录；尚未在科研通当前运行环境复验，不开放执行"
+  },
+  {
+    "id": "farmcpu",
+    "name": "FarmCPU",
+    "priorEvidence": "E2_docker_toy_data",
+    "priorScope": "maize continuous trait EarHT",
+    "portalStatus": "planned",
+    "note": "前期工作区记录；尚未在科研通当前运行环境复验，不开放执行"
+  },
+  {
+    "id": "fast3vmrmlm",
+    "name": "Fast3VmrMLM",
+    "priorEvidence": "E1_contract_executable",
+    "priorScope": "source-reference validation and native-execution promotion plan",
+    "portalStatus": "planned",
+    "note": "前期工作区记录；尚未在科研通当前运行环境复验，不开放执行"
+  },
+  {
+    "id": "gwaspoly",
+    "name": "GWASpoly",
+    "priorEvidence": "E2_docker_toy_data",
+    "priorScope": "tetraploid potato tuber_shape additive model",
+    "portalStatus": "planned",
+    "note": "前期工作区记录；尚未在科研通当前运行环境复验，不开放执行"
+  },
+  {
+    "id": "nf_gwas_regenie",
+    "name": "nf-gwas / REGENIE workflow",
+    "priorEvidence": "E2_docker_toy_data",
+    "priorScope": "real Nextflow nf-gwas/REGENIE two-trait PLINK/VCF toy execution",
+    "portalStatus": "planned",
+    "note": "前期工作区记录；尚未在科研通当前运行环境复验，不开放执行"
+  },
+  {
+    "id": "ldak_kvik",
+    "name": "LDAK-KVIK",
+    "priorEvidence": "E1_contract_executable",
+    "priorScope": "source-reference validation and native-execution promotion plan",
+    "portalStatus": "planned",
+    "note": "前期工作区记录；尚未在科研通当前运行环境复验，不开放执行"
+  },
+  {
+    "id": "psr_glmm",
+    "name": "PSR-GLMM",
+    "priorEvidence": "E2_docker_toy_data",
+    "priorScope": "binary non-normal trait targeted scan",
+    "portalStatus": "planned",
+    "note": "前期工作区记录；尚未在科研通当前运行环境复验，不开放执行"
+  },
+  {
+    "id": "kmeria",
+    "name": "KMERIA / sugarcane k-mer GWAS",
+    "priorEvidence": "E1_contract_executable",
+    "priorScope": "294-sample sugarcane example metadata plus synthetic k-mer association fixture",
+    "portalStatus": "planned",
+    "note": "前期工作区记录；尚未在科研通当前运行环境复验，不开放执行"
+  },
+  {
+    "id": "kcftools",
+    "name": "KCFtools",
+    "priorEvidence": "E2_docker_toy_data",
+    "priorScope": "official donor/recipient/introgressed FASTA truth-table example",
+    "portalStatus": "planned",
+    "note": "前期工作区记录；尚未在科研通当前运行环境复验，不开放执行"
+  },
+  {
+    "id": "ibspy",
+    "name": "IBSpy",
+    "priorEvidence": "E1_contract_executable",
+    "priorScope": "source-reference validation and native-execution promotion plan",
+    "portalStatus": "planned",
+    "note": "前期工作区记录；尚未在科研通当前运行环境复验，不开放执行"
+  },
+  {
+    "id": "missing_link_finder",
+    "name": "Missing Link Finder",
+    "priorEvidence": "E1_contract_executable",
+    "priorScope": "source-reference validation and native-execution promotion plan",
+    "portalStatus": "planned",
+    "note": "前期工作区记录；尚未在科研通当前运行环境复验，不开放执行"
+  },
+  {
+    "id": "kgwasmatrix",
+    "name": "KGWASMatrix",
+    "priorEvidence": "E1_contract_executable",
+    "priorScope": "source-reference validation and native-execution promotion plan",
+    "portalStatus": "planned",
+    "note": "前期工作区记录；尚未在科研通当前运行环境复验，不开放执行"
+  },
+  {
+    "id": "gctb_gwfm",
+    "name": "GCTB / GWFM",
+    "priorEvidence": "E1_contract_executable",
+    "priorScope": "source-reference validation and native-execution promotion plan",
+    "portalStatus": "planned",
+    "note": "前期工作区记录；尚未在科研通当前运行环境复验，不开放执行"
+  },
+  {
+    "id": "metagwasmanager",
+    "name": "metaGWASmanager",
+    "priorEvidence": "E1_contract_executable",
+    "priorScope": "source-reference validation and native-execution promotion plan",
+    "portalStatus": "planned",
+    "note": "前期工作区记录；尚未在科研通当前运行环境复验，不开放执行"
+  },
+  {
+    "id": "pp_gwas",
+    "name": "PP-GWAS",
+    "priorEvidence": "E1_contract_executable",
+    "priorScope": "source-reference validation and native-execution promotion plan",
+    "portalStatus": "planned",
+    "note": "前期工作区记录；尚未在科研通当前运行环境复验，不开放执行"
+  },
+  {
+    "id": "cost_efficient_non_additive",
+    "name": "Cost-efficient non-additive GWAS",
+    "priorEvidence": "E1_contract_executable",
+    "priorScope": "source-reference validation and native-execution promotion plan",
+    "portalStatus": "planned",
+    "note": "前期工作区记录；尚未在科研通当前运行环境复验，不开放执行"
+  },
+  {
+    "id": "gwastool_epistasis",
+    "name": "GWASTool epistasis modules",
+    "priorEvidence": "E1_contract_executable",
+    "priorScope": "source-reference validation and native-execution promotion plan",
+    "portalStatus": "planned",
+    "note": "前期工作区记录；尚未在科研通当前运行环境复验，不开放执行"
+  },
+  {
+    "id": "compile_candidate_gene",
+    "name": "COMPILE candidate-gene annotation",
+    "priorEvidence": "E1_contract_executable",
+    "priorScope": "source-reference validation and native-execution promotion plan",
+    "portalStatus": "planned",
+    "note": "前期工作区记录；尚未在科研通当前运行环境复验，不开放执行"
+  },
+  {
+    "id": "pgboost",
+    "name": "pgBoost",
+    "priorEvidence": "E1_contract_executable",
+    "priorScope": "source-reference validation and native-execution promotion plan",
+    "portalStatus": "planned",
+    "note": "前期工作区记录；尚未在科研通当前运行环境复验，不开放执行"
+  },
+  {
+    "id": "tresor",
+    "name": "TRESOR",
+    "priorEvidence": "E1_contract_executable",
+    "priorScope": "source-reference validation and native-execution promotion plan",
+    "portalStatus": "planned",
+    "note": "前期工作区记录；尚未在科研通当前运行环境复验，不开放执行"
+  },
+  {
+    "id": "gp_waiter",
+    "name": "GP-WAITER",
+    "priorEvidence": "E1_contract_executable",
+    "priorScope": "source-reference validation and native-execution promotion plan",
+    "portalStatus": "planned",
+    "note": "前期工作区记录；尚未在科研通当前运行环境复验，不开放执行"
+  },
+  {
+    "id": "snpqt",
+    "name": "snpQT",
+    "priorEvidence": "E1_contract_executable",
+    "priorScope": "source-reference validation and native-execution promotion plan",
+    "portalStatus": "planned",
+    "note": "前期工作区记录；尚未在科研通当前运行环境复验，不开放执行"
+  },
+  {
+    "id": "multigwas",
+    "name": "MultiGWAS",
+    "priorEvidence": "E1_contract_executable",
+    "priorScope": "source-reference validation and native-execution promotion plan",
+    "portalStatus": "planned",
+    "note": "前期工作区记录；尚未在科研通当前运行环境复验，不开放执行"
+  },
+  {
+    "id": "genos_human_fm",
+    "name": "Genos Human Genomic Foundation Model",
+    "priorEvidence": "E1_contract_executable",
+    "priorScope": "Genos human FM E1 contract validation only; GPU Docker wrapper pending",
+    "portalStatus": "planned",
+    "note": "前期工作区记录；尚未在科研通当前运行环境复验，不开放执行"
+  },
+  {
+    "id": "genos_m_microbiome_fm",
+    "name": "Genos-m Human-Associated Microbial Foundation Model",
+    "priorEvidence": "E1_contract_executable",
+    "priorScope": "Genos-m microbiome FM E1 contract validation only; 10K reads sample embedding smoke pending",
+    "portalStatus": "planned",
+    "note": "前期工作区记录；尚未在科研通当前运行环境复验，不开放执行"
+  },
+  {
+    "id": "fm_sae_interpreter",
+    "name": "FM Sparse Autoencoder Mechanistic Interpreter",
+    "priorEvidence": "E1_contract_executable",
+    "priorScope": "SAE interpreter E1 contract validation only; weight release dependency tracked upstream",
+    "portalStatus": "planned",
+    "note": "前期工作区记录；尚未在科研通当前运行环境复验，不开放执行"
+  }
+]

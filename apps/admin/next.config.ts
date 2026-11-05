@@ -25,6 +25,8 @@ function loadRootEnv() {
 loadRootEnv();
 
 const nextConfig: NextConfig = {
+  output: "standalone",
+  outputFileTracingRoot: path.join(__dirname,"../.."),
   reactStrictMode: true,
   transpilePackages: ["@keyantong/ops-shared"],
 };

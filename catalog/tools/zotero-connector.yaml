@@ -1,0 +1,15 @@
+id: zotero-connector
+name: Zotero Connector
+resource_type: plugin
+summary: Zotero 官方浏览器连接器，将当前网页的书目信息保存到文献库；需配合桌面端与授权获取渠道使用。
+categories: [literature, browser-extension]
+author: Corporation for Digital Scholarship
+install:
+  notes: |
+    从 Zotero 官方下载页选择当前浏览器的连接器。
+common_pitfalls:
+  - 网页元数据质量取决于出版社页面与 translator 支持
+  - 保存元数据不等于自动获得受限全文访问权限
+links:
+  docs: https://www.zotero.org/support/connector
+  forum_tags: [zotero, browser-extension]
