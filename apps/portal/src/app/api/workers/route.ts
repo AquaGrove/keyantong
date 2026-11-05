@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { workerRuntimeStatus } from "@/lib/workers/harness";
 import { createWorker, listWorkers } from "@/lib/workers/store";
 import { currentUser } from "@/lib/user-session";
 import { rateLimit, clientIp } from "@/lib/security/rate-limit";
@@ -9,8 +10,11 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const user = await currentUser();
   if (!user) return NextResponse.json({ error: "请先登录" }, { status: 401 });
-  const agents = await listWorkers(user.id);
-  return NextResponse.json({ agents });
+  const [agents, runtime] = await Promise.all([
+    listWorkers(user.id),
+    workerRuntimeStatus(),
+  ]);
+  return NextResponse.json({ agents, runtime });
 }
 
 export async function POST(request: Request) {
@@ -21,7 +25,12 @@ export async function POST(request: Request) {
   const user = await currentUser();
   if (!user) return NextResponse.json({ error: "请先登录" }, { status: 401 });
 
-  let body: { name?: string; kind?: string; persona?: string; skills?: string[] };
+  let body: {
+    name?: string;
+    kind?: string;
+    persona?: string;
+    skills?: string[];
+  };
   try {
     body = (await request.json()) as typeof body;
   } catch {
@@ -34,6 +43,7 @@ export async function POST(request: Request) {
     persona: typeof body.persona === "string" ? body.persona : "",
     skills: Array.isArray(body.skills) ? body.skills.map(String) : [],
   });
-  if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
+  if (!result.ok)
+    return NextResponse.json({ error: result.error }, { status: 400 });
   return NextResponse.json({ agent: result.agent });
 }

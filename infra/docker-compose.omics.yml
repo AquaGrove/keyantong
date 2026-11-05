@@ -1,0 +1,44 @@
+# Apply together with prod + storage overrides; CPU tasks run outside the portal process.
+services:
+  portal:
+    environment:
+      OMICS_ENABLED: "1"
+    image: keyantong-portal:omics-20261105
+  admin:
+    build:
+      context: ..
+      dockerfile: apps/admin/Dockerfile
+    image: keyantong-admin:omics-20261105
+    restart: unless-stopped
+    env_file:
+      - path: ${KT_STORAGE_SECRETS_DIR:-/data/keyantong/storage-secrets}/admin.env
+        format: raw
+    ports: ["127.0.0.1:3001:3001"]
+    networks: [kt]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    mem_limit: 512m
+  omics-worker:
+    build:
+      context: ..
+      dockerfile: services/omics/Dockerfile
+    image: keyantong-omics:20261105
+    restart: unless-stopped
+    env_file:
+      - ${KT_STORAGE_SECRETS_DIR:-/data/keyantong/storage-secrets}/dispatcher.env
+      - ${KT_STORAGE_SECRETS_DIR:-/data/keyantong/storage-secrets}/s3-production.env
+    networks: [kt]
+    user: "1002:1002"
+    read_only: true
+    tmpfs: ["/tmp:size=768m,mode=1777"]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    pids_limit: 128
+    mem_limit: 2g
+    cpus: 1.5
+    stop_grace_period: 20s
+  rnaseq-worker:
+    image: keyantong-rnaseq-worker:omics-20261105
+    mem_limit: 3g
+    cpus: 2
+    pids_limit: 256

@@ -63,13 +63,18 @@ def zip_results(out_dir: Path, zip_path: Path) -> None:
 
 
 def load_summary(out_dir: Path) -> dict:
-    for name in ("result.json", "summary.json", "tables/methods.json"):
+    for name in ("manifest.json", "result.json", "summary.json", "tables/methods.json"):
         p = out_dir / name
         if not p.is_file():
             continue
         try:
             data = json.loads(p.read_text(encoding="utf-8"))
             if isinstance(data, dict):
+                if name == "manifest.json":
+                    summary = data.get("summary")
+                    if isinstance(summary, dict):
+                        return summary
+                    continue
                 if name.endswith("methods.json"):
                     return {
                         "de_engine": data.get("engine") or data.get("de_engine"),
@@ -92,6 +97,15 @@ def run_downstream(job_path: Path, job: dict) -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
     if not matrix.exists() or not groups.exists():
         raise FileNotFoundError("downstream job missing input/matrix.csv or groups.json")
+
+    # The portal historically queues every grouping file as groups.json.
+    # Preserve genuine JSON designs; route tabular inputs to the table parser.
+    with groups.open("rb") as stream:
+        prefix = stream.read(4096).removeprefix(b"\xef\xbb\xbf").lstrip()
+    if not prefix.startswith((b"{", b"[")):
+        table = groups.with_suffix(".csv")
+        shutil.copyfile(groups, table)
+        groups = table
 
     # Soft quota on input size (80GiB default covers upstream; downstream matrices are tiny)
     assert_can_accept_job(DATA_ROOT, work)

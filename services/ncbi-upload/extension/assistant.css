@@ -1,0 +1,128 @@
+:root {
+  color-scheme: light;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: #203c37;
+  background: #f5f6f3;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  line-height: 1.8;
+}
+main {
+  max-width: 920px;
+  margin: auto;
+  padding: 32px 20px 64px;
+}
+header {
+  margin-bottom: 30px;
+}
+header > p:first-child {
+  font: 11px monospace;
+  letter-spacing: 2px;
+  color: #237461;
+}
+h1 {
+  font-size: 32px;
+  line-height: 1.4;
+}
+h2 {
+  font-size: 20px;
+  margin: 0 0 16px;
+}
+section {
+  border: 1px solid #dfe5df;
+  border-radius: 14px;
+  background: white;
+  padding: 24px;
+  margin-top: 20px;
+}
+p,
+footer {
+  font-size: 14px;
+  color: #64736d;
+}
+button,
+a {
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+button {
+  padding: 10px 16px;
+  background: #205b4d;
+  border: 1px solid #205b4d;
+  border-radius: 8px;
+  color: white;
+  margin: 4px 6px 4px 0;
+  min-height: 44px;
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+label {
+  display: block;
+  font-size: 14px;
+  margin: 16px 0;
+}
+input:not([type="checkbox"]),
+select {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #bdcac1;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 16px;
+  color: #203c37;
+  background: white;
+  margin-top: 6px;
+}
+pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 360px;
+  overflow: auto;
+  font-size: 12px;
+  background: #f5f6f3;
+  border-radius: 8px;
+  padding: 14px;
+}
+pre:empty {
+  display: none;
+}
+#notice:not(:empty) {
+  position: sticky;
+  top: 8px;
+  background: #edf4ef;
+  border: 1px solid #bdcac1;
+  padding: 14px;
+  border-radius: 10px;
+  z-index: 1;
+}
+footer {
+  margin-top: 28px;
+}
+a {
+  color: #205b4d;
+}
+button:focus-visible,
+input:focus-visible,
+a:focus-visible {
+  outline: 3px solid #438e78;
+  outline-offset: 3px;
+}
+@media (max-width: 500px) {
+  main {
+    padding: 20px 12px;
+  }
+  section {
+    padding: 18px;
+  }
+  h1 {
+    font-size: 26px;
+  }
+}

@@ -9,6 +9,7 @@ const links = [
   { href: "/github", label: "GitHub" },
   { href: "/services", label: "服务健康" },
   { href: "/content", label: "内容治理" },
+  { href: "/resources", label: "资源审核" },
   { href: "/settings", label: "设置" },
 ];
 

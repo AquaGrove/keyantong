@@ -6,7 +6,7 @@ class ChecklistTests(unittest.TestCase):
         st = checklist_from_status(
             {"status": "dry_run", "ok": True, "command": "ascp ...", "issues": [], "message": "ok"}
         )
-        self.assertEqual(st["automation_policy"], "no_browser_automation")
+        self.assertEqual(st["automation_policy"], "local_browser_assistance")
         done = {s["id"]: s["done"] for s in st["steps"]}
         self.assertTrue(done["validate"])
         self.assertTrue(done["dry_run"])

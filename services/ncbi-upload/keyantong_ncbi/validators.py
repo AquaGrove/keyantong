@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+import shlex
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -59,6 +60,8 @@ def reconcile_filenames(files: list[dict[str, Any]], layout: str) -> list[Valida
         if not name:
             issues.append(ValidationIssue("error", f"files[{i}].filename", "文件名不能为空"))
             continue
+        if name in {".", ".."} or "/" in name or "\\" in name or name.startswith("-") or any(ord(c) < 32 for c in name):
+            issues.append(ValidationIssue("error", f"files[{i}].filename", "文件名只能是当前目录中的单个文件名"))
         names.append(name)
         if not FASTQ_RE.match(name) and not name.lower().endswith((".bam", ".cram", ".hdf5", ".fast5")):
             issues.append(
@@ -143,14 +146,17 @@ def build_ascp_command(
         )
     if not account_folder or not str(account_folder).strip():
         issues.append(ValidationIssue("error", "ascp.account_folder", "需要 NCBI 分配的 uploads 子目录名"))
+    if account_folder and not re.fullmatch(r"[A-Za-z0-9_@.-]+", account_folder):
+        issues.append(ValidationIssue("error", "ascp.account_folder", "账户目录只能是 NCBI 分配的单个目录名"))
+    if account_folder in {".", ".."}:
+        issues.append(ValidationIssue("error", "ascp.account_folder", "账户目录无效"))
+    if not re.fullmatch(r"[1-9][0-9]{0,5}[kKmMgG]", rate):
+        issues.append(ValidationIssue("error", "ascp.rate", "速率应为 100m 等正整数单位值"))
     if any(i.level == "error" for i in issues):
         return None, issues
     # Never embed key content — only the path placeholder the user already provided locally.
     # Remote user is ALWAYS subasp@upload.ncbi.nlm.nih.gov (not the account email).
-    cmd = (
-        f"ascp -i {key_path} -QT -l{rate} -k1 -d "
-        f"{local_folder} subasp@upload.ncbi.nlm.nih.gov:uploads/{account_folder}"
-    )
+    cmd = shlex.join(["ascp", "-i", key_path, "-QT", f"-l{rate}", "-k1", "-d", local_folder, f"subasp@upload.ncbi.nlm.nih.gov:uploads/{account_folder}"])
     return cmd, issues
 
 

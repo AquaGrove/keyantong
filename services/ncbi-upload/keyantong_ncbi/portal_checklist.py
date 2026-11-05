@@ -50,7 +50,7 @@ class ChecklistState:
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "automation_policy": "no_browser_automation",
+            "automation_policy": "local_browser_assistance",
             "steps": [{"id": k, "label": lab, "done": bool(self.steps.get(k))} for k, lab in STEPS],
             "notes": dict(self.notes),
             "next": next((k for k, lab in STEPS if not self.steps.get(k)), None),

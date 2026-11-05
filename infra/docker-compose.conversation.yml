@@ -1,0 +1,4 @@
+# Last override after prod + storage + omics. Keep existing workers and private admin unchanged.
+services:
+  portal:
+    image: keyantong-portal:conversation-20261105

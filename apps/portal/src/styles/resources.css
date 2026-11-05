@@ -1,0 +1,461 @@
+.botanical-hero {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 3rem;
+  align-items: center;
+  padding: 2rem 0 3rem;
+}
+.botanical-hero .page-title {
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  line-height: 1.3;
+  letter-spacing: -0.04em;
+}
+.botanical-specimen {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  color: #557b63;
+  background: #e9eee3;
+  border: 1px solid #d8e0d1;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+.botanical-specimen:before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(#557b630b 1px, transparent 1px),
+    linear-gradient(90deg, #557b630b 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+.botanical-specimen span {
+  font: 10px var(--font-display);
+  letter-spacing: 0.15em;
+  z-index: 1;
+}
+.botanical-specimen svg {
+  width: min(240px, 100%);
+  height: 240px;
+  z-index: 1;
+}
+.botanical-specimen em {
+  font-family: Fraunces, serif;
+  font-size: 1.1rem;
+  z-index: 1;
+}
+.resource-note {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  background: #eaf1ec;
+  border-left: 3px solid #4b7c63;
+  padding: 1rem 1.2rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+.resource-note span {
+  flex: 1;
+  min-width: 200px;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+}
+.resource-note a {
+  white-space: nowrap;
+  font-weight: 600;
+}
+.resource-search {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  margin: 1.5rem 0 1rem;
+}
+.resource-search label {
+  flex: 1;
+  max-width: 650px;
+  display: grid;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.resource-search input {
+  width: 100%;
+}
+.resource-total {
+  margin-left: auto;
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+.resource-total strong {
+  font-size: 2rem;
+  color: var(--accent);
+  margin-right: 0.25rem;
+  font-family: var(--font-display);
+}
+.resource-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+.resource-card {
+  background: var(--paper-elevated);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 1.3rem;
+  min-width: 0;
+  align-self: start;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 305px;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+.resource-card:hover {
+  border-color: #b1c4b5;
+  box-shadow: var(--shadow-sm);
+}
+.resource-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+.resource-card-heading > div:last-child {
+  min-width: 0;
+}
+.resource-card h2 {
+  font-size: 1.15rem;
+  line-height: 1.4;
+  margin: 0.2rem 0;
+  overflow-wrap: anywhere;
+}
+.resource-card em {
+  font-size: 0.76rem;
+  color: var(--ink-soft);
+  display: block;
+}
+.resource-category {
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  color: #6e7c67;
+}
+.plant-medallion {
+  flex: 0 0 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #f0f3e9;
+  color: #637b50;
+  width: 64px;
+  height: 64px;
+}
+.plant-icon {
+  width: 54px;
+  height: 54px;
+}
+.resource-initial {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  background: #e8f0ed;
+  color: #34735f;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  font: 600 1.1rem var(--font-display);
+}
+.resource-summary {
+  color: var(--ink-soft);
+  font-size: 0.89rem;
+  min-height: 2.9em;
+  margin: 1rem 0 0.5rem;
+  overflow-wrap: anywhere;
+}
+.resource-provider,
+.resource-assembly {
+  font-size: 0.76rem;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+  margin: 0.35rem 0;
+}
+.resource-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+.resource-actions .btn {
+  font-size: 0.76rem;
+  padding: 0.45rem 0.7rem;
+  min-height: 36px;
+}
+.resource-details {
+  margin: 1rem 0 0;
+  border-top: 1px solid var(--line);
+  padding-top: 0.5rem;
+}
+.resource-details > div {
+  padding: 0.6rem 0;
+}
+.resource-details dt {
+  font-size: 0.75rem;
+  color: var(--accent);
+  font-weight: 600;
+}
+.resource-details dd {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  margin: 0.2rem 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.resource-form {
+  margin: 1.5rem 0;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  display: grid;
+  gap: 1rem;
+}
+.resource-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.resource-form label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 500;
+  font-size: 0.83rem;
+}
+.resource-form input,
+.resource-form textarea {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+.resource-form .resource-consent {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  font-weight: 400;
+}
+.resource-form .resource-consent input {
+  width: 1rem;
+  flex: 0 0 1rem;
+  margin-top: 0.3rem;
+}
+.resource-form > .btn {
+  justify-self: start;
+}
+.submission-list {
+  list-style: none;
+  padding: 0;
+}
+.submission-list li {
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.85rem;
+}
+.submission-list li span {
+  margin-left: 1rem;
+  color: var(--accent);
+}
+.omics-workbench {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+.omics-workbench form {
+  display: grid;
+  gap: 1rem;
+}
+.omics-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.omics-fields label {
+  display: grid;
+  gap: 0.4rem;
+  font-size: 0.87rem;
+}
+.omics-fields input,
+.omics-fields select {
+  width: 100%;
+  min-width: 0;
+}
+.omics-result {
+  padding: 1.2rem;
+  background: #edf4ef;
+  margin-top: 1rem;
+  border-radius: 0.75rem;
+  overflow-wrap: anywhere;
+}
+.omics-job {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+}
+.omics-environments {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 2rem 0;
+}
+.omics-environments article {
+  padding: 1rem;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  border-radius: 0.75rem;
+  font-size: 0.85rem;
+}
+.omics-environments h3 {
+  font-size: 1rem;
+}
+.method-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.method-table td,
+.method-table th {
+  padding: 0.7rem;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+}
+.table-scroll {
+  overflow-x: auto;
+}
+.home-modules {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+.home-modules > a {
+  min-width: 0;
+}
+@media (max-width: 1050px) {
+  .resource-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .home-modules {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .module-nav {
+    gap: 0.7rem;
+  }
+  .module-nav a {
+    font-size: 0.78rem;
+  }
+}
+@media (max-width: 650px) {
+  .botanical-hero {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding-top: 1rem;
+  }
+  .botanical-specimen {
+    display: none;
+  }
+  .resource-grid {
+    grid-template-columns: 1fr;
+  }
+  .resource-search {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .resource-search label {
+    width: 100%;
+  }
+  .resource-total {
+    margin: 0;
+    font-size: 0.75rem;
+  }
+  .resource-total strong {
+    font-size: 1.2rem;
+  }
+  .resource-form-grid,
+  .omics-fields,
+  .omics-environments {
+    grid-template-columns: 1fr;
+  }
+  .resource-form,
+  .omics-workbench {
+    padding: 1rem;
+  }
+  .home-modules {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .resource-note {
+    padding: 0.9rem;
+  }
+  .resource-card {
+    padding: 1.1rem;
+  }
+}
+.resource-search input,
+.resource-form input:not([type="checkbox"]),
+.resource-form textarea,
+.omics-fields input,
+.omics-fields select {
+  border: 1px solid var(--line-strong);
+  background: var(--paper-elevated);
+  border-radius: 0.55rem;
+  padding: 0.7rem 0.85rem;
+  min-height: 44px;
+  color: var(--ink);
+  font: inherit;
+  outline: none;
+  box-sizing: border-box;
+}
+.resource-search input:focus-visible,
+.resource-form input:focus-visible,
+.resource-form textarea:focus-visible,
+.omics-fields input:focus-visible {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px #23746118;
+}
+.resource-search input::placeholder,
+.resource-form input::placeholder,
+.resource-form textarea::placeholder {
+  color: #839087;
+  font-weight: 400;
+}
+.omics-fields input[type="file"] {
+  font-size: 0.8rem;
+  max-width: 100%;
+}
+.omics-fields input::file-selector-button {
+  border: 0;
+  border-radius: 0.3rem;
+  background: #e8efea;
+  color: var(--accent-ink);
+  padding: 0.4rem 0.6rem;
+  margin-right: 0.6rem;
+}
+.omics-workbench .resource-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+}
+.omics-workbench .resource-consent input {
+  margin-top: 0.35rem;
+  flex-shrink: 0;
+}
+.omics-workbench form > .btn {
+  justify-self: start;
+}
+.resource-availability {
+  font-size: 0.73rem;
+  color: #956829;
+  background: #faf3e4;
+  border-radius: 0.3rem;
+  padding: 0.35rem 0.5rem;
+  margin: 0.5rem 0;
+}

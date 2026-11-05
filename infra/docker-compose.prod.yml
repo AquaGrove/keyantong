@@ -64,6 +64,8 @@ services:
       LLM_DAILY_CALL_BUDGET: ${LLM_DAILY_CALL_BUDGET:-80}
       LLM_TIMEOUT_MS: ${LLM_TIMEOUT_MS:-45000}
       LLM_ALLOW_ANY_MODEL: ${LLM_ALLOW_ANY_MODEL:-0}
+      HARNESS_WORKER_URL: ${HARNESS_WORKER_URL:-}
+      HARNESS_WORKER_TOKEN: ${HARNESS_WORKER_TOKEN:-}
     volumes:
       - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/portal:/data/portal
       - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/rnaseq:/data/rnaseq
@@ -76,7 +78,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "node -e \"fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"",
+          'node -e "fetch(''http://127.0.0.1:3000/api/health'').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"',
         ]
       interval: 15s
       timeout: 5s
@@ -98,7 +100,11 @@ services:
     volumes:
       - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/pg:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-kt} -d ${POSTGRES_DB:-keyantong}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-kt} -d ${POSTGRES_DB:-keyantong}",
+        ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -148,6 +154,41 @@ services:
     networks:
       - kt
 
+  # Personal roles: same pinned Harness runtime, separate homes from operations.
+  # Enable explicitly; never publish a host port for this internal API.
+  harness-workers:
+    profiles: ["harness-workers"]
+    build:
+      context: ./harness
+      dockerfile: Dockerfile
+    image: keyantong-harness-workers:local
+    entrypoint: ["node", "/opt/dsh/worker-bridge.mjs"]
+    restart: unless-stopped
+    environment:
+      HARNESS_WORKER_TOKEN: ${HARNESS_WORKER_TOKEN:-}
+      HARNESS_WORKER_API_KEY: ${HARNESS_WORKER_API_KEY:-}
+      HARNESS_WORKER_BASE_URL: ${HARNESS_WORKER_BASE_URL:-https://api.deepseek.com}
+      HARNESS_WORKER_MODEL: ${HARNESS_WORKER_MODEL:-deepseek-chat}
+      HARNESS_WORKER_ROOT: /data/workers
+      HARNESS_WORKER_TIMEOUT_MS: "90000"
+    volumes:
+      - ${KEYANTONG_DATA_ROOT:-/data/keyantong}/harness-workers:/data/workers
+    networks: [kt]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    pids_limit: 128
+    mem_limit: 2g
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3090/health',{headers:{Authorization:'Bearer '+process.env.HARNESS_WORKER_TOKEN}}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
   # Optional DeepSeek Harness (developer preview) — profile harness
   # NEVER publish 3080 on 0.0.0.0; host bind is loopback only. Prefer SSH tunnel.

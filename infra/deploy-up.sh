@@ -18,5 +18,20 @@ EXTRA=()
 if [[ -n "$PROFILES" ]]; then
   EXTRA+=(--profile "$PROFILES")
 fi
-docker compose -f infra/docker-compose.prod.yml --env-file infra/.env "${EXTRA[@]}" up -d --build
-docker compose -f infra/docker-compose.prod.yml --env-file infra/.env ps
+COMPOSE=(-f infra/docker-compose.prod.yml)
+# A migrated deployment must always include the runtime identity credentials.
+if [[ -f "${KT_STORAGE_SECRETS_DIR:-$DATA/storage-secrets}/portal.env" ]]; then
+  COMPOSE+=(-f infra/docker-compose.storage.yml)
+fi
+if [[ -f "$DATA/storage-secrets/omics-enabled" ]]; then
+  docker build -f services/omics/Dockerfile -t keyantong-omics:20261105 .
+  COMPOSE+=(-f infra/docker-compose.omics.yml)
+fi
+if [[ -f "$DATA/storage-secrets/conversation-enabled" ]]; then
+  COMPOSE+=(-f infra/docker-compose.conversation.yml)
+fi
+if [[ -f "$DATA/storage-secrets/closed-loop-enabled" ]]; then
+  COMPOSE+=(-f infra/docker-compose.closed-loop.yml)
+fi
+docker compose "${COMPOSE[@]}" --env-file infra/.env "${EXTRA[@]}" up -d --build
+docker compose "${COMPOSE[@]}" --env-file infra/.env ps

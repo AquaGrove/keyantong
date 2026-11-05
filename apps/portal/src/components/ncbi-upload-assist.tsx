@@ -44,31 +44,91 @@ type PortalChecklist = {
 };
 
 const FALLBACK_STEPS: ChecklistStep[] = [
-  { id: "validate", label: "字段与文件清单校验通过", done: false, kind: "auto", hint: "本工具自动" },
-  { id: "dry_run", label: "已生成本地 dry-run 助手包", done: false, kind: "auto", hint: "在用户本机执行" },
-  { id: "ascp_upload", label: "本机 ascp 直连 NCBI 成功（用户勾选）", done: false, kind: "manual", hint: "用户本机完成后勾选" },
-  { id: "portal_login", label: "用户已在浏览器登录 Submission Portal", done: false, kind: "manual", hint: "浏览器手动" },
-  { id: "bioproject", label: "用户已创建/选择 BioProject", done: false, kind: "manual", hint: "浏览器手动" },
-  { id: "biosample", label: "用户已创建 BioSample 并粘贴校验字段", done: false, kind: "manual", hint: "浏览器手动" },
-  { id: "sra_submit", label: "用户已创建 SRA submission 并关联文件", done: false, kind: "manual", hint: "浏览器手动" },
-  { id: "accessions", label: "用户已保存 Accession", done: false, kind: "manual", hint: "浏览器手动" },
+  {
+    id: "validate",
+    label: "字段与文件清单校验通过",
+    done: false,
+    kind: "auto",
+    hint: "本工具自动",
+  },
+  {
+    id: "dry_run",
+    label: "本机 dry-run 已执行并通过",
+    done: false,
+    kind: "manual",
+    hint: "生成助手包不等于本机校验已执行",
+  },
+  {
+    id: "ascp_upload",
+    label: "本机 ascp 直连 NCBI 成功（用户勾选）",
+    done: false,
+    kind: "manual",
+    hint: "用户本机完成后勾选",
+  },
+  {
+    id: "portal_login",
+    label: "用户已在浏览器登录 Submission Portal",
+    done: false,
+    kind: "manual",
+    hint: "浏览器手动",
+  },
+  {
+    id: "bioproject",
+    label: "用户已创建/选择 BioProject",
+    done: false,
+    kind: "manual",
+    hint: "浏览器手动",
+  },
+  {
+    id: "biosample",
+    label: "用户已创建 BioSample 并粘贴校验字段",
+    done: false,
+    kind: "manual",
+    hint: "浏览器手动",
+  },
+  {
+    id: "sra_submit",
+    label: "用户已创建 SRA submission 并关联文件",
+    done: false,
+    kind: "manual",
+    hint: "浏览器手动",
+  },
+  {
+    id: "accessions",
+    label: "用户已保存 Accession",
+    done: false,
+    kind: "manual",
+    hint: "浏览器手动",
+  },
 ];
 
-function mergeChecklist(base: PortalChecklist | null, patchDone: Partial<Record<string, boolean>>): PortalChecklist {
-  const steps = (base?.steps?.length ? base.steps : FALLBACK_STEPS).map((s) => ({
-    ...s,
-    done: patchDone[s.id] ?? s.done,
-  }));
+function mergeChecklist(
+  base: PortalChecklist | null,
+  patchDone: Partial<Record<string, boolean>>,
+): PortalChecklist {
+  const steps = (base?.steps?.length ? base.steps : FALLBACK_STEPS).map(
+    (s) => ({
+      ...s,
+      done: patchDone[s.id] ?? s.done,
+    }),
+  );
   const next = steps.find((s) => !s.done)?.id || null;
   return {
-    automation_policy: base?.automation_policy || "no_browser_automation",
+    automation_policy: base?.automation_policy || "local_browser_assistance",
     steps,
     next,
     notes: base?.notes || {},
   };
 }
 
-export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; loggedIn: boolean }) {
+export function NcbiUploadAssist({
+  entitled,
+  loggedIn,
+}: {
+  entitled: boolean;
+  loggedIn: boolean;
+}) {
+  const [portableHelper, setPortableHelper] = useState<string | null>(null);
   const [step, setStep] = useState(1);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -81,7 +141,9 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
   const [source, setSource] = useState("TRANSCRIPTOMIC");
   const [selection, setSelection] = useState("cDNA");
   const [layout, setLayout] = useState("paired");
-  const [filesText, setFilesText] = useState("sample_R1.fastq.gz\nsample_R2.fastq.gz");
+  const [filesText, setFilesText] = useState(
+    "sample_R1.fastq.gz\nsample_R2.fastq.gz",
+  );
   const [keyPath, setKeyPath] = useState("");
   const [localFolder, setLocalFolder] = useState("");
   const [ncbiEmail, setNcbiEmail] = useState("");
@@ -91,7 +153,8 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
   const [issues, setIssues] = useState<Issue[]>([]);
   const [command, setCommand] = useState<string | null>(null);
   const [checklistLegacy, setChecklistLegacy] = useState<string[]>([]);
-  const [portalChecklist, setPortalChecklist] = useState<PortalChecklist | null>(null);
+  const [portalChecklist, setPortalChecklist] =
+    useState<PortalChecklist | null>(null);
   const [manualDone, setManualDone] = useState<Record<string, boolean>>({});
   const [runStatus, setRunStatus] = useState<RunStatus | null>(null);
   const [lastMode, setLastMode] = useState<"dry-run" | "run" | null>(null);
@@ -183,7 +246,11 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
     }
   }
 
-  function downloadText(filename: string, content: string, mime = "text/plain;charset=utf-8") {
+  function downloadText(
+    filename: string,
+    content: string,
+    mime = "text/plain;charset=utf-8",
+  ) {
     const blob = new Blob([content], { type: mime });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -218,13 +285,14 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
       if (Array.isArray(data.issues)) setIssues(data.issues);
       if (data.ascp_command) setCommand(String(data.ascp_command));
       if (data.helper_script) setHelperScript(String(data.helper_script));
+      if (data.helper_python) setPortableHelper(String(data.helper_python));
       if (Array.isArray(data.how_to_run)) setHowToRun(data.how_to_run);
       if (data.portal_checklist) applyPortalChecklist(data.portal_checklist);
       if (data.ok) {
         applyPortalChecklist(
           mergeChecklist(portalChecklist || data.portal_checklist, {
             validate: true,
-            dry_run: mode === "dry-run" || mode === "run" ? true : undefined,
+            // Generating a script is not evidence of a local dry-run.
           }),
         );
         setRunStatus({
@@ -256,18 +324,23 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
     }
   }
 
-    function toggleManual(id: string) {
+  function toggleManual(id: string) {
     const stepMeta = viewChecklist.steps.find((s) => s.id === id);
     if (stepMeta?.kind === "auto") return;
-    setManualDone((prev) => ({ ...prev, [id]: !viewChecklist.steps.find((s) => s.id === id)?.done }));
+    setManualDone((prev) => ({
+      ...prev,
+      [id]: !viewChecklist.steps.find((s) => s.id === id)?.done,
+    }));
   }
 
   return (
     <div className="ncbi-wizard">
       <div className="rules-banner" role="note">
         <strong>架构原则：</strong>
-        测序大数据<strong>不经过科研通服务器</strong>。本页只收集元数据、校验字段、生成你可在本机运行的 ascp
-        命令 / 助手脚本；文件由你的电脑经 Aspera <strong>直连 NCBI</strong>。禁止把 FASTQ/BAM 上传到本站再转发。
+        测序大数据<strong>不经过科研通服务器</strong>
+        。本页只收集元数据、校验字段、生成你可在本机运行的 ascp 命令 /
+        助手脚本；文件由你的电脑经 Aspera <strong>直连 NCBI</strong>。禁止把
+        FASTQ/BAM 上传到本站再转发。
       </div>
       {!loggedIn ? (
         <p className="rules-banner">
@@ -290,11 +363,20 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
             <h2>BioProject（必要）</h2>
             <label>
               标题
-              <input value={title} onChange={(e) => setTitle(e.target.value)} required />
+              <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+              />
             </label>
             <label>
               描述
-              <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} required />
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+                required
+              />
             </label>
             <NcbiEnumField
               label="数据类型（BioProject data type）"
@@ -315,7 +397,11 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
             <h2>BioSample（必要）</h2>
             <label>
               sample_name
-              <input value={sampleName} onChange={(e) => setSampleName(e.target.value)} required />
+              <input
+                value={sampleName}
+                onChange={(e) => setSampleName(e.target.value)}
+                required
+              />
             </label>
             <NcbiOrganismField
               label="organism（物种学名）"
@@ -326,7 +412,11 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
             />
             <label>
               isolate / breed
-              <input value={isolate} onChange={(e) => setIsolate(e.target.value)} required />
+              <input
+                value={isolate}
+                onChange={(e) => setIsolate(e.target.value)}
+                required
+              />
             </label>
             <label>
               collection_date
@@ -368,7 +458,11 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
               required
               allowOther={false}
             />
-            <button type="button" className="btn btn-primary" onClick={() => setStep(2)}>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => setStep(2)}
+            >
               下一步：文件清单
             </button>
           </>
@@ -379,13 +473,22 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
             <h2>文件清单（必要）</h2>
             <label>
               每行一个文件名（须与本地上传目录一致）
-              <textarea value={filesText} onChange={(e) => setFilesText(e.target.value)} rows={5} required />
+              <textarea
+                value={filesText}
+                onChange={(e) => setFilesText(e.target.value)}
+                rows={5}
+                required
+              />
             </label>
             <div className="actions">
               <button type="button" className="btn" onClick={() => setStep(1)}>
                 上一步
               </button>
-              <button type="button" className="btn btn-primary" onClick={() => setStep(3)}>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => setStep(3)}
+              >
                 下一步：Aspera
               </button>
             </div>
@@ -414,22 +517,37 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
               />
             </label>
             <label>
-              NCBI 账户邮箱（账号备忘；ascp 远程用户固定为 subasp@upload.ncbi.nlm.nih.gov）
-              <input type="email" value={ncbiEmail} onChange={(e) => setNcbiEmail(e.target.value)} placeholder="you@example.com" />
+              NCBI 账户邮箱（账号备忘；ascp 远程用户固定为
+              subasp@upload.ncbi.nlm.nih.gov）
+              <input
+                type="email"
+                value={ncbiEmail}
+                onChange={(e) => setNcbiEmail(e.target.value)}
+                placeholder="you@example.com"
+              />
             </label>
             <label>
               uploads 子目录名
-              <input value={accountFolder} onChange={(e) => setAccountFolder(e.target.value)} required />
+              <input
+                value={accountFolder}
+                onChange={(e) => setAccountFolder(e.target.value)}
+                required
+              />
             </label>
             <p className="form-note">
-              私钥内容请勿粘贴到网页。这里只记录<strong>本机绝对路径字符串</strong>，用于生成命令；
+              私钥内容请勿粘贴到网页。这里只记录
+              <strong>本机绝对路径字符串</strong>，用于生成命令；
               科研通服务器不会读取该路径下的文件，也不会代传测序数据。
             </p>
             <div className="actions">
               <button type="button" className="btn" onClick={() => setStep(2)}>
                 上一步
               </button>
-              <button className="btn btn-primary" type="submit" disabled={busy || !loggedIn || !entitled}>
+              <button
+                className="btn btn-primary"
+                type="submit"
+                disabled={busy || !loggedIn || !entitled}
+              >
                 {busy ? "校验中…" : "校验并进入运行步"}
               </button>
             </div>
@@ -440,18 +558,24 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
           <>
             <h2>校验结果 · 生成本地上传助手</h2>
             <div className="ncbi-mode-cards">
-              <article className={`ncbi-mode-card${lastMode === "dry-run" ? " is-on" : ""}`}>
+              <article
+                className={`ncbi-mode-card${lastMode === "dry-run" ? " is-on" : ""}`}
+              >
                 <h3>生成本地 dry-run 包</h3>
                 <p>
-                  门户只做元数据校验并生成脚本；<strong>不在服务器读你的测序文件</strong>。
+                  门户只做元数据校验并生成脚本；
+                  <strong>不在服务器读你的测序文件</strong>。
                   你在本机跑脚本时才会检查路径（仍不上传）。
                 </p>
               </article>
-              <article className={`ncbi-mode-card${lastMode === "run" ? " is-on" : ""}`}>
+              <article
+                className={`ncbi-mode-card${lastMode === "run" ? " is-on" : ""}`}
+              >
                 <h3>生成本机实际上传包</h3>
                 <p>
                   下载助手后在你的电脑执行 ascp，<strong>直连 NCBI</strong>。
-                  密钥仅本机路径、不落库。本站<strong>不做</strong> Submission Portal 网页代填。
+                  私钥保存在本机。上方浏览器助手可代填已支持的可见字段，最终信息在
+                  NCBI 核对。
                 </p>
               </article>
             </div>
@@ -460,7 +584,8 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
               <div className="ncbi-checklist-head">
                 <h3>进度清单（状态机）</h3>
                 <p className="form-note mono">
-                  policy={viewChecklist.automation_policy} · next={viewChecklist.next || "done"}
+                  policy={viewChecklist.automation_policy} · next=
+                  {viewChecklist.next || "done"}
                 </p>
               </div>
               <ul className="ncbi-checklist-list">
@@ -484,19 +609,37 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
                 ))}
               </ul>
               <p className="form-note">
-                校验与「生成本地包」可自动勾选；真正 ascp 成功请你在本机跑完后手动勾选。本站<strong>不做</strong>{" "}
-                Submission Portal 浏览器自动化，也<strong>不中转</strong>测序文件。
+                这里只自动记录元数据校验。生成助手包不代表本机 dry-run、传输或
+                NCBI 提交成功；请分别核对本机任务状态与 NCBI 实际回执。
               </p>
             </section>
 
             <div className="actions">
-              <button type="button" className="btn" onClick={() => setStep(3)} disabled={busy}>
+              {portableHelper ? (
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() =>
+                    downloadText("keyantong-ncbi-upload.py", portableHelper)
+                  }
+                >
+                  下载跨平台 Python 助手
+                </button>
+              ) : null}
+              <button
+                type="button"
+                className="btn"
+                onClick={() => setStep(3)}
+                disabled={busy}
+              >
                 返回修改
               </button>
               <button
                 type="button"
                 className="btn"
-                onClick={() => void onValidate({ preventDefault() {} } as FormEvent)}
+                onClick={() =>
+                  void onValidate({ preventDefault() {} } as FormEvent)
+                }
                 disabled={busy}
               >
                 重新校验
@@ -508,7 +651,9 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
                 onClick={() => void onPrepareLocal("dry-run")}
                 title="生成 dry-run 本地助手"
               >
-                {busy && lastMode === "dry-run" ? "生成中…" : "① 生成本地 dry-run 包"}
+                {busy && lastMode === "dry-run"
+                  ? "生成中…"
+                  : "① 生成本地 dry-run 包"}
               </button>
               <button
                 type="button"
@@ -519,14 +664,22 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
               >
                 {busy && lastMode === "run" ? "生成中…" : "② 生成本机上传包"}
               </button>
-              <button type="button" className="btn" disabled={!command || busy} onClick={() => void copyCommand()}>
+              <button
+                type="button"
+                className="btn"
+                disabled={!command || busy}
+                onClick={() => void copyCommand()}
+              >
                 {copied ? "已复制命令" : "复制 ascp 命令"}
               </button>
               <button
                 type="button"
                 className="btn"
                 disabled={!helperScript || busy}
-                onClick={() => helperScript && downloadText("keyantong-ncbi-local-upload.sh", helperScript)}
+                onClick={() =>
+                  helperScript &&
+                  downloadText("keyantong-ncbi-local-upload.sh", helperScript)
+                }
               >
                 下载本地助手 .sh
               </button>
@@ -535,7 +688,11 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
                 className="btn"
                 disabled={!command || busy}
                 onClick={() =>
-                  downloadText("ncbi-payload.json", JSON.stringify(payload(), null, 2), "application/json")
+                  downloadText(
+                    "ncbi-payload.json",
+                    JSON.stringify(payload(), null, 2),
+                    "application/json",
+                  )
                 }
               >
                 下载 payload.json
@@ -550,8 +707,12 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
             ) : null}
             <p className="form-note">
               本机执行示例：
-              <code className="mono">chmod +x keyantong-ncbi-local-upload.sh && ./keyantong-ncbi-local-upload.sh</code>
-              ；或直接粘贴 ascp 命令。ascp 需自行安装 Aspera Connect（IBM 许可）。
+              <code className="mono">
+                chmod +x keyantong-ncbi-local-upload.sh &&
+                ./keyantong-ncbi-local-upload.sh
+              </code>
+              ；或直接粘贴 ascp 命令。ascp 需自行安装 Aspera Connect（IBM
+              许可）。
             </p>
           </>
         ) : null}
@@ -595,17 +756,26 @@ export function NcbiUploadAssist({ entitled, loggedIn }: { entitled: boolean; lo
         <section className="section" style={{ marginTop: "1rem" }}>
           <h2>本地助手包状态</h2>
           <p className="mono">
-            mode={lastMode || "?"} · status={runStatus.status} · ok={String(runStatus.ok)} · dry_run=
+            mode={lastMode || "?"} · status={runStatus.status} · ok=
+            {String(runStatus.ok)} · dry_run=
             {String(runStatus.dry_run)}
             {runStatus.ascp_path ? ` · ascp=${runStatus.ascp_path}` : ""}
           </p>
           {runStatus.message ? <p>{runStatus.message}</p> : null}
-          {runStatus.log_path ? <p className="form-note mono">log: {runStatus.log_path}</p> : null}
-          {runStatus.status_path ? <p className="form-note mono">status: {runStatus.status_path}</p> : null}
+          {runStatus.log_path ? (
+            <p className="form-note mono">log: {runStatus.log_path}</p>
+          ) : null}
+          {runStatus.status_path ? (
+            <p className="form-note mono">status: {runStatus.status_path}</p>
+          ) : null}
         </section>
       ) : null}
 
-      <ToolsJobHistory loggedIn={loggedIn} entitled={entitled} filterKind="ncbi" />
+      <ToolsJobHistory
+        loggedIn={loggedIn}
+        entitled={entitled}
+        filterKind="ncbi"
+      />
     </div>
   );
 }

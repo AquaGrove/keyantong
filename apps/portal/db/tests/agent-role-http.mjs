@@ -1,0 +1,20 @@
+import assert from "node:assert/strict";
+import {randomUUID} from "node:crypto";
+const base="http://keyantong-portal-validation:3000";
+const post=(path,body,cookie)=>fetch(base+path,{method:"POST",headers:{"content-type":"application/json",...(cookie?{cookie}:{})},body:JSON.stringify(body),signal:AbortSignal.timeout(60000)});
+async function json(r){const d=await r.json();assert.ok(r.ok,d.error);return d;}
+const email="harness-role-"+randomUUID()+"@example.edu",password=randomUUID();
+const reg=await json(await post("/api/auth/register",{email,password}));
+await json(await post("/api/auth/verify",{email,code:reg.devCode}));
+const login=await post("/api/auth/login",{email,password,deviceId:randomUUID()});assert.ok(login.ok);
+const cookie=login.headers.getSetCookie().find(x=>x.startsWith("kt_user_session=")).split(";")[0];
+const preview=await json(await post("/api/agent",{message:"创建一个专属打工人\n名称：验证伙伴\n角色设定：用中文简短回应科研实验设计。\n技能：实验设计"},cookie));
+assert.ok(preview.ticket,preview.reply);
+await json(await post("/api/agent/confirm",{ticket:preview.ticket,confirmation:"确认创建"},cookie));
+const workers=await json(await fetch(base+"/api/workers",{headers:{cookie}}));
+const id=workers.agents.find(a=>a.name==="验证伙伴").id;
+const chat=await json(await post("/api/workers/"+id+"/chat",{message:"请记住我合成测试中关心的变量是根长。用一句话回应。"},cookie));
+assert.equal(chat.source,"deepseek-harness");assert.ok(chat.reply);
+const next=await json(await post("/api/workers/"+id+"/chat",{message:"我上一轮关心的变量是什么？"},cookie));
+assert.equal(next.source,"deepseek-harness");assert.match(next.reply,/根长/);
+console.log("Confirmed role creation and real two-turn Harness memory");

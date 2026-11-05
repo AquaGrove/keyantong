@@ -137,3 +137,23 @@ class EnrichTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+class EngineSafetyTests(unittest.TestCase):
+    def test_explicit_engine_never_silently_downgrades(self):
+        from unittest.mock import patch
+        from keyantong_rnaseq.de import run_de_samples
+        matrix=pd.DataFrame([[1,2,3,4]],index=['g'],columns=['a','b','c','d'])
+        with patch('keyantong_rnaseq.r_backends.run_de_r',side_effect=RuntimeError('missing dependency')), patch('keyantong_rnaseq.de.run_de_limma_like') as fallback:
+            with self.assertRaises(RuntimeError):run_de_samples(matrix,['a','b'],['c','d'],engine='r_limma')
+            fallback.assert_not_called()
+    def test_unknown_engine_rejected(self):
+        from keyantong_rnaseq.de import run_de_samples
+        matrix=pd.DataFrame([[1,2,3,4]],index=['g'],columns=['a','b','c','d'])
+        with self.assertRaises(ValueError):run_de_samples(matrix,['a','b'],['c','d'],engine='unknown')
+    def test_auto_fallback_records_reason(self):
+        from unittest.mock import patch
+        from keyantong_rnaseq.de import run_de_samples
+        matrix=pd.DataFrame([[1,2,3,4]],index=['g'],columns=['a','b','c','d'])
+        with patch('keyantong_rnaseq.r_backends.available_r_engines',return_value=['r_limma']),patch('keyantong_rnaseq.r_backends.run_de_r',side_effect=RuntimeError('dependency unavailable')),patch('keyantong_rnaseq.de.run_de_limma_like',return_value=pd.DataFrame({'engine':['limma_like']})):
+            result=run_de_samples(matrix,['a','b'],['c','d'],engine='auto')
+            self.assertIn('dependency unavailable',result.attrs['engine_fallbacks'][0])

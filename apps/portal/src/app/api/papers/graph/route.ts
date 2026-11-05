@@ -1,22 +1,27 @@
 import { NextResponse } from "next/server";
 import { buildGraph } from "@/lib/openalex";
-import { isEntitled } from "@/lib/user-store";
-import { currentUser } from "@/lib/user-session";
-
+import { rateLimit, clientIp } from "@/lib/security";
 export async function GET(request: Request) {
-  const user = await currentUser();
-  if (!user) {
-    return NextResponse.json({ error: "请先登录", code: "AUTH" }, { status: 401 });
-  }
-  if (!isEntitled(user)) {
+  const gate = rateLimit(`papers-graph:${clientIp(request)}`, {
+    windowMs: 60000,
+    max: 20,
+  });
+  if (!gate.ok)
     return NextResponse.json(
-      { error: "试用已结束，请开通永久会员后继续使用文献关系网", code: "PAYWALL" },
-      { status: 402 },
+      { error: "文献查询较频繁，请稍后再试" },
+      { status: 429 },
     );
-  }
   const q = new URL(request.url).searchParams.get("q")?.trim() || "";
-  if (!q) return NextResponse.json({ error: "缺少查询" }, { status: 400 });
+  if (!q || q.length > 300)
+    return NextResponse.json(
+      { error: "请输入 300 字以内的 DOI、OpenAlex ID 或题名" },
+      { status: 400 },
+    );
   const { graph, error } = await buildGraph(q);
-  if (!graph) return NextResponse.json({ error: error || "未找到该文献" }, { status: 404 });
+  if (!graph)
+    return NextResponse.json(
+      { error: error || "未找到该文献" },
+      { status: error?.includes("未找到") ? 404 : 503 },
+    );
   return NextResponse.json(graph);
 }

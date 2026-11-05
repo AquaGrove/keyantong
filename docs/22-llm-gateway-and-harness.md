@@ -272,3 +272,7 @@ Harness
 点数公式仍为 `points = ceil(tokens × k)`，`k∈{1.0,1.5,3.0}` 对应 fast/default/reasoning。
 
 若 API Key 曾出现在聊天或工单中，**务必在硅基流动控制台轮换**后再写入 `.env`。
+
+## 9. 专属科研角色（2026-11-05）
+
+根据用户要求新增独立的公共角色 SDK 适配层，使用同版本 Harness 引擎及按用户/角色隔离的 home，不共享运维 Web UI 或数据卷。公网门户只访问内部令牌 API。配置与限制见 [28](./28-research-commons.md) 及 ADR-010；现有运维 Harness 已部署不代表公共角色服务已部署。

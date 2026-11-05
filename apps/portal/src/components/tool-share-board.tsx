@@ -33,7 +33,7 @@ type ListResponse = {
 };
 
 type Props = {
-  entitled: boolean;
+  canContribute: boolean;
   initialTab?: "share" | "help";
   initialQuery?: string;
 };
@@ -48,7 +48,11 @@ function statusLabel(s: PostStatus) {
   return "已归档";
 }
 
-export function ToolShareBoard({ entitled, initialTab = "share", initialQuery = "" }: Props) {
+export function ToolShareBoard({
+  canContribute,
+  initialTab = "share",
+  initialQuery = "",
+}: Props) {
   const [tab, setTab] = useState<"share" | "help" | "post-share" | "post-help">(
     initialTab === "help" ? "help" : "share",
   );
@@ -95,7 +99,8 @@ export function ToolShareBoard({ entitled, initialTab = "share", initialQuery = 
     <div className="tool-share-board">
       <div className="rules-banner" role="note">
         <strong>合规与安全：</strong>
-        只分享开源、自有或明确授权的科研工具<strong>外链</strong>（http/https）。勿上传安装包到本站；勿贴盗版文献站、破解软件或引导 PDF
+        只分享开源、自有或明确授权的科研工具<strong>外链</strong>
+        （http/https）。勿上传安装包到本站；勿贴盗版文献站、破解软件或引导 PDF
         互传。用户输入按纯文本处理，请勿粘贴脚本。
       </div>
 
@@ -114,7 +119,7 @@ export function ToolShareBoard({ entitled, initialTab = "share", initialQuery = 
         >
           工具求助
         </button>
-        {entitled ? (
+        {canContribute ? (
           <>
             <button
               type="button"
@@ -136,19 +141,21 @@ export function ToolShareBoard({ entitled, initialTab = "share", initialQuery = 
             <Link className="btn btn-secondary" href="/login">
               登录后发帖
             </Link>
-            <Link className="btn btn-secondary" href="/pricing">
-              会员说明
-            </Link>
+            <span className="form-note">分享与求助无需会员</span>
           </>
         )}
-        <Link className="btn btn-secondary" href="/community#ask">
+        <Link className="btn btn-secondary" href="/literature#research-feed">
           文献互助
         </Link>
       </div>
 
       {(tab === "share" || tab === "help") && (
         <>
-          <form className="help-form" onSubmit={onSearch} style={{ marginTop: "1rem" }}>
+          <form
+            className="help-form"
+            onSubmit={onSearch}
+            style={{ marginTop: "1rem" }}
+          >
             <label>
               搜索工具帖（标题 / 描述 / 标签）
               <input
@@ -164,7 +171,11 @@ export function ToolShareBoard({ entitled, initialTab = "share", initialQuery = 
           </form>
 
           {loading && <p className="section-lead">加载中…</p>}
-          {error && <p className="section-lead" style={{ color: "crimson" }}>{error}</p>}
+          {error && (
+            <p className="section-lead" style={{ color: "crimson" }}>
+              {error}
+            </p>
+          )}
 
           {data && !loading && (
             <>
@@ -175,7 +186,7 @@ export function ToolShareBoard({ entitled, initialTab = "share", initialQuery = 
               {data.suggestHelp && (
                 <div className="rules-banner" role="status">
                   没有搜到相关工具帖。
-                  {entitled ? (
+                  {canContribute ? (
                     <>
                       {" "}
                       <button
@@ -190,7 +201,8 @@ export function ToolShareBoard({ entitled, initialTab = "share", initialQuery = 
                   ) : (
                     <>
                       {" "}
-                      <Link href="/login">登录后</Link>可发求助，让同伴看到并分享工具。
+                      <Link href="/login">登录后</Link>
+                      可发求助，让同伴看到并分享工具。
                     </>
                   )}
                 </div>
@@ -201,7 +213,9 @@ export function ToolShareBoard({ entitled, initialTab = "share", initialQuery = 
                     <div className="tool-post-meta">
                       <span className="badge">{typeLabel(p.type)}</span>
                       {p.type === "tool_help" && (
-                        <span className={`badge ${p.status === "open" ? "badge-bad" : "badge-ok"}`}>
+                        <span
+                          className={`badge ${p.status === "open" ? "badge-bad" : "badge-ok"}`}
+                        >
                           {statusLabel(p.status)}
                         </span>
                       )}
@@ -220,7 +234,9 @@ export function ToolShareBoard({ entitled, initialTab = "share", initialQuery = 
                     <p>{p.description}</p>
                     {p.tried && <p className="form-note">已尝试：{p.tried}</p>}
                     {p.expectedToolType && (
-                      <p className="form-note">期望类型：{p.expectedToolType}</p>
+                      <p className="form-note">
+                        期望类型：{p.expectedToolType}
+                      </p>
                     )}
                     <div className="tool-post-tags">
                       {p.tags.map((t) => (
@@ -241,17 +257,21 @@ export function ToolShareBoard({ entitled, initialTab = "share", initialQuery = 
                         </a>
                       )}
                       {p.linkedShareId && (
-                        <span className="form-note">已关联分享帖 {p.linkedShareId.slice(0, 8)}…</span>
+                        <span className="form-note">
+                          已关联分享帖 {p.linkedShareId.slice(0, 8)}…
+                        </span>
                       )}
-                      {p.type === "tool_help" && p.status === "open" && entitled && (
-                        <button
-                          type="button"
-                          className="btn btn-secondary"
-                          onClick={() => setResolveFor(p)}
-                        >
-                          去解决（发分享并关联）
-                        </button>
-                      )}
+                      {p.type === "tool_help" &&
+                        p.status === "open" &&
+                        canContribute && (
+                          <button
+                            type="button"
+                            className="btn btn-secondary"
+                            onClick={() => setResolveFor(p)}
+                          >
+                            去解决（发分享并关联）
+                          </button>
+                        )}
                     </div>
                   </li>
                 ))}
@@ -261,7 +281,7 @@ export function ToolShareBoard({ entitled, initialTab = "share", initialQuery = 
         </>
       )}
 
-      {tab === "post-share" && entitled && (
+      {tab === "post-share" && canContribute && (
         <ShareForm
           onDone={() => {
             setTab("share");
@@ -270,9 +290,13 @@ export function ToolShareBoard({ entitled, initialTab = "share", initialQuery = 
           }}
         />
       )}
-      {tab === "post-help" && entitled && (
+      {tab === "post-help" && canContribute && (
         <HelpForm
-          prefillTitle={data?.suggestHelp && submittedQ.trim() ? `求工具：${submittedQ.trim()}` : ""}
+          prefillTitle={
+            data?.suggestHelp && submittedQ.trim()
+              ? `求工具：${submittedQ.trim()}`
+              : ""
+          }
           prefillDesc={
             data?.suggestHelp && submittedQ.trim()
               ? `搜索「${submittedQ.trim()}」无结果，希望有人推荐可用工具与合法下载入口。`
@@ -286,7 +310,7 @@ export function ToolShareBoard({ entitled, initialTab = "share", initialQuery = 
         />
       )}
 
-      {resolveFor && entitled && (
+      {resolveFor && canContribute && (
         <ResolveModal
           help={resolveFor}
           onClose={() => setResolveFor(null)}
@@ -345,12 +369,23 @@ function ShareForm({
   }
 
   return (
-    <form className="help-form" onSubmit={onSubmit} style={{ marginTop: "1rem" }}>
+    <form
+      className="help-form"
+      onSubmit={onSubmit}
+      style={{ marginTop: "1rem" }}
+    >
       <h2>分享一个工具</h2>
-      <p className="form-note">只需外链 + 功能描述；安装包请放在官方或你有权分发的托管处。</p>
+      <p className="form-note">
+        只需外链 + 功能描述；安装包请放在官方或你有权分发的托管处。
+      </p>
       <label>
         标题
-        <input value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={120} />
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+          maxLength={120}
+        />
       </label>
       <label>
         功能描述
@@ -374,11 +409,20 @@ function ShareForm({
       </label>
       <label>
         标签（逗号分隔）
-        <input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="rnaseq, qc" maxLength={200} />
+        <input
+          value={tags}
+          onChange={(e) => setTags(e.target.value)}
+          placeholder="rnaseq, qc"
+          maxLength={200}
+        />
       </label>
       <label>
         分类
-        <input value={category} onChange={(e) => setCategory(e.target.value)} maxLength={40} />
+        <input
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          maxLength={40}
+        />
       </label>
       {err && <p style={{ color: "crimson" }}>{err}</p>}
       <p className="enter-hint mono">按 Enter 提交</p>
@@ -440,12 +484,23 @@ function HelpForm({
   }
 
   return (
-    <form className="help-form" onSubmit={onSubmit} style={{ marginTop: "1rem" }}>
+    <form
+      className="help-form"
+      onSubmit={onSubmit}
+      style={{ marginTop: "1rem" }}
+    >
       <h2>工具求助</h2>
-      <p className="form-note">说清需求与已尝试方案；他人看到后可发分享帖并标记解决。</p>
+      <p className="form-note">
+        说清需求与已尝试方案；他人看到后可发分享帖并标记解决。
+      </p>
       <label>
         标题
-        <input value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={120} />
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+          maxLength={120}
+        />
       </label>
       <label>
         需求描述
@@ -459,7 +514,12 @@ function HelpForm({
       </label>
       <label>
         已尝试
-        <textarea value={tried} onChange={(e) => setTried(e.target.value)} rows={3} maxLength={1000} />
+        <textarea
+          value={tried}
+          onChange={(e) => setTried(e.target.value)}
+          rows={3}
+          maxLength={1000}
+        />
       </label>
       <label>
         期望工具类型
@@ -471,7 +531,11 @@ function HelpForm({
       </label>
       <label>
         标签（逗号分隔）
-        <input value={tags} onChange={(e) => setTags(e.target.value)} maxLength={200} />
+        <input
+          value={tags}
+          onChange={(e) => setTags(e.target.value)}
+          maxLength={200}
+        />
       </label>
       {err && <p style={{ color: "crimson" }}>{err}</p>}
       <p className="enter-hint mono">按 Enter 提交</p>
@@ -491,7 +555,9 @@ function ResolveModal({
   onClose: () => void;
   onDone: () => void;
 }) {
-  const [title, setTitle] = useState(`推荐工具：回应「${help.title.slice(0, 40)}」`);
+  const [title, setTitle] = useState(
+    `推荐工具：回应「${help.title.slice(0, 40)}」`,
+  );
   const [description, setDescription] = useState("");
   const [downloadUrl, setDownloadUrl] = useState("");
   const [busy, setBusy] = useState(false);
@@ -507,7 +573,12 @@ function ResolveModal({
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          resolveWithShare: { title, description, downloadUrl, tags: help.tags },
+          resolveWithShare: {
+            title,
+            description,
+            downloadUrl,
+            tags: help.tags,
+          },
         }),
       });
       const json = await res.json();
@@ -524,10 +595,17 @@ function ResolveModal({
     <div className="tool-resolve-modal" role="dialog" aria-modal="true">
       <form className="help-form" onSubmit={onSubmit}>
         <h2>去解决该求助</h2>
-        <p className="form-note">将发布一条工具分享并自动把求助标为已解决、互相关联。</p>
+        <p className="form-note">
+          将发布一条工具分享并自动把求助标为已解决、互相关联。
+        </p>
         <label>
           分享标题
-          <input value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={120} />
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+            maxLength={120}
+          />
         </label>
         <label>
           功能描述与用法要点
@@ -551,7 +629,7 @@ function ResolveModal({
         {err && <p style={{ color: "crimson" }}>{err}</p>}
         <div className="actions">
           <p className="enter-hint mono">按 Enter 提交</p>
-      <button className="enter-submit-hidden" type="submit" disabled={busy}>
+          <button className="enter-submit-hidden" type="submit" disabled={busy}>
             {busy ? "提交中…" : "发布并标记解决"}
           </button>
           <button className="btn btn-secondary" type="button" onClick={onClose}>

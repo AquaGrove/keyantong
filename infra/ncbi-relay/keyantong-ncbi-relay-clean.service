@@ -1,0 +1,14 @@
+[Unit]
+Description=Remove expired KeyanTong NCBI staging files
+ConditionPathIsDirectory=/data/keyantong/ncbi-relay
+
+[Service]
+Type=oneshot
+User=1001
+Group=1001
+ExecStart=/usr/bin/find /data/keyantong/ncbi-relay -mindepth 1 -maxdepth 1 -type d -regextype posix-extended -regex '.*/[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}' -mmin +1500 -exec /usr/bin/rm -rf -- {} +
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=/data/keyantong/ncbi-relay
+ProtectHome=yes
+PrivateTmp=yes

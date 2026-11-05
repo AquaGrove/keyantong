@@ -12,9 +12,10 @@ RUN apt-get update \
 WORKDIR /opt/dsh
 ENV npm_config_update_notifier=false
 # Pin a published CLI; bump intentionally after reading release notes.
-RUN npm install -g @deepseek-ai/dsh@0.2.1-rc.5 \
+RUN npm install -g @deepseek-ai/dsh@0.2.1-rc.5 @deepseek-ai/dsh-sdk-client@0.2.1-rc.5 \
   && npm cache clean --force
 
+COPY worker-bridge.mjs worker-profile.patch.yml /opt/dsh/
 COPY proxy.mjs /opt/dsh/proxy.mjs
 COPY entrypoint.sh /opt/dsh/entrypoint.sh
 RUN chmod +x /opt/dsh/entrypoint.sh \

@@ -1,3 +1,5 @@
+> 2026-11-05 更新：本文保留为历史缺口审计，原“网页代填明确不做”已由用户新要求与 ADR-011 扩展为受限本机自动化。现行实现、证据与限制见 [29](./29-ncbi-automation.md)，可执行技能见 [ncbi-local-upload](../skills/ncbi-local-upload/SKILL.md)。以下历史任务勾选不代表当前实现状态。
+
 # NCBI 全自动上传 Skill · 仓库侧草稿 Checklist
 
 > **状态：** Skill 正文草案（已写入仓库；父代理请 UpdateSkill）\n> **代码修复：** ascp 远程用户已改为 `subasp@upload.ncbi.nlm.nih.gov`（2026-11-05）  

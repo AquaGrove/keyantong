@@ -37,6 +37,12 @@ ENV NEXT_PUBLIC_GITHUB_OWNER=$NEXT_PUBLIC_GITHUB_OWNER
 ENV NEXT_PUBLIC_GITHUB_REPO=$NEXT_PUBLIC_GITHUB_REPO
 RUN pnpm --dir apps/portal build
 
+# Operational image: migrations and dispatcher, not used by the public portal.
+FROM builder AS operations
+ENV NODE_ENV=production
+WORKDIR /app/apps/portal
+CMD ["node", "--import", "tsx", "db/scripts/dispatch.ts"]
+
 FROM node:20-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production

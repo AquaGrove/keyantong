@@ -77,6 +77,7 @@ export async function getWorker(userId: string, agentId: string): Promise<Worker
 export async function createWorker(
   userId: string,
   input: { name: string; kind: WorkerKind; persona: string; skills?: string[] },
+  idempotencyId?: string,
 ): Promise<{ ok: true; agent: WorkerAgent } | { ok: false; error: string }> {
   const name = input.name.trim().slice(0, 40);
   const persona = input.persona.trim().slice(0, 800);
@@ -89,6 +90,7 @@ export async function createWorker(
     .slice(0, 12);
 
   const agents = await readAgents(userId);
+  const existing=agents.find(a=>a.id===idempotencyId);if(existing)return {ok:true,agent:existing};
   const workers = agents.filter((a) => a.kind === "worker").length;
   const pets = agents.filter((a) => a.kind === "pet").length;
   if (kind === "worker" && workers >= MAX_WORKERS) {
@@ -100,7 +102,7 @@ export async function createWorker(
 
   const now = new Date().toISOString();
   const agent: WorkerAgent = {
-    id: newId(),
+    id: idempotencyId || newId(),
     name,
     kind,
     persona,

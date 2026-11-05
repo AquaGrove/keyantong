@@ -43,3 +43,9 @@ services/rnaseq-pipeline/annotations/fetch_meta.json
 services/rnaseq-pipeline/annotations/tryout/
 infra/backup/*.tgz
 infra/backup/*.sql.gz
+
+**/.data
+.pnpm-store
+*.tgz
+
+**/.next-*

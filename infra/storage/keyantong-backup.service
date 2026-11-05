@@ -1,0 +1,9 @@
+[Unit]
+Description=KeyanTong checked PostgreSQL and object storage backup
+After=docker.service
+Requires=docker.service
+[Service]
+Type=oneshot
+ExecStart=/opt/keyantong/infra/storage/backup.sh
+UMask=0077
+TimeoutStartSec=1800

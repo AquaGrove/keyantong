@@ -11,6 +11,8 @@ import os
 import shutil
 import subprocess
 import time
+import threading
+import shlex
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -51,8 +53,7 @@ class RunStatus:
 
     def write(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
-        if self.portal_checklist is None:
-            self.portal_checklist = checklist_from_status(self.to_dict())
+        self.portal_checklist = checklist_from_status(self.to_dict())
         path.write_text(json.dumps(self.to_dict(), ensure_ascii=False, indent=2), encoding="utf-8")
 
 
@@ -68,6 +69,13 @@ def find_ascp(explicit: str | None = None) -> str | None:
     candidates = [
         Path.home() / "Applications/Aspera Connect.app/Contents/Resources/ascp",
         Path("/Applications/Aspera Connect.app/Contents/Resources/ascp"),
+        Path.home() / "Applications/Aspera/Connect.app/Contents/Resources/ascp",
+        Path("/Applications/Aspera/Connect.app/Contents/Resources/ascp"),
+        Path.home() / ".aspera/connect/bin/ascp",
+        Path.home() / "aspera/connect/bin/ascp",
+        Path("/opt/aspera/bin/ascp"),
+        Path(os.environ.get("LOCALAPPDATA", str(Path.home()))) / "Programs/IBM/Aspera Connect/bin/ascp.exe",
+        Path(os.environ.get("PROGRAMFILES", "C:/Program Files")) / "Aspera/Aspera Connect/bin/ascp.exe",
         Path("/usr/local/bin/ascp"),
         Path("/usr/bin/ascp"),
     ]
@@ -120,7 +128,14 @@ def prepare_and_run(
         else:
             # reconcile filenames if provided
             names = [str(f.get("filename") or "") for f in (payload.get("files") or [])]
-            missing = [n for n in names if n and not (lf / n).exists()]
+            missing = [n for n in names if n and (not (lf / n).is_file() or (lf / n).is_symlink() or (lf / n).resolve().parent != lf.resolve())]
+            extras = [p.name for p in lf.iterdir() if p.is_file() and p.name not in names]
+            if extras:
+                issues.append({"level": "error", "field": "files", "message": "上传目录包含清单以外的文件，请使用只含待上传数据的专用目录"})
+            if Path(key_path).resolve().is_relative_to(lf.resolve()):
+                issues.append({"level": "error", "field": "ascp.key_path", "message": "私钥不能位于上传数据目录内"})
+            if any(p.is_dir() or p.is_symlink() for p in lf.iterdir()):
+                issues.append({"level": "error", "field": "files", "message": "上传目录不能包含子目录或符号链接"})
             if missing:
                 issues.append(
                     {
@@ -162,7 +177,7 @@ def prepare_and_run(
 
     # Rewrite command to use discovered ascp binary if present
     if binary and cmd.startswith("ascp "):
-        cmd = binary + cmd[4:]
+        cmd = shlex.quote(binary) + cmd[4:]
         st.command = cmd
 
     if dry_run:
@@ -196,16 +211,23 @@ def prepare_and_run(
         log.write(f"[{_now()}] START\ncommand={_redact(cmd, key_path)}\n")
         log.flush()
         try:
+            argv = [binary, "-i", key_path, "-QT", f"-l{ascp.get('rate') or '100m'}", "-k1", "-d", str(Path(local_folder).resolve()), f"subasp@upload.ncbi.nlm.nih.gov:uploads/{ascp.get('account_folder')}"]
             proc = subprocess.Popen(
-                cmd,
-                shell=True,
+                argv,
+                shell=False,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
                 env={k: v for k, v in os.environ.items()},  # no injected secrets
             )
             assert proc.stdout is not None
-            start = time.time()
+            timed_out = threading.Event()
+            def terminate_timeout():
+                timed_out.set()
+                proc.kill()
+            timer = threading.Timer(timeout_sec, terminate_timeout) if timeout_sec else None
+            if timer:
+                timer.start()
             for line in proc.stdout:
                 # never echo key file contents; ascp itself shouldn't print them
                 if "PRIVATE KEY" in line.upper() or "BEGIN OPENSSH" in line.upper():
@@ -213,20 +235,19 @@ def prepare_and_run(
                 else:
                     log.write(line)
                 log.flush()
-                if timeout_sec and (time.time() - start) > timeout_sec:
-                    proc.kill()
-                    log.write(f"\n[{_now()}] TIMEOUT after {timeout_sec}s\n")
-                    st.exit_code = -1
-                    st.status = "failed"
-                    st.message = f"ascp 超时（{timeout_sec}s）"
-                    break
+            proc.stdout.close()
             rc = proc.wait()
+            if timer:
+                timer.cancel()
             st.exit_code = rc
+            if timed_out.is_set():
+                st.status = "failed"
+                st.message = f"ascp 超时（{timeout_sec}s），可使用 -k1 恢复传输"
             if st.status != "failed":
                 if rc == 0:
                     st.status = "succeeded"
                     st.ok = True
-                    st.message = "ascp 完成"
+                    st.message = "ascp 传输完成；仍需在 NCBI Files 核对文件并完成提交"
                 else:
                     st.status = "failed"
                     st.message = f"ascp 退出码 {rc}"

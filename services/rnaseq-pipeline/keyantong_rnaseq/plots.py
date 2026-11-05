@@ -29,6 +29,7 @@ def _setup_fonts() -> None:
         "Songti SC",
         "Hiragino Sans GB",
         "Noto Sans CJK SC",
+        "Noto Sans CJK JP",
         "Arial Unicode MS",
         "Microsoft YaHei",
     ]

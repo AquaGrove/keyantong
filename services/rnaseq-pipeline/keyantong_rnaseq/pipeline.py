@@ -7,6 +7,7 @@ import zipfile
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 
@@ -112,6 +113,7 @@ def run_pipeline(
     deg_by_contrast: dict[str, pd.DataFrame] = {}
     all_deg_frames: list[pd.DataFrame] = []
     engines_used: list[str] = []
+    engine_fallbacks: list[dict[str, Any]] = []
     for c in contrasts:
         treat_g = id_to_group[c["treatment"]]
         ctrl_g = id_to_group[c["control"]]
@@ -125,6 +127,8 @@ def run_pipeline(
             contrast_id=cid,
             engine=cfg.de_engine,
         )
+        if deg.attrs.get("engine_fallbacks"):
+            engine_fallbacks.append({"contrast":cid,"warnings":deg.attrs["engine_fallbacks"]})
         eng = str(deg["engine"].iloc[0]) if "engine" in deg.columns and len(deg) else cfg.de_engine
         engines_used.append(eng)
         deg_by_contrast[cid] = deg
@@ -303,6 +307,7 @@ def run_pipeline(
     treat_names = [id_to_group[c["treatment"]].name for c in contrasts]
 
     methods = {
+        "engine_fallbacks": engine_fallbacks,
         "de_engine_requested": cfg.de_engine,
         "de_engine_used": primary_engine,
         "de_engines_by_contrast": dict(zip([c.get("id") or "" for c in contrasts], engines_used)),

@@ -135,6 +135,11 @@ def run_de_r(
     if len(control_samples) < 2 or len(treatment_samples) < 2:
         raise ValueError("对照与实验组各自至少需要 2 个样本")
     X = matrix[control_samples + treatment_samples].astype(float)
+    if flag in ("edger", "deseq2"):
+        import numpy as np
+        values = X.to_numpy()
+        if not np.isfinite(values).all() or (values < 0).any() or not np.equal(values,np.floor(values)).all():
+            raise ValueError("DESeq2/edgeR 要求非负整数原始 counts，不能输入 TPM/FPKM 或小数矩阵")
     keep = (X.sum(axis=1) > min_count) & (X.var(axis=1) > 0)
     X = X.loc[keep]
     with tempfile.TemporaryDirectory(prefix="kt-rde-") as tmp:

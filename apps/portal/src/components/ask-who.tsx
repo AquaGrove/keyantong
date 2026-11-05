@@ -40,7 +40,10 @@ function clampPos(x: number, y: number): Pos {
 
 function defaultPos(): Pos {
   if (typeof window === "undefined") return { x: 24, y: 24 };
-  return clampPos(window.innerWidth / 2 - FAB_W / 2, window.innerHeight - FAB_H - 28);
+  return clampPos(
+    window.innerWidth - FAB_W - 24,
+    window.innerHeight - FAB_H - 24,
+  );
 }
 
 function loadPos(): Pos {
@@ -115,7 +118,9 @@ export function AskWho({ loggedIn }: { loggedIn: boolean }) {
   } | null>(null);
   const fabRef = useRef<HTMLButtonElement>(null);
 
-  const [auth, setAuth] = useState<"unknown" | "in" | "out">(loggedIn ? "in" : "unknown");
+  const [auth, setAuth] = useState<"unknown" | "in" | "out">(
+    loggedIn ? "in" : "unknown",
+  );
   const [loadingAgents, setLoadingAgents] = useState(false);
 
   const load = useCallback(async () => {
@@ -158,7 +163,11 @@ export function AskWho({ loggedIn }: { loggedIn: boolean }) {
           .filter((a) => a.id),
       );
       if (!res.ok) {
-        setErr(typeof data.error === "string" ? data.error : `加载失败 HTTP ${res.status}`);
+        setErr(
+          typeof data.error === "string"
+            ? data.error
+            : `加载失败 HTTP ${res.status}`,
+        );
       }
     } catch (e) {
       setErr(e instanceof Error ? e.message : "加载打工人失败");
@@ -242,17 +251,36 @@ export function AskWho({ loggedIn }: { loggedIn: boolean }) {
   }
 
   const panelStyle: CSSProperties = {
-    left: Math.min(pos.x, typeof window !== "undefined" ? window.innerWidth - 360 : pos.x),
-    top: Math.max(8, pos.y - 12),
-    bottom: "auto",
-    transform: "translateY(-100%)",
+    left:
+      typeof window !== "undefined"
+        ? Math.max(
+            12,
+            Math.min(
+              pos.x,
+              window.innerWidth - Math.min(420, window.innerWidth - 24) - 12,
+            ),
+          )
+        : 12,
+    top: "auto",
+    bottom: "5.5rem",
+    transform: "none",
   };
 
   return (
     <>
       <div
         className={`ask-who-dock${isHome ? " ask-who-dock-home" : ""}${ready ? " ask-who-dock-ready" : ""}`}
-        style={ready ? { left: pos.x, top: pos.y, right: "auto", bottom: "auto", transform: "none" } : undefined}
+        style={
+          ready
+            ? {
+                left: pos.x,
+                top: pos.y,
+                right: "auto",
+                bottom: "auto",
+                transform: "none",
+              }
+            : undefined
+        }
       >
         <button
           ref={fabRef}
@@ -260,7 +288,11 @@ export function AskWho({ loggedIn }: { loggedIn: boolean }) {
           className="ask-who-fab"
           aria-expanded={open}
           aria-label={label}
-          title={locale === "zh" ? "拖动可改位置；点击打开" : "Drag to move; click to open"}
+          title={
+            locale === "zh"
+              ? "拖动可改位置；点击打开"
+              : "Drag to move; click to open"
+          }
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
@@ -272,34 +304,93 @@ export function AskWho({ loggedIn }: { loggedIn: boolean }) {
       </div>
 
       {open ? (
-        <div className="ask-who-panel" role="dialog" aria-label={label} style={ready ? panelStyle : undefined}>
+        <div
+          className="ask-who-panel"
+          role="dialog"
+          aria-label={label}
+          style={ready ? panelStyle : undefined}
+        >
           <div className="ask-who-panel-head">
             <strong>{label}</strong>
-            <button type="button" className="linkish" onClick={() => setOpen(false)}>
+            <button
+              type="button"
+              className="linkish"
+              onClick={() => setOpen(false)}
+            >
               {locale === "zh" ? "关闭" : "Close"}
             </button>
           </div>
 
           <div className="ask-who-section">
-            <p className="ask-who-label">{locale === "zh" ? "快捷" : "Quick"}</p>
-            <Link className="ask-who-item" href="/" onClick={() => setOpen(false)}>
+            <p className="ask-who-label">
+              {locale === "zh" ? "快捷" : "Quick"}
+            </p>
+            <Link
+              className="ask-who-item"
+              href="/"
+              onClick={() => setOpen(false)}
+            >
               {locale === "zh" ? "回首页对话" : "Home dispatcher"}
+            </Link>
+            <Link
+              className="ask-who-item"
+              href="/literature"
+              onClick={() => setOpen(false)}
+            >
+              {t("nav.literature")}
+            </Link>
+            <Link
+              className="ask-who-item"
+              href="/tools"
+              onClick={() => setOpen(false)}
+            >
+              {t("nav.tools")}
+            </Link>
+            <Link
+              className="ask-who-item"
+              href="/analysis"
+              onClick={() => setOpen(false)}
+            >
+              {t("nav.analysis")}
+            </Link>
+            <Link
+              className="ask-who-item"
+              href="/community"
+              onClick={() => setOpen(false)}
+            >
+              {t("nav.community")}
             </Link>
             {auth === "out" || (auth !== "in" && !loggedIn) ? (
               <>
-                <Link className="ask-who-item" href="/login" onClick={() => setOpen(false)}>
+                <Link
+                  className="ask-who-item"
+                  href="/login"
+                  onClick={() => setOpen(false)}
+                >
                   {t("nav.login")}
                 </Link>
-                <Link className="ask-who-item" href="/register" onClick={() => setOpen(false)}>
+                <Link
+                  className="ask-who-item"
+                  href="/register"
+                  onClick={() => setOpen(false)}
+                >
                   {t("nav.register")}
                 </Link>
               </>
             ) : (
               <>
-                <Link className="ask-who-item" href="/account" onClick={() => setOpen(false)}>
+                <Link
+                  className="ask-who-item"
+                  href="/account"
+                  onClick={() => setOpen(false)}
+                >
                   {t("nav.account")}
                 </Link>
-                <Link className="ask-who-item" href="/notifications" onClick={() => setOpen(false)}>
+                <Link
+                  className="ask-who-item"
+                  href="/notifications"
+                  onClick={() => setOpen(false)}
+                >
                   {t("nav.notifications")}
                 </Link>
               </>
@@ -313,16 +404,30 @@ export function AskWho({ loggedIn }: { loggedIn: boolean }) {
             <p className="ask-who-label">
               {locale === "zh" ? "我的打工人 / 宠物" : "My workers / pets"}
               {loadingAgents ? (
-                <span className="mono"> · {locale === "zh" ? "加载中…" : "loading…"}</span>
+                <span className="mono">
+                  {" "}
+                  · {locale === "zh" ? "加载中…" : "loading…"}
+                </span>
               ) : null}
             </p>
-            {auth === "out" || (auth === "unknown" && !loggedIn && !loadingAgents) ? (
-              <p className="mono">{locale === "zh" ? "登录后可召唤专属角色" : "Sign in to summon roles"}</p>
+            {auth === "out" ||
+            (auth === "unknown" && !loggedIn && !loadingAgents) ? (
+              <p className="mono">
+                {locale === "zh"
+                  ? "登录后可召唤专属角色"
+                  : "Sign in to summon roles"}
+              </p>
             ) : loadingAgents && agents.length === 0 ? (
-              <p className="mono">{locale === "zh" ? "正在加载已创建角色…" : "Loading your roles…"}</p>
+              <p className="mono">
+                {locale === "zh"
+                  ? "正在加载已创建角色…"
+                  : "Loading your roles…"}
+              </p>
             ) : agents.length === 0 ? (
               <p className="mono">
-                {locale === "zh" ? "还没有角色 — 可下方添加" : "None yet — add below"}
+                {locale === "zh"
+                  ? "还没有角色 — 可下方添加"
+                  : "None yet — add below"}
               </p>
             ) : (
               <ul className="ask-who-list">
@@ -350,7 +455,11 @@ export function AskWho({ loggedIn }: { loggedIn: boolean }) {
               </ul>
             )}
             {auth === "in" || loggedIn ? (
-              <Link className="ask-who-item ask-who-add" href="/#workers" onClick={() => setOpen(false)}>
+              <Link
+                className="ask-who-item ask-who-add"
+                href="/#workers"
+                onClick={() => setOpen(false)}
+              >
                 {locale === "zh" ? "+ 添加我的打工人" : "+ Add a worker"}
               </Link>
             ) : null}
@@ -359,7 +468,9 @@ export function AskWho({ loggedIn }: { loggedIn: boolean }) {
         </div>
       ) : null}
 
-      {active ? <WorkerChatWindow agent={active} onClose={() => setActive(null)} /> : null}
+      {active ? (
+        <WorkerChatWindow agent={active} onClose={() => setActive(null)} />
+      ) : null}
     </>
   );
 }

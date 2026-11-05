@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "environmentImage": "keyantong-omics:20261105",
+  "methods": [
+    {
+      "id": "gwas.plink-linear.v1",
+      "module": "gwas",
+      "name": "PLINK · PCA + 线性关联",
+      "version": "1.0.0",
+      "status": "experimental",
+      "files": [
+        "genotypes.csv",
+        "phenotypes.csv"
+      ],
+      "inputs": "二倍体整数剂量 CSV + 连续表型 CSV；12–2000 个样本",
+      "outputs": "质控、LD 剪枝、PCA、关联统计、Manhattan / QQ 图与运行清单",
+      "limitations": "探索性线性模型；尚未接入亲缘混合模型、多倍体与二分类性状。",
+      "parameters": {
+        "maf": {
+          "default": 0.05,
+          "min": 0.001,
+          "max": 0.49,
+          "integer": false
+        },
+        "pcs": {
+          "default": 2,
+          "min": 1,
+          "max": 5,
+          "integer": true
+        },
+        "ploidy": {
+          "default": 2,
+          "min": 2,
+          "max": 2,
+          "integer": true
+        }
+      }
+    },
+    {
+      "id": "bsa.delta.v1",
+      "module": "bsaseq",
+      "name": "ΔSNP-index · 双池读段对比",
+      "version": "1.0.0",
+      "status": "experimental",
+      "files": [
+        "counts.csv"
+      ],
+      "inputs": "双池 ref/alt 计数 CSV，含染色体及 1-based 坐标",
+      "outputs": "SNP-index、ΔSNP-index、读段 Fisher/BH、窗口均值和扫描图",
+      "limitations": "读段计数探索，不提供已校准的分离阈值、因果基因、PIP 或多倍体机制推断。",
+      "parameters": {
+        "minDepth": {
+          "default": 10,
+          "min": 1,
+          "max": 10000,
+          "integer": true
+        },
+        "windowBp": {
+          "default": 1000000,
+          "min": 100,
+          "max": 100000000,
+          "integer": true
+        }
+      }
+    }
+  ]
+}

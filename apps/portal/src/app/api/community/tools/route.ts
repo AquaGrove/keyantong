@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
-import { createToolPost, listToolPosts, type ToolPostType } from "@/lib/community/tool-posts";
+import {
+  createToolPost,
+  listToolPosts,
+  type ToolPostType,
+} from "@/lib/community/tool-posts";
 import { clientIp, rateLimit } from "@/lib/security";
-import { isEntitled } from "@/lib/user-store";
 import { currentUser } from "@/lib/user-session";
 
 export const runtime = "nodejs";
@@ -9,7 +12,10 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   const ip = clientIp(request);
-  const rl = rateLimit(`community:tools:get:${ip}`, { windowMs: 60_000, max: 120 });
+  const rl = rateLimit(`community:tools:get:${ip}`, {
+    windowMs: 60_000,
+    max: 120,
+  });
   if (!rl.ok) {
     return NextResponse.json(
       { error: "请求过于频繁，请稍后再试" },
@@ -21,8 +27,15 @@ export async function GET(request: Request) {
   const q = url.searchParams.get("q") || undefined;
   const typeRaw = (url.searchParams.get("type") || "all").toLowerCase();
   const type =
-    typeRaw === "tool_share" || typeRaw === "tool_help" || typeRaw === "share" || typeRaw === "help"
-      ? ((typeRaw === "share" ? "tool_share" : typeRaw === "help" ? "tool_help" : typeRaw) as ToolPostType)
+    typeRaw === "tool_share" ||
+    typeRaw === "tool_help" ||
+    typeRaw === "share" ||
+    typeRaw === "help"
+      ? ((typeRaw === "share"
+          ? "tool_share"
+          : typeRaw === "help"
+            ? "tool_help"
+            : typeRaw) as ToolPostType)
       : "all";
   const tag = url.searchParams.get("tag") || undefined;
   const statusRaw = (url.searchParams.get("status") || "all").toLowerCase();
@@ -31,7 +44,9 @@ export async function GET(request: Request) {
       ? statusRaw
       : "all";
   const page = Number(url.searchParams.get("page") || 1);
-  const pageSize = Number(url.searchParams.get("pageSize") || url.searchParams.get("limit") || 20);
+  const pageSize = Number(
+    url.searchParams.get("pageSize") || url.searchParams.get("limit") || 20,
+  );
 
   const result = listToolPosts({
     q,
@@ -47,7 +62,10 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const ip = clientIp(request);
-  const rl = rateLimit(`community:tools:post:${ip}`, { windowMs: 60_000, max: 10 });
+  const rl = rateLimit(`community:tools:post:${ip}`, {
+    windowMs: 60_000,
+    max: 10,
+  });
   if (!rl.ok) {
     return NextResponse.json(
       { error: "发帖过于频繁，请稍后再试" },
@@ -57,11 +75,11 @@ export async function POST(request: Request) {
 
   const user = await currentUser();
   if (!user) return NextResponse.json({ error: "请先登录" }, { status: 401 });
-  if (!isEntitled(user)) {
-    return NextResponse.json({ error: "需要有效校园试用或永久会员才能发帖" }, { status: 403 });
-  }
 
-  const body = (await request.json().catch(() => null)) as Record<string, unknown> | null;
+  const body = (await request.json().catch(() => null)) as Record<
+    string,
+    unknown
+  > | null;
   if (!body || typeof body !== "object") {
     return NextResponse.json({ error: "请求体无效" }, { status: 400 });
   }
@@ -74,7 +92,10 @@ export async function POST(request: Request) {
         ? "tool_help"
         : null;
   if (!type) {
-    return NextResponse.json({ error: "type 须为 tool_share 或 tool_help" }, { status: 400 });
+    return NextResponse.json(
+      { error: "type 须为 tool_share 或 tool_help" },
+      { status: 400 },
+    );
   }
 
   const base = {
@@ -110,7 +131,10 @@ export async function POST(request: Request) {
         );
 
   if (!created.ok) {
-    return NextResponse.json({ error: created.error }, { status: created.status });
+    return NextResponse.json(
+      { error: created.error },
+      { status: created.status },
+    );
   }
   return NextResponse.json({ post: created.post }, { status: 201 });
 }

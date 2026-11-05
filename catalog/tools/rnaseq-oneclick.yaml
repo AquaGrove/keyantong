@@ -6,7 +6,7 @@ license: Apache-2.0
 author: keyantong
 install:
   notes: |
-    门户路径 /tools/rnaseq。本地 CLI：services/rnaseq-pipeline（python3 -m keyantong_rnaseq）。
+    门户路径 /analysis/rnaseq。本地 CLI：services/rnaseq-pipeline（python3 -m keyantong_rnaseq）。
     输入约定：矩阵首列为 gene_id；分组可为 sample,group CSV，或含 groups[{id,name,role,color,samples}] 的 JSON。
 common_pitfalls:
   - 对照与各实验组各自少于 2 个生物学重复
@@ -14,5 +14,5 @@ common_pitfalls:
   - 把已经算好的 DEG 表当成主输入（本工具主路径不需要）
 links:
   docs: https://github.com/AquaGrove/keyantong/tree/main/services/rnaseq-pipeline
-  portal: /tools/rnaseq
+  portal: /analysis/rnaseq
   forum_tags: [rnaseq, deg, pca, venn]

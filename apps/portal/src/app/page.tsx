@@ -1,22 +1,12 @@
-import { HomeDispatcher } from "@/components/home-dispatcher";
-import { PageDecor } from "@/components/page-decor";
-import { HomeIntro } from "@/components/home-intro";
-import { WorkerManager } from "@/components/worker-manager";
-import { isEntitled } from "@/lib/user-store";
-import { currentUser } from "@/lib/user-session";
+import { Suspense } from "react";
+import { ConversationHome } from "@/components/conversation/console";
+import { ConversationReader } from "@/components/conversation/surface";
 
 export const dynamic = "force-dynamic";
 
-export default async function HomePage() {
-  const user = await currentUser();
-  const entitled = user ? isEntitled(user) : false;
-
-  return (
-    <main className="page page-home">
-      <PageDecor variant="home" />
-      <HomeIntro />
-      <HomeDispatcher loggedIn={Boolean(user)} entitled={entitled} />
-      <WorkerManager loggedIn={Boolean(user)} />
-    </main>
-  );
+export default function Home() {
+  return <>
+    <ConversationHome />
+    <Suspense fallback={null}><ConversationReader /></Suspense>
+  </>;
 }

@@ -30,44 +30,44 @@ export const CHECKLIST_STEPS: Omit<ChecklistStep, "done">[] = [
   {
     id: "dry_run",
     label: "本机 ascp dry-run 成功",
-    kind: "auto",
+    kind: "manual",
     hint: "Dry-run：只检查路径与命令，不实际上传",
   },
   {
     id: "ascp_upload",
-    label: "本机 ascp 实际上传成功（可选）",
-    kind: "auto",
+    label: "本机 ascp 实际上传成功",
+    kind: "manual",
     hint: "真实运行：对本机执行 ascp；密钥不落库",
   },
   {
     id: "portal_login",
     label: "用户已在浏览器登录 Submission Portal",
     kind: "manual",
-    hint: "需你在浏览器手动完成（本站不做网页自动化）",
+    hint: "使用本机已登录浏览器；登录验证由用户完成",
   },
   {
     id: "bioproject",
     label: "用户已创建/选择 BioProject",
     kind: "manual",
-    hint: "浏览器手动",
+    hint: "本机浏览器助手代填已支持字段后核对",
   },
   {
     id: "biosample",
     label: "用户已创建 BioSample 并粘贴校验字段",
     kind: "manual",
-    hint: "浏览器手动",
+    hint: "本机浏览器助手代填已支持字段后核对",
   },
   {
     id: "sra_submit",
     label: "用户已创建 SRA submission 并关联文件",
     kind: "manual",
-    hint: "浏览器手动",
+    hint: "本机浏览器助手代填已支持字段后核对",
   },
   {
     id: "accessions",
     label: "用户已保存 Accession",
     kind: "manual",
-    hint: "浏览器手动",
+    hint: "本机浏览器助手代填已支持字段后核对",
   },
 ];
 
@@ -82,26 +82,29 @@ export function emptyChecklist(doneIds: ChecklistStepId[] = []): {
     ...s,
     done: done.has(s.id),
   }));
-  const next = (steps.find((s) => !s.done)?.id || null) as ChecklistStepId | null;
+  const next = (steps.find((s) => !s.done)?.id ||
+    null) as ChecklistStepId | null;
   return {
-    automation_policy: "no_browser_automation",
+    automation_policy: "local_browser_assistance",
     steps,
     next,
     notes: {},
   };
 }
 
-export function checklistFromRunner(status?: {
-  status?: string;
-  ok?: boolean;
-  command?: string | null;
-  message?: string;
-} | null) {
+export function checklistFromRunner(
+  status?: {
+    status?: string;
+    ok?: boolean;
+    command?: string | null;
+    message?: string;
+  } | null,
+) {
   const done: ChecklistStepId[] = [];
   const notes: Record<string, string> = {};
   if (!status) return { ...emptyChecklist(), notes };
   const st = String(status.status || "");
-  if (status.command || ["dry_run", "succeeded", "running", "failed"].includes(st)) {
+  if (status.command || ["dry_run", "succeeded", "running"].includes(st)) {
     done.push("validate");
     notes.validate = "from runner / validate";
   }

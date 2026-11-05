@@ -106,13 +106,20 @@ export function AiAssistant({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(typeof data.error === "string" ? data.error : `请求失败 ${res.status}`);
+        setError(
+          typeof data.error === "string"
+            ? data.error
+            : `请求失败 ${res.status}`,
+        );
         setMsgs((m) => [
           ...m,
           {
             id: uid(),
             role: "assistant",
-            text: typeof data.error === "string" ? data.error : "暂时无法回答，请稍后再试。",
+            text:
+              typeof data.error === "string"
+                ? data.error
+                : "暂时无法回答，请稍后再试。",
           },
         ]);
       } else {
@@ -125,7 +132,11 @@ export function AiAssistant({
           },
         ]);
         if (data.quota) {
-          setStatus((s) => ({ ...(s || {}), quota: data.quota, entitled: true }));
+          setStatus((s) => ({
+            ...(s || {}),
+            quota: data.quota,
+            entitled: true,
+          }));
         } else {
           void refreshStatus();
         }
@@ -141,7 +152,9 @@ export function AiAssistant({
     return (
       <section className="section">
         <h2>需要登录</h2>
-        <p className="section-lead">登录后可使用科研通 AI 助手（校园试用或永久会员）。</p>
+        <p className="section-lead">
+          登录后可使用科研通 AI 助手（校园试用或永久会员）。
+        </p>
         <div className="actions">
           <a className="btn btn-primary" href="/login">
             去登录
@@ -155,7 +168,9 @@ export function AiAssistant({
     return (
       <section className="section">
         <h2>需要会员权益</h2>
-        <p className="section-lead">AI 助手仅对校园邮箱试用或永久会员开放。可先浏览工具目录与社区。</p>
+        <p className="section-lead">
+          AI 助手仅对校园邮箱试用或永久会员开放。可先浏览工具目录与社区。
+        </p>
         <div className="actions">
           <a className="btn btn-primary" href="/pricing">
             查看定价
@@ -174,11 +189,19 @@ export function AiAssistant({
         <section className="ai-chat-panel" aria-label="对话">
           <h2>对话</h2>
           <div className="ai-meta">
-            <span className={`ai-pill ${status?.configured ? "is-ok" : "is-warn"}`}>
-              {status?.configured ? "网关已配置" : status?.error || "网关未就绪"}
+            <span
+              className={`ai-pill ${status?.configured ? "is-ok" : "is-warn"}`}
+            >
+              {status?.configured
+                ? "网关已配置"
+                : status?.error || "网关未就绪"}
             </span>
-            {quotaLabel ? <span className="ai-pill">今日 {quotaLabel}</span> : null}
-            <span className="ai-pill">场景 {SCENES.find((s) => s.id === scene)?.label}</span>
+            {quotaLabel ? (
+              <span className="ai-pill">今日 {quotaLabel}</span>
+            ) : null}
+            <span className="ai-pill">
+              场景 {SCENES.find((s) => s.id === scene)?.label}
+            </span>
           </div>
 
           <div className="ai-scene-row" role="tablist" aria-label="场景">
@@ -218,18 +241,32 @@ export function AiAssistant({
             <label className="ai-composer-solo" htmlFor="ai-input">
               <textarea
                 id="ai-input"
+                aria-label="输入科研问题"
                 value={input}
                 disabled={busy || !status?.configured}
                 placeholder="输入问题（勿粘贴测序原文、密钥或隐私标识）"
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
+                  if (
+                    e.key === "Enter" &&
+                    !e.shiftKey &&
+                    !e.nativeEvent.isComposing
+                  ) {
                     e.preventDefault();
-                    if (!busy && input.trim() && status?.configured) void send();
+                    if (!busy && input.trim() && status?.configured)
+                      void send();
                   }
                 }}
               />
             </label>
+            <button
+              type="button"
+              className="btn btn-primary"
+              disabled={busy || !status?.configured || !input.trim()}
+              onClick={() => void send()}
+            >
+              {busy ? "思考中…" : "发送 ↗"}
+            </button>
             {error ? <p className="ai-error">{error}</p> : null}
             <p className="enter-hint mono">
               Enter 发送 · Shift+Enter 换行 · 点数 = ceil(tokens × 档位系数)

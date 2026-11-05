@@ -6,6 +6,8 @@ export type DispatchIntent =
   | "papers"
   | "pricing"
   | "account"
+  | "analysis"
+  | "forum"
   | "general";
 
 export type NextAction = {
@@ -26,6 +28,46 @@ export type DispatchPlan = {
 };
 
 const PLANS: Record<Exclude<DispatchIntent, "general">, DispatchPlan> = {
+  analysis: {
+    intent: "analysis",
+    titleZh: "组学分析与协作",
+    titleEn: "Omics analysis",
+    bodyZh:
+      "RNA-seq 已接入分析流程；BSA-seq、GWAS、单细胞方向可先发起协作，尚未提供在线计算。",
+    bodyEn:
+      "RNA-seq has an integrated workflow. Other omics directions currently support community collaboration.",
+    checklistZh: [
+      "研究目标与物种",
+      "数据类型、样本设计与规模",
+      "已有流程或遇到的瓶颈",
+    ],
+    checklistEn: [
+      "Research question and species",
+      "Data type and sample design",
+      "Workflow or bottleneck",
+    ],
+    next: {
+      href: "/analysis",
+      labelZh: "进入组学分析",
+      labelEn: "Open analysis",
+    },
+  },
+  forum: {
+    intent: "forum",
+    titleZh: "科研论坛",
+    titleEn: "Research community",
+    bodyZh:
+      "分享科研日常、心得、瓶颈与经验。登录后即可发帖和响应，不需要会员。",
+    bodyEn:
+      "Share notes, questions and experience. Sign in to contribute; no membership required.",
+    checklistZh: ["一个想记录的发现或问题", "你已经尝试过的思路"],
+    checklistEn: ["A discovery or question", "What you have tried"],
+    next: {
+      href: "/community",
+      labelZh: "去科研广场",
+      labelEn: "Open community",
+    },
+  },
   rnaseq: {
     intent: "rnaseq",
     titleZh: "转录组分析准备清单",
@@ -46,7 +88,11 @@ const PLANS: Record<Exclude<DispatchIntent, "general">, DispatchPlan> = {
       "Species / annotation preference (human, mouse, …; optional GO/KEGG)",
       "Contrasts (e.g. Treat vs Control) and whether you need Venn diagrams",
     ],
-    next: { href: "/tools/rnaseq", labelZh: "进入转录组分析", labelEn: "Open RNA-seq studio" },
+    next: {
+      href: "/analysis/rnaseq",
+      labelZh: "进入转录组分析",
+      labelEn: "Open RNA-seq studio",
+    },
   },
   ncbi: {
     intent: "ncbi",
@@ -68,7 +114,11 @@ const PLANS: Record<Exclude<DispatchIntent, "general">, DispatchPlan> = {
       "Local sequencing file paths (for command generation only — not uploaded here)",
       "Metadata: BioProject / BioSample / library fields",
     ],
-    next: { href: "/tools/ncbi-upload", labelZh: "打开 NCBI 上传向导", labelEn: "Open NCBI wizard" },
+    next: {
+      href: "/tools/ncbi-upload",
+      labelZh: "打开 NCBI 上传向导",
+      labelEn: "Open NCBI wizard",
+    },
   },
   community: {
     intent: "community",
@@ -88,7 +138,11 @@ const PLANS: Record<Exclude<DispatchIntent, "general">, DispatchPlan> = {
       "OA / library / author-manuscript paths already tried",
       "Short note on intended use",
     ],
-    next: { href: "/community", labelZh: "前往社区", labelEn: "Go to community" },
+    next: {
+      href: "/literature",
+      labelZh: "前往文献互助",
+      labelEn: "Go to community",
+    },
   },
   tools: {
     intent: "tools",
@@ -108,26 +162,43 @@ const PLANS: Record<Exclude<DispatchIntent, "general">, DispatchPlan> = {
       "Compliant download URL (http/https)",
       "Optional tags for the use case",
     ],
-    next: { href: "/community/tools", labelZh: "打开工具分享板", labelEn: "Open tool board" },
+    next: {
+      href: "/tools",
+      labelZh: "打开科研工具",
+      labelEn: "Open tool board",
+    },
   },
   papers: {
     intent: "papers",
     titleZh: "文献关系网",
     titleEn: "Literature network",
     bodyZh: "用公开学术图谱探索引用邻域与相关工作，作为社区求助前的检索辅助。",
-    bodyEn: "Explore citation neighborhoods via open scholarly graphs before posting a help request.",
+    bodyEn:
+      "Explore citation neighborhoods via open scholarly graphs before posting a help request.",
     checklistZh: ["一篇种子文献的 DOI 或标题", "想看引用还是被引邻域"],
-    checklistEn: ["Seed paper DOI or title", "Whether you want citing or cited neighborhood"],
-    next: { href: "/papers", labelZh: "打开文献关系网", labelEn: "Open papers graph" },
+    checklistEn: [
+      "Seed paper DOI or title",
+      "Whether you want citing or cited neighborhood",
+    ],
+    next: {
+      href: "/papers",
+      labelZh: "打开文献关系网",
+      labelEn: "Open papers graph",
+    },
   },
   pricing: {
     intent: "pricing",
     titleZh: "定价与试用",
     titleEn: "Pricing & trial",
-    bodyZh: "校园邮箱可注册试用；永久会员由站务开通。AI 助手与部分工具配额与会员相关。",
-    bodyEn: "Campus email unlocks a trial; lifetime membership is granted by operators. AI and some tool quotas follow membership.",
+    bodyZh:
+      "校园邮箱可注册试用；永久会员由站务开通。AI 助手与部分工具配额与会员相关。",
+    bodyEn:
+      "Campus email unlocks a trial; lifetime membership is granted by operators. AI and some tool quotas follow membership.",
     checklistZh: ["准备校园邮箱完成注册", "了解试用到期后的权益变化"],
-    checklistEn: ["Have a campus email ready to register", "Know what changes when the trial ends"],
+    checklistEn: [
+      "Have a campus email ready to register",
+      "Know what changes when the trial ends",
+    ],
     next: { href: "/pricing", labelZh: "查看定价", labelEn: "View pricing" },
   },
   account: {
@@ -135,7 +206,8 @@ const PLANS: Record<Exclude<DispatchIntent, "general">, DispatchPlan> = {
     titleZh: "账号与设备",
     titleEn: "Account & devices",
     bodyZh: "登录后可查看会员状态、已绑定设备与通知。",
-    bodyEn: "After sign-in you can review membership, devices, and notifications.",
+    bodyEn:
+      "After sign-in you can review membership, devices, and notifications.",
     checklistZh: ["已注册的校园邮箱", "登录密码"],
     checklistEn: ["Registered campus email", "Password"],
     next: { href: "/account", labelZh: "进入账号", labelEn: "Open account" },
@@ -144,16 +216,40 @@ const PLANS: Record<Exclude<DispatchIntent, "general">, DispatchPlan> = {
 
 export function detectIntent(text: string): DispatchIntent {
   const t = text.toLowerCase();
-  if (/转录组|rna[\s-]?seq|rnaseq|差异表达|\bdeg\b|count.?matrix|fastq|表达矩阵|火山图|韦恩/.test(t)) {
+  if (/bsa[\s-]?seq|gwas|单细胞|single[ -]?cell|组学|混池|全基因组关联/.test(t))
+    return "analysis";
+  if (
+    /论坛|心得|感悟|科研日常|实验瓶颈|经验分享|发动态|research diary|forum/.test(
+      t,
+    )
+  )
+    return "forum";
+  if (/文献网|引用|openalex|papers? graph|关系网/.test(t)) return "papers";
+  if (
+    /转录组|rna[\s-]?seq|rnaseq|差异表达|\bdeg\b|count.?matrix|fastq|表达矩阵|火山图|韦恩/.test(
+      t,
+    )
+  ) {
     return "rnaseq";
   }
-  if (/ncbi|sra|geo|ascp|aspera|submission\s*portal|上传.*(数据|测序)|测序.*上传|biosample|bioproject/.test(t)) {
+  if (
+    /ncbi|sra|geo|ascp|aspera|submission\s*portal|上传.*(数据|测序)|测序.*上传|biosample|bioproject/.test(
+      t,
+    )
+  ) {
     return "ncbi";
   }
-  if (/文献求助|找文献|pdf|doi|求助帖|community|互助/.test(t) && !/工具/.test(t)) {
+  if (
+    /文献求助|找文献|pdf|doi|求助帖|community|互助/.test(t) &&
+    !/工具/.test(t)
+  ) {
     return "community";
   }
-  if (/工具分享|分享工具|软件推荐|检索工具|下载链接|tool\s*share|找个工具|比对工具|序列比对/.test(t)) {
+  if (
+    /工具分享|分享工具|软件推荐|检索工具|下载链接|tool\s*share|找个工具|比对工具|序列比对/.test(
+      t,
+    )
+  ) {
     return "tools";
   }
   if (/文献网|引用|openalex|papers? graph|关系网/.test(t)) {
@@ -177,7 +273,7 @@ export function planForIntent(intent: DispatchIntent): DispatchPlan {
       titleZh: "我可以帮你调度这些模块",
       titleEn: "I can route you to these modules",
       bodyZh:
-        "试试说：分析转录组、NCBI 上传、分享工具、文献求助。首页只保留对话入口，具体模块会在确认后跳转。",
+        "试试说：分析转录组、GWAS 协作、NCBI 上传、分享工具、文献求助、分享科研心得。首页提供文献互助、科研工具、组学分析与科研论坛入口，所有人都能贡献经验或响应求助。",
       bodyEn:
         "Try: RNA-seq analysis, NCBI upload, share a tool, or literature help. The home page stays chat-first; modules open after you confirm.",
       checklistZh: [
@@ -190,13 +286,20 @@ export function planForIntent(intent: DispatchIntent): DispatchPlan {
         "NCBI → local ascp direct to NCBI (no server relay)",
         "Tools / literature → community posts & search",
       ],
-      next: { href: "/tools", labelZh: "浏览全部工具", labelEn: "Browse all tools" },
+      next: {
+        href: "/tools",
+        labelZh: "浏览全部工具",
+        labelEn: "Browse all tools",
+      },
     };
   }
   return PLANS[intent];
 }
 
-export function renderPlan(plan: DispatchPlan, locale: "zh" | "en"): {
+export function renderPlan(
+  plan: DispatchPlan,
+  locale: "zh" | "en",
+): {
   title: string;
   body: string;
   checklist: string[];
@@ -208,7 +311,10 @@ export function renderPlan(plan: DispatchPlan, locale: "zh" | "en"): {
     body: zh ? plan.bodyZh : plan.bodyEn,
     checklist: zh ? plan.checklistZh : plan.checklistEn,
     next: plan.next
-      ? { href: plan.next.href, label: zh ? plan.next.labelZh : plan.next.labelEn }
+      ? {
+          href: plan.next.href,
+          label: zh ? plan.next.labelZh : plan.next.labelEn,
+        }
       : undefined,
   };
 }

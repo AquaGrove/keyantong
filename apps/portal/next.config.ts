@@ -50,6 +50,7 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   reactStrictMode: true,
   transpilePackages: ["@keyantong/ops-shared"],
   poweredByHeader: false,

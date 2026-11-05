@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
-import { getToolPost, patchToolPost, toPublic } from "@/lib/community/tool-posts";
+import {
+  getToolPost,
+  patchToolPost,
+  toPublic,
+} from "@/lib/community/tool-posts";
 import { clientIp, rateLimit } from "@/lib/security";
-import { isEntitled } from "@/lib/user-store";
 import { currentUser } from "@/lib/user-session";
 
 export const runtime = "nodejs";
@@ -11,7 +14,10 @@ type Ctx = { params: Promise<{ id: string }> };
 
 export async function GET(request: Request, ctx: Ctx) {
   const ip = clientIp(request);
-  const rl = rateLimit(`community:tools:getid:${ip}`, { windowMs: 60_000, max: 120 });
+  const rl = rateLimit(`community:tools:getid:${ip}`, {
+    windowMs: 60_000,
+    max: 120,
+  });
   if (!rl.ok) {
     return NextResponse.json(
       { error: "请求过于频繁，请稍后再试" },
@@ -26,7 +32,10 @@ export async function GET(request: Request, ctx: Ctx) {
 
 export async function PATCH(request: Request, ctx: Ctx) {
   const ip = clientIp(request);
-  const rl = rateLimit(`community:tools:patch:${ip}`, { windowMs: 60_000, max: 20 });
+  const rl = rateLimit(`community:tools:patch:${ip}`, {
+    windowMs: 60_000,
+    max: 20,
+  });
   if (!rl.ok) {
     return NextResponse.json(
       { error: "请求过于频繁，请稍后再试" },
@@ -36,12 +45,12 @@ export async function PATCH(request: Request, ctx: Ctx) {
 
   const user = await currentUser();
   if (!user) return NextResponse.json({ error: "请先登录" }, { status: 401 });
-  if (!isEntitled(user)) {
-    return NextResponse.json({ error: "需要有效校园试用或永久会员" }, { status: 403 });
-  }
 
   const { id } = await ctx.params;
-  const body = (await request.json().catch(() => null)) as Record<string, unknown> | null;
+  const body = (await request.json().catch(() => null)) as Record<
+    string,
+    unknown
+  > | null;
   if (!body) return NextResponse.json({ error: "请求体无效" }, { status: 400 });
 
   const status = body.status != null ? String(body.status) : undefined;
@@ -86,7 +95,13 @@ export async function PATCH(request: Request, ctx: Ctx) {
   );
 
   if (!result.ok) {
-    return NextResponse.json({ error: result.error }, { status: result.status });
+    return NextResponse.json(
+      { error: result.error },
+      { status: result.status },
+    );
   }
-  return NextResponse.json({ post: result.post, createdShare: result.createdShare ?? null });
+  return NextResponse.json({
+    post: result.post,
+    createdShare: result.createdShare ?? null,
+  });
 }

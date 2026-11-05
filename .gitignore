@@ -21,6 +21,7 @@ node_modules/
 dist/
 build/
 .next/
+.next-*/
 coverage/
 *.tsbuildinfo
 __pycache__/

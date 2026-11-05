@@ -40,7 +40,10 @@ export function HomeDispatcher({
   }, [t, locale]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    if (msgs.some((m) => m.role === "user")) {
+      const thread = bottomRef.current?.parentElement;
+      thread?.scrollTo({ top: thread.scrollHeight, behavior: "smooth" });
+    }
   }, [msgs, busy]);
 
   async function send(raw?: string) {
@@ -63,7 +66,8 @@ export function HomeDispatcher({
       });
       const data = await res.json();
       if (!res.ok) {
-        const err = typeof data.error === "string" ? data.error : `HTTP ${res.status}`;
+        const err =
+          typeof data.error === "string" ? data.error : `HTTP ${res.status}`;
         setError(err);
         setMsgs((m) => [...m, { id: uid(), role: "assistant", text: err }]);
       } else {
@@ -85,19 +89,59 @@ export function HomeDispatcher({
   }
 
   const suggestions = [
-    { key: "home.suggest.rnaseq", textZh: "我想分析转录组数据", textEn: "I want to analyze RNA-seq data" },
-    { key: "home.suggest.ncbi", textZh: "帮我准备 NCBI 数据上传", textEn: "Help me prepare an NCBI upload" },
-    { key: "home.suggest.tools", textZh: "我想分享一个好用的科研工具", textEn: "I want to share a useful research tool" },
-    { key: "home.suggest.community", textZh: "我需要文献求助", textEn: "I need literature help" },
+    {
+      key: "home.suggest.rnaseq",
+      textZh: "我想分析转录组数据",
+      textEn: "I want to analyze RNA-seq data",
+    },
+    {
+      key: "home.suggest.ncbi",
+      textZh: "帮我准备 NCBI 数据上传",
+      textEn: "Help me prepare an NCBI upload",
+    },
+    {
+      key: "home.suggest.tools",
+      textZh: "我想分享一个好用的科研工具",
+      textEn: "I want to share a useful research tool",
+    },
+    {
+      key: "home.suggest.community",
+      textZh: "我需要文献求助",
+      textEn: "I need literature help",
+    },
   ] as const;
 
   return (
     <section className="home-dispatch" aria-label="AI dispatcher">
       <div className="home-dispatch-card">
-        {(loggedIn || entitled) ? (
+        <div className="dispatch-heading">
+          <span className="dispatch-symbol" aria-hidden="true">
+            ✳
+          </span>
+          <div>
+            <strong>
+              {locale === "zh" ? "科研助手" : "Research assistant"}
+            </strong>
+            <span>
+              {locale === "zh"
+                ? "从一个问题，开始下一步探索"
+                : "A question is the start of your next discovery"}
+            </span>
+          </div>
+          <span className="dispatch-mode">
+            {locale === "zh" ? "需求导航" : "Research guide"}
+          </span>
+        </div>
+        {loggedIn || entitled ? (
           <div className="home-dispatch-top">
             <span className={`ai-pill ${entitled ? "is-ok" : "is-warn"}`}>
-              {entitled ? (locale === "zh" ? "会员 · 可增强" : "Member · LLM on") : locale === "zh" ? "已登录" : "Signed in"}
+              {entitled
+                ? locale === "zh"
+                  ? "会员 · 可增强"
+                  : "Member · LLM on"
+                : locale === "zh"
+                  ? "已登录"
+                  : "Signed in"}
             </span>
           </div>
         ) : null}
@@ -117,18 +161,28 @@ export function HomeDispatcher({
               <div className="home-msg-text">{m.text}</div>
               {m.next ? (
                 <div className="home-next-row">
-                  <Link className="btn btn-primary home-next-btn" href={m.next.href}>
+                  <Link
+                    className="btn btn-primary home-next-btn"
+                    href={m.next.href}
+                  >
                     {t("home.chat.next")} · {m.next.label}
                   </Link>
                 </div>
               ) : null}
             </div>
           ))}
-          {busy ? <div className="ai-msg ai-msg-system">{t("home.chat.thinking")}</div> : null}
+          {busy ? (
+            <div className="ai-msg ai-msg-system">
+              {t("home.chat.thinking")}
+            </div>
+          ) : null}
           <div ref={bottomRef} />
         </div>
 
-        <div className="home-suggest" role="list">
+        <div
+          className="home-suggest"
+          aria-label={locale === "zh" ? "试试这些问题" : "Try a question"}
+        >
           {suggestions.map((s) => (
             <button
               key={s.key}
@@ -146,20 +200,40 @@ export function HomeDispatcher({
           <label className="ai-composer-solo" htmlFor="home-dispatch-input">
             <textarea
               id="home-dispatch-input"
+              aria-label={
+                locale === "zh"
+                  ? "描述你的科研需求"
+                  : "Describe your research need"
+              }
               value={input}
               disabled={busy}
               placeholder={t("home.chat.placeholder")}
               rows={3}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
+                if (
+                  e.key === "Enter" &&
+                  !e.shiftKey &&
+                  !e.nativeEvent.isComposing
+                ) {
                   e.preventDefault();
                   if (!busy && input.trim()) void send();
                 }
               }}
             />
           </label>
-          <p className="enter-hint mono">{t("home.chat.enterHint")}</p>
+          <div className="composer-footer">
+            <p className="enter-hint">{t("home.chat.enterHint")}</p>
+            <button
+              type="button"
+              className="btn btn-primary"
+              disabled={busy || !input.trim()}
+              onClick={() => void send()}
+            >
+              {busy ? t("home.chat.thinking") : t("home.chat.send")}
+              <span aria-hidden="true">↗</span>
+            </button>
+          </div>
           {error ? <p className="ai-error">{error}</p> : null}
         </div>
       </div>

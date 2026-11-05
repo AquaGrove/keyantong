@@ -19,8 +19,10 @@
   --shadow: 0 18px 50px rgba(10, 28, 46, 0.08);
   --shadow-sm: 0 8px 22px rgba(10, 28, 46, 0.06);
   --font-display: "Fraunces", "Noto Serif SC", "Songti SC", Georgia, serif;
-  --font-body: "Outfit", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
-    "HarmonyOS Sans SC", "MiSans", "Noto Sans SC", "Noto Sans CJK SC", sans-serif;
+  --font-body:
+    "Outfit", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    "HarmonyOS Sans SC", "MiSans", "Noto Sans SC", "Noto Sans CJK SC",
+    sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
   --radius: 0.55rem;
   --radius-lg: 1rem;
@@ -52,8 +54,16 @@ body {
   color: var(--ink);
   font-family: var(--font-body);
   background:
-    radial-gradient(900px 520px at 88% -10%, rgba(45, 212, 191, 0.22), transparent 55%),
-    radial-gradient(700px 480px at -10% 20%, rgba(13, 148, 136, 0.10), transparent 50%),
+    radial-gradient(
+      900px 520px at 88% -10%,
+      rgba(45, 212, 191, 0.22),
+      transparent 55%
+    ),
+    radial-gradient(
+      700px 480px at -10% 20%,
+      rgba(13, 148, 136, 0.1),
+      transparent 50%
+    ),
     linear-gradient(165deg, var(--bg) 0%, var(--bg-deep) 100%);
 }
 
@@ -149,7 +159,9 @@ a {
   border-radius: 999px;
   background: var(--ink);
   color: var(--paper);
-  transition: transform 160ms ease, background 160ms ease;
+  transition:
+    transform 160ms ease,
+    background 160ms ease;
   word-break: keep-all;
   white-space: nowrap;
 }
@@ -230,7 +242,10 @@ a {
   background: #ecfdf8;
   color: var(--accent-ink);
   border-color: rgba(13, 148, 136, 0.3);
-  transition: transform 160ms ease, background 160ms ease, border-color 160ms ease,
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    border-color 160ms ease,
     box-shadow 160ms ease;
 }
 
@@ -264,8 +279,7 @@ a {
   position: relative;
   border-radius: 1rem;
   overflow: hidden;
-  background:
-    linear-gradient(160deg, #0b1f33 0%, #12324d 45%, #0f766e 120%);
+  background: linear-gradient(160deg, #0b1f33 0%, #12324d 45%, #0f766e 120%);
   box-shadow: var(--shadow);
   animation: rise 900ms 120ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   min-height: 320px;
@@ -325,7 +339,12 @@ a {
 .link-line {
   position: absolute;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(94, 234, 212, 0.65), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(94, 234, 212, 0.65),
+    transparent
+  );
   transform-origin: left center;
   animation: draw-line 1.4s ease both;
 }
@@ -403,7 +422,9 @@ h3.section-subtitle {
   border-radius: 0.55rem;
   background: rgba(11, 31, 51, 0.03);
   border: 1px solid transparent;
-  transition: border-color 160ms ease, background 160ms ease;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease;
 }
 
 .pulse-list li:hover {
@@ -483,8 +504,13 @@ h3.section-subtitle {
   padding: 1rem 1.05rem;
   border-radius: 0.85rem;
   border: 1px solid rgba(13, 148, 136, 0.16);
-  background: linear-gradient(165deg, rgba(45, 212, 191, 0.08), transparent 45%), var(--paper);
-  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  background:
+    linear-gradient(165deg, rgba(45, 212, 191, 0.08), transparent 45%),
+    var(--paper);
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .hub-tile:hover {
@@ -1041,7 +1067,10 @@ h1.page-title {
   padding: 0.28rem 0.7rem;
   font-size: 0.82rem;
   cursor: pointer;
-  transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+  transition:
+    transform 120ms ease,
+    border-color 120ms ease,
+    background 120ms ease;
 }
 
 .rnaseq-chip:hover:not(:disabled) {
@@ -1072,10 +1101,16 @@ h1.page-title {
   padding: 0.9rem 0.95rem;
   border-radius: 0.9rem;
   border: 1.5px solid color-mix(in srgb, var(--group-accent) 45%, var(--line));
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--group-accent) 10%, #fff) 0%, #fff 42%);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--group-accent) 10%, #fff) 0%,
+    #fff 42%
+  );
   cursor: pointer;
-  transition: box-shadow 160ms ease, transform 160ms ease, border-color 160ms ease;
+  transition:
+    box-shadow 160ms ease,
+    transform 160ms ease,
+    border-color 160ms ease;
 }
 
 .rnaseq-group-card:hover {
@@ -1101,7 +1136,8 @@ h1.page-title {
   font-weight: 700;
   font-size: 1.02rem;
   border: 0;
-  border-bottom: 1px dashed color-mix(in srgb, var(--group-accent) 35%, transparent);
+  border-bottom: 1px dashed
+    color-mix(in srgb, var(--group-accent) 35%, transparent);
   background: transparent;
   color: var(--ink);
   padding: 0.15rem 0.1rem;
@@ -1277,7 +1313,8 @@ h1.page-title {
 
 .rnaseq-group-card.is-drop {
   border-color: var(--group-accent, var(--accent));
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--group-accent, var(--accent)) 35%, transparent);
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--group-accent, var(--accent)) 35%, transparent);
   background: color-mix(in srgb, var(--group-accent, var(--accent)) 8%, #fff);
 }
 
@@ -1329,7 +1366,6 @@ h1.page-title {
   font-weight: 600;
 }
 
-
 .tools-history {
   margin-top: 1.75rem;
   padding-top: 1rem;
@@ -1378,7 +1414,8 @@ h1.page-title {
 .tools-history-table td {
   text-align: left;
   padding: 0.45rem 0.55rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--muted, #667) 28%, transparent);
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--muted, #667) 28%, transparent);
   vertical-align: top;
 }
 
@@ -1508,8 +1545,6 @@ h1.page-title {
   color: var(--muted, #667);
 }
 
-
-
 /* tool-share-board */
 .tool-post-list {
   list-style: none;
@@ -1519,7 +1554,8 @@ h1.page-title {
   gap: 0.85rem;
 }
 .tool-post-card {
-  border: 1px solid color-mix(in oklab, var(--border, #d0d7de) 100%, transparent);
+  border: 1px solid
+    color-mix(in oklab, var(--border, #d0d7de) 100%, transparent);
   border-radius: 12px;
   padding: 1rem 1.1rem;
   background: color-mix(in oklab, var(--card, #fff) 92%, transparent);
@@ -1562,7 +1598,6 @@ h1.page-title {
   padding: 1.1rem 1.2rem 1.25rem;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
 }
-
 
 /* —— Unified page chrome —— */
 .page-kicker {
@@ -1830,15 +1865,15 @@ h1.page-title {
 .nav-link {
   border-radius: 999px;
   padding: 0.35rem 0.7rem;
-  transition: background 140ms ease, color 140ms ease;
+  transition:
+    background 140ms ease,
+    color 140ms ease;
 }
 
 .nav-link:hover {
   background: var(--accent-soft);
   color: var(--accent-ink);
 }
-
-
 
 /* —— Chat-first home + i18n + notifications —— */
 .page-home {
@@ -2057,7 +2092,6 @@ h1.page-title {
   gap: 0.3rem 0.55rem;
 }
 
-
 /* —— Home shell: centered auth chrome, no logo/footer —— */
 .site-header-home {
   justify-content: center;
@@ -2086,7 +2120,6 @@ h1.page-title {
 .page-home {
   padding-top: 0.1rem;
 }
-
 
 /* Enter-to-confirm: visible text-like submit (also clickable) */
 .enter-submit-hidden {
@@ -2121,7 +2154,10 @@ h1.page-title {
   font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease;
 }
 
 .enter-confirm-btn:hover:not(:disabled) {
@@ -2162,7 +2198,6 @@ h1.page-title {
   min-height: 88px;
 }
 
-
 /* —— Ask AI helper + workers —— */
 .ask-who-dock {
   position: fixed;
@@ -2200,7 +2235,9 @@ h1.page-title {
   background: linear-gradient(160deg, #ecfeff, #ccfbf1);
   border: 1px solid rgba(45, 212, 191, 0.55);
   box-shadow: 0 14px 36px rgba(15, 118, 110, 0.22);
-  transition: box-shadow 140ms ease, transform 140ms ease;
+  transition:
+    box-shadow 140ms ease,
+    transform 140ms ease;
 }
 
 .ask-who-fab:active {
@@ -2438,7 +2475,6 @@ body:has(.ask-who-dock:not(.ask-who-dock-home)) .page {
   padding-top: 1.25rem;
 }
 
-
 /* —— Page decorations (user assets under /public/decor) —— */
 .page {
   position: relative;
@@ -2466,20 +2502,45 @@ body:has(.ask-who-dock:not(.ask-who-dock-home)) .page {
   filter: saturate(0.92);
 }
 
-.page-decor-tl { top: 0.5rem; left: -0.5rem; }
-.page-decor-tr { top: 1.5rem; right: -0.75rem; }
-.page-decor-bl { bottom: 2rem; left: -1rem; max-width: min(320px, 38vw); }
-.page-decor-br { bottom: 1rem; right: -0.5rem; max-width: min(300px, 36vw); }
-
-.page-decor-home .page-decor-tl { max-width: min(240px, 28vw); opacity: 0.5; }
-.page-decor-home .page-decor-tr { max-width: min(260px, 30vw); opacity: 0.48; }
-.page-decor-home .page-decor-bl { opacity: 0.52; }
-.page-decor-home .page-decor-br { opacity: 0.45; }
-
-@media (max-width: 900px) {
-  .page-decor { display: none; }
+.page-decor-tl {
+  top: 0.5rem;
+  left: -0.5rem;
+}
+.page-decor-tr {
+  top: 1.5rem;
+  right: -0.75rem;
+}
+.page-decor-bl {
+  bottom: 2rem;
+  left: -1rem;
+  max-width: min(320px, 38vw);
+}
+.page-decor-br {
+  bottom: 1rem;
+  right: -0.5rem;
+  max-width: min(300px, 36vw);
 }
 
+.page-decor-home .page-decor-tl {
+  max-width: min(240px, 28vw);
+  opacity: 0.5;
+}
+.page-decor-home .page-decor-tr {
+  max-width: min(260px, 30vw);
+  opacity: 0.48;
+}
+.page-decor-home .page-decor-bl {
+  opacity: 0.52;
+}
+.page-decor-home .page-decor-br {
+  opacity: 0.45;
+}
+
+@media (max-width: 900px) {
+  .page-decor {
+    display: none;
+  }
+}
 
 /* NCBI enum / organism fields */
 .ncbi-enum-field {
@@ -2507,204 +2568,4 @@ body:has(.ask-who-dock:not(.ask-who-dock-home)) .page {
 
 .ncbi-enum-field .form-note {
   margin: 0;
-}
-
-
-/* —— Fresh adaptive shell 2026-11 —— */
-:root {
-  --page-pad-x: clamp(0.65rem, 2.2vw, 1.25rem);
-  --page-max: 1280px;
-  --gap-tight: clamp(0.55rem, 1.4vw, 0.95rem);
-}
-
-.page,
-.site-header,
-.site-footer {
-  width: min(var(--page-max), calc(100% - (var(--page-pad-x) * 2)));
-}
-
-.page {
-  padding-bottom: clamp(1.25rem, 4vh, 2.25rem);
-}
-
-.page-title {
-  margin: 0 0 0.45rem;
-}
-
-.page-lead {
-  margin: 0 0 0.85rem;
-  max-width: min(52rem, 100%);
-}
-
-.actions {
-  gap: 0.55rem;
-}
-
-/* Ensure every control has a clear fill */
-button:not([class]):not(.enter-submit-hidden),
-.help-form > button:not(.enter-submit-hidden) {
-  background: linear-gradient(160deg, #14b8a6, #0d9488);
-  color: #ecfeff;
-  border: 1px solid transparent;
-  border-radius: var(--radius);
-  padding: 0.65rem 1.05rem;
-  font: inherit;
-  font-weight: 650;
-  cursor: pointer;
-}
-
-.enter-confirm-btn {
-  background: #ecfdf8 !important;
-  border: 1px solid rgba(13, 148, 136, 0.4) !important;
-  color: var(--accent-ink) !important;
-}
-
-.enter-confirm-btn:hover:not(:disabled) {
-  background: #ccfbf1 !important;
-}
-
-.locale-btn {
-  background: #ffffff;
-  border: 1px solid rgba(13, 148, 136, 0.25);
-  color: var(--accent-ink);
-  border-radius: 999px;
-  padding: 0.3rem 0.7rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.locale-btn.is-on,
-.locale-btn[aria-pressed="true"],
-.locale-btn[data-active="true"] {
-  background: linear-gradient(160deg, #14b8a6, #0d9488);
-  color: #ecfeff;
-  border-color: transparent;
-}
-
-.nav-cta {
-  background: linear-gradient(160deg, #14b8a6, #0d9488) !important;
-  color: #ecfeff !important;
-}
-
-.ask-who-item {
-  background: #f0fdfa;
-  border: 1px solid rgba(13, 148, 136, 0.18);
-}
-
-.ask-who-summon {
-  background: #ecfdf8;
-  border: 1px solid rgba(13, 148, 136, 0.28);
-  color: var(--accent-ink);
-}
-
-.ask-who-add {
-  background: linear-gradient(160deg, rgba(45, 212, 191, 0.28), rgba(13, 148, 136, 0.12));
-  border: 1px dashed rgba(13, 148, 136, 0.45);
-  color: var(--accent-ink);
-  font-weight: 700;
-}
-
-.worker-card-actions .btn,
-.worker-home .btn,
-.worker-window .btn {
-  background: linear-gradient(160deg, #14b8a6, #0d9488);
-  color: #ecfeff;
-  border-color: transparent;
-}
-
-.rnaseq-chip,
-.rnaseq-icon-btn,
-.rnaseq-group-card button,
-.ncbi-wizard button:not(.btn-primary):not(.btn-secondary) {
-  background: #ecfdf8;
-  border: 1px solid rgba(13, 148, 136, 0.28);
-  color: var(--accent-ink);
-}
-
-.rnaseq-chip.is-assigned,
-.rnaseq-chip-on {
-  background: linear-gradient(160deg, #14b8a6, #0d9488);
-  color: #ecfeff;
-  border-color: transparent;
-}
-
-.ncbi-wizard .ncbi-steps li {
-  background: #f0fdfa;
-  border: 1px solid rgba(13, 148, 136, 0.16);
-  border-radius: 999px;
-  padding: 0.35rem 0.7rem;
-}
-
-.ncbi-wizard .ncbi-steps li.is-on {
-  background: linear-gradient(160deg, #14b8a6, #0d9488);
-  color: #ecfeff !important;
-  border-color: transparent;
-}
-
-.home-thread {
-  min-height: min(36vh, 320px);
-  max-height: min(48vh, 440px);
-}
-
-.home-dispatch-card,
-.ai-chat-panel,
-.ai-side-panel,
-.worker-window {
-  border-color: rgba(13, 148, 136, 0.18);
-}
-
-.hub-grid,
-.panels,
-.ai-layout,
-.graph-wrap {
-  gap: var(--gap-tight);
-}
-
-@media (min-width: 1100px) {
-  .hub-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-  .ai-layout {
-    grid-template-columns: minmax(0, 1.65fr) minmax(260px, 0.7fr);
-  }
-}
-
-@media (max-width: 900px) {
-  .page {
-    width: calc(100% - 1rem);
-    padding-bottom: 1.25rem;
-  }
-  .page-home {
-    max-width: 100%;
-  }
-  .section,
-  .module-hero,
-  .home-dispatch-card {
-    padding-left: 0.85rem;
-    padding-right: 0.85rem;
-  }
-  .home-thread {
-    min-height: 220px;
-    max-height: 42vh;
-  }
-  .hero {
-    min-height: auto;
-    padding: 0.75rem 0 1.25rem;
-    gap: 1rem;
-  }
-}
-
-@media (max-width: 560px) {
-  .actions {
-    gap: 0.5rem;
-  }
-  .actions .btn {
-    flex: 1 1 calc(50% - 0.5rem);
-  }
-  .page-lead,
-  .section-lead,
-  .home-lead {
-    font-size: 0.95rem;
-    line-height: 1.55;
-  }
 }

@@ -7,18 +7,30 @@
     "build": "next build",
     "start": "next start --hostname 0.0.0.0 --port ${PORT:-3000}",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "tsx db/scripts/migrate.ts",
+    "db:import-users": "tsx db/scripts/import-users.ts",
+    "db:export-users": "tsx db/scripts/export-users.ts",
+    "db:verify-users": "tsx db/scripts/verify-import.ts",
+    "db:test": "tsx db/tests/integration.ts",
+    "tasks:dispatch": "tsx db/scripts/dispatch.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1161.0",
+    "@aws-sdk/s3-request-presigner": "^3.1161.0",
     "@keyantong/ops-shared": "workspace:*",
     "next": "^15.1.0",
+    "pg": "^8.23.1",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "redis": "^6.3.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "tsx": "^4.23.15",
     "typescript": "^5.7.0"
   }
 }

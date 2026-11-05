@@ -5,6 +5,10 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  if (!pathname.startsWith("/api/")) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
   // Never expose internal APIs without secret — reject empty auth early for writes
   if (pathname.startsWith("/api/internal")) {
     const auth = request.headers.get("authorization") || "";
@@ -21,5 +25,10 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/internal/:path*", "/api/community/:path*"],
+  matcher: [
+    "/api/internal/:path*", "/api/community/:path*",
+    "/login", "/register", "/account", "/notifications", "/pricing", "/community/:path*",
+    "/companions", "/tools/:path*", "/papers", "/about", "/genomes", "/contributions",
+    "/literature", "/analysis/:path*",
+  ],
 };

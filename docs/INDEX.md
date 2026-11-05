@@ -57,3 +57,12 @@
 - [20 生产部署与迁移](./20-production-deploy-migrate.md)
 - [21 上游 RNAseq Worker](./21-rnaseq-upstream-worker.md)
 - [22 LLM 网关与 DeepSeek Harness](./22-llm-gateway-and-harness.md)
+
+- [27 门户视觉与响应式改造、项目实现现状](./27-ui-refresh.md)
+
+- [28 科研互助模块与专属角色](./28-research-commons.md)
+- [29 NCBI 本机自动化设计与实现](./29-ncbi-automation.md)
+- [30 统一存储、用户权限迁移与恢复](./30-unified-storage.md)
+- [31 组学分析环境、GWAS/BSA 与植物资源图鉴](./31-omics-and-resource-atlas.md)
+- [32 对话即操作：门户转型与执行边界](32-conversation-native-portal.md)
+- [33 对话闭环：Harness、执行回执与任务追踪](33-conversation-execution-loop.md)

@@ -1,0 +1,15 @@
+# Verified against @deepseek-ai/dsh-sdk-minimal 0.2.1-rc.5.
+# Public research roles use durable sessions, persona and context compaction.
+# No model-controlled shell, file/image reader or directory tool is exposed.
+- id: persistent-bash
+  disabled: true
+- id: persistent-pwsh
+  disabled: true
+- id: tool-fs
+  disabled: true
+- id: tool-working-directory
+  disabled: true
+- id: session-log-deepseek
+  disabled: true
+- id: plugin-package-inventory-deepseek
+  disabled: true

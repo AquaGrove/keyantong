@@ -208,9 +208,8 @@ def run_de_pydeseq2(
         raise ValueError("pydeseq2 requires non-negative counts")
     # heuristic: if median is small float-ish and many non-integers, skip
     vals = X.to_numpy().ravel()
-    frac_int = np.mean(np.isclose(vals, np.round(vals), atol=1e-6))
-    if frac_int < 0.85 and float(np.median(vals)) < 50:
-        raise ValueError("matrix looks continuous (TPM/FPKM); pydeseq2 skipped")
+    if not np.isfinite(vals).all() or (vals < 0).any() or not np.equal(vals,np.floor(vals)).all():
+        raise ValueError("PyDESeq2 要求非负整数原始 counts，不能输入 TPM/FPKM 或小数矩阵")
 
     counts = np.rint(np.maximum(X.T.to_numpy(), 0)).astype(int)
     counts_df = pd.DataFrame(counts, index=control_samples + treatment_samples, columns=X.index.astype(str))
@@ -220,9 +219,9 @@ def run_de_pydeseq2(
         },
         index=counts_df.index,
     )
-    dds = DeseqDataSet(counts=counts_df, metadata=meta, design_factors="condition", refit_cooks=True, quiet=True)
+    dds = DeseqDataSet(counts=counts_df, metadata=meta, design_factors="condition", refit_cooks=True, quiet=True, n_cpus=1)
     dds.deseq2()
-    stat = DeseqStats(dds, contrast=["condition", "treatment", "control"], quiet=True)
+    stat = DeseqStats(dds, contrast=["condition", "treatment", "control"], quiet=True, inference=dds.inference)
     stat.summary()
     res = stat.results_df.copy()
     res = res.rename(columns={"log2FoldChange": "log2FC", "pvalue": "pvalue", "padj": "padj"})
@@ -342,20 +341,19 @@ def run_de_samples(
             order.append("r_limma")
         order.extend(["limma_like", "welch"])
     elif eng in ("r_limma", "limma_bioc", "bioc_limma"):
-        order = ["r_limma", "limma_like", "welch"]
+        order = ["r_limma"]
     elif eng in ("r_edger", "edger", "edger"):
-        order = ["r_edger", "limma_like", "welch"]
+        order = ["r_edger"]
     elif eng in ("r_deseq2", "deseq2"):
-        order = ["r_deseq2", "pydeseq2", "limma_like", "welch"]
+        order = ["r_deseq2"]
     elif eng in ("limma", "limma_like", "eb", "empirical_bayes"):
-        order = ["limma_like", "welch"]
+        order = ["limma_like"]
     elif eng in ("welch", "ttest"):
         order = ["welch"]
     elif eng == "pydeseq2":
-        order = ["pydeseq2", "limma_like", "welch"]
+        order = ["pydeseq2"]
     else:
-        order = ["limma_like", "welch"]
-        errors.append(f"unknown engine {engine}, falling back")
+        raise ValueError(f"未知 DE 引擎: {engine}")
 
     def _run_r(name: str) -> pd.DataFrame:
         from .r_backends import run_de_r
@@ -383,8 +381,9 @@ def run_de_samples(
     for name in order:
         try:
             if name in ("r_limma", "r_edger", "r_deseq2"):
-                return _run_r(name)
-            return runners[name](
+                result = _run_r(name)
+            else:
+                result = runners[name](
                 matrix,
                 control_samples,
                 treatment_samples,
@@ -392,7 +391,9 @@ def run_de_samples(
                 padj_cutoff=padj_cutoff,
                 min_count=min_count,
                 contrast_id=contrast_id,
-            )
+                )
+            result.attrs["engine_fallbacks"] = list(errors)
+            return result
         except Exception as exc:  # noqa: BLE001
             last_exc = exc
             errors.append(f"{name}: {exc}")
